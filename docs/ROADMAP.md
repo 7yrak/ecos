@@ -24,7 +24,7 @@ Criterio de salida:
 
 ## Fase 1 - Prototipo de mecanica
 
-Estado: implementacion tecnica completada; 1 de 5 pruebas externas iniciada.
+Estado: implementacion tecnica completada; 1 de 5 pruebas externas completada.
 
 Objetivo: demostrar que controlar al jugador y convivir con sus ecos es divertido.
 
@@ -52,6 +52,8 @@ Entregables:
 - Flujo completo: inicio, partida, resultado y repeticion.
 - Una arena terminada.
 - Tres obstaculos.
+- Progresion dentro de la partida que introduzca variedad sin depender solamente
+  de acumular ecos.
 - Efectos visuales, sonido y vibracion.
 - Tutorial de menos de un minuto.
 - Ajustes de sonido, vibracion y sensibilidad.

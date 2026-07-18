@@ -7,7 +7,7 @@
 
 - Fecha de actualizacion: 2026-07-18
 - Fase activa: Fase 1 - Prototipo de mecanica
-- Hito activo: validacion de diversion con cinco personas, 1 de 5 iniciada
+- Hito activo: validacion de diversion con cinco personas, 1 de 5 completada
 - Estado general: implementacion tecnica de Fase 1 completada; cuatro testers pendientes
 - Ultima sesion: primera prueba positiva en un telefono Android real
 
@@ -31,13 +31,15 @@
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
 - Pasan 29 verificaciones headless, incluidos diez ciclos tecnicos consecutivos.
-- T01 instalo y probo la APK release en un telefono real sin informar fallos, y la
-  evaluo espontaneamente como "super buena"; faltan sus respuestas del protocolo.
+- T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
+  quiso superar su puntuacion y no informo fallos tecnicos.
+- T01 detecto repeticion despues de dominar el ritmo: la partida cambia poco y la
+  acumulacion de ecos dificulta continuar superandose.
 
 ## Siguiente accion exacta
 
-Completar las respuestas de T01 y ejecutar `docs/PRUEBAS_FASE1.md` con cuatro
-personas adicionales.
+Ejecutar `docs/PRUEBAS_FASE1.md` con cuatro personas adicionales y comprobar si
+tambien perciben repeticion o saturacion de ecos.
 
 ## Tareas pendientes inmediatas
 
@@ -50,6 +52,7 @@ personas adicionales.
 - [x] Completar diez ciclos tecnicos consecutivos sin errores.
 - [x] Probar en al menos un telefono Android fisico.
 - [ ] Obtener resultados de al menos cinco testers.
+- [ ] Confirmar con T02-T05 si la repeticion y saturacion de ecos es un patron.
 - [ ] Decidir si la mecanica pasa a vertical slice o requiere iteracion.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
 

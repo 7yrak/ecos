@@ -45,6 +45,17 @@ Todos los valores son parametros de balance, no constantes definitivas.
 Estos comportamientos estan implementados, pero su diversion y claridad deben
 validarse con al menos cinco personas antes de la Fase 2.
 
+### Aprendizaje de T01
+
+- La regla del eco se entiende sin explicacion.
+- La puntuacion provoca intentos voluntarios de superacion.
+- Despues de unas quince partidas, la experiencia se siente repetitiva porque la
+  arena cambia poco.
+- Acumular ecos como fuente principal de dificultad termina saturando el espacio y
+  reduce la sensacion de que el jugador puede seguir mejorando.
+- La vertical slice debe probar variacion durante la partida y una curva de
+  dificultad que no dependa solamente de agregar ecos.
+
 ## Alcance del MVP
 
 - Un modo infinito.

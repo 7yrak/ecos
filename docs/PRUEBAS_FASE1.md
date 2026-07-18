@@ -23,15 +23,16 @@ una explicacion extensa.
 
 | Tester | Dispositivo | Partidas | Entendio el eco | Quiso repetir | Problemas | Comentario principal |
 |---|---|---:|---|---|---|---|
-| T01 | Android, modelo pendiente | >=1 | Pendiente | Pendiente | Ninguno informado | Evaluacion espontanea: "super buena" |
+| T01 | Galaxy S25 Ultra | 15 aprox. | Si | Si | Repeticion y saturacion de ecos | Motiva mejorar, pero luego se siente siempre igual y demasiados ecos frenan la superacion |
 | T02 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T03 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T04 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T05 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 
-T01 confirmo el 2026-07-18 que pudo instalar y probar la APK release en un telefono
-real. Faltan registrar el numero de partidas y sus respuestas sobre comprension del
-eco e intencion de repetir.
+T01 confirmo el 2026-07-18 que pudo instalar y probar la APK release en un Galaxy
+S25 Ultra. Entendio el eco sin explicacion y jugo unas quince partidas intentando
+superar su puntuacion. Despues percibio repeticion: la partida cambia poco y la
+acumulacion de ecos hace cada vez mas dificil seguir progresando.
 
 ## Criterio de salida
 

@@ -4,6 +4,32 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Resultado completo de T01
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Resultado:
+
+- T01 jugo aproximadamente quince partidas en un Galaxy S25 Ultra.
+- Entendio sin explicacion que el eco repite movimientos anteriores.
+- Quiso repetir para superar su puntuacion y no informo fallos tecnicos.
+- Tras dominar el ritmo, percibio que la experiencia se vuelve repetitiva porque
+  la arena cambia poco.
+- La acumulacion de muchos ecos termino reduciendo su expectativa de seguir
+  superandose.
+
+Decision:
+
+- T01 cuenta como una prueba completa y positiva para el criterio de Fase 1.
+- La futura vertical slice debe introducir variedad y una curva de dificultad que
+  no escale solamente mediante mas ecos.
+- Se esperaran T02-T05 para confirmar si el problema es un patron antes de fijar la
+  mecanica exacta que lo resolvera.
+
+Siguiente accion:
+
+- Ejecutar el mismo protocolo con cuatro personas adicionales.
+
 ## 2026-07-18 - Primera prueba externa positiva
 
 Fase: Fase 1 - Prototipo de mecanica
