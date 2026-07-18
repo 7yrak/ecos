@@ -7,7 +7,7 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 
 ## Descargar APK
 
-- [ECOS 0.1.0 debug para Android](releases/ECOS-0.1.0-debug.apk)
+- [Descargar ECOS 0.1.0 debug para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.1.0-debug.apk)
 - SHA-256: `e0ff8705b277e939916bba64491b27348fe49061cdc6a2cedd97e0ab6895b8bd`
 
 Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
