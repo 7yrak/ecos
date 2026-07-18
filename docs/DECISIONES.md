@@ -80,6 +80,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: las validaciones se ejecutan mediante scripts locales. Cuando exista
   un remoto GitHub, la primera opcion de CI sera GitHub Actions.
 
+## D-009 - Control y segmentacion de ecos
+
+- Fecha: 2026-07-18
+- Estado: aceptada para prueba de Fase 1
+- Decision: mover hacia la posicion tocada y generar un eco por cada segmento de
+  cinco segundos.
+- Motivo: el control se entiende con un dedo y los segmentos independientes mantienen
+  acotado el costo de grabacion y reproduccion.
+- Consecuencia: velocidad, duracion y frecuencia se consideran parametros de balance
+  que pueden cambiar despues de las pruebas con jugadores.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

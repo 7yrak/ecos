@@ -22,8 +22,9 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 - `docs/DECISIONES.md`: decisiones tecnicas y de producto.
 - `docs/GDD.md`: definicion del juego y alcance del MVP.
 - `docs/ENTORNO.md`: versiones, rutas y comandos de desarrollo.
+- `docs/PRUEBAS_FASE1.md`: protocolo y resultados de validacion del prototipo.
 
 ## Estado
 
-La Fase 0 esta completada. El proyecto se encuentra listo para comenzar la Fase 1:
-prototipo de movimiento, grabacion y reproduccion de ecos.
+La implementacion tecnica de la Fase 1 esta completada. Falta probar la mecanica
+con cinco personas antes de comenzar la vertical slice de Fase 2.

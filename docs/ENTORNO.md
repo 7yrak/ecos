@@ -32,6 +32,7 @@ Android nativo.
 
 ```bash
 ./scripts/dev/check_environment.sh
+./scripts/dev/test.sh
 ./scripts/dev/godot.sh --editor --path .
 ./scripts/dev/godot.sh --path .
 ./scripts/dev/export_android_debug.sh

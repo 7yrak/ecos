@@ -24,7 +24,7 @@ Criterio de salida:
 
 ## Fase 1 - Prototipo de mecanica
 
-Estado: siguiente fase.
+Estado: implementacion tecnica completada; validacion con cinco jugadores pendiente.
 
 Objetivo: demostrar que controlar al jugador y convivir con sus ecos es divertido.
 

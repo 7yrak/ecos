@@ -28,6 +28,53 @@ Siguiente accion:
 -
 ```
 
+## 2026-07-18 - Prototipo jugable de Fase 1
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Objetivo: implementar y validar el bucle basico de movimiento, grabacion y colision
+con ecos.
+
+Cambios:
+
+- Se reemplazo la pantalla tecnica por una arena jugable vertical.
+- Se implemento movimiento suave mediante toque, arrastre y mouse.
+- Se agregaron limites fisicos y dos obstaculos peligrosos.
+- Se implemento `EchoTimeline` con muestras ordenadas, interpolacion y copias
+  inmutables.
+- Se graba un tramo cada cinco segundos y se crea un eco que lo reproduce en bucle.
+- Se agregaron colisiones con ecos, puntuacion, tiempo, contador de ecos, pantalla
+  de resultado y reinicio tactil.
+- Se creo un runner de pruebas headless y un protocolo para cinco testers.
+- Se identifico la build del prototipo como `0.1.0`.
+
+Decisiones:
+
+- El prototipo usa movimiento hacia la posicion tocada, no un joystick virtual.
+- Cada eco reproduce en bucle un segmento independiente de cinco segundos.
+- Los limites contienen al jugador; los ecos y obstaculos terminan la partida.
+- La Fase 2 no comienza hasta evaluar la comprension y repeticion con cinco personas.
+
+Verificacion:
+
+- Pasan 29 verificaciones automatizadas.
+- Se completan diez ciclos tecnicos consecutivos sin errores.
+- Se verifican interpolacion, copias inmutables, capas fisicas y creacion de ecos.
+- Las pruebas fisicas confirman colision mortal con obstaculos y contencion en muros.
+- La APK se instalo en Android 15 x86_64.
+- Se verificaron visualmente movimiento tactil, eco, resultado y reinicio.
+- El log Android quedo limpio despues de corregir el cambio de `monitoring` dentro
+  de la senal fisica.
+
+Pendiente:
+
+- Ejecutar `docs/PRUEBAS_FASE1.md` con al menos cinco personas en telefonos reales.
+- Ajustar velocidad, intervalo o control segun los resultados.
+
+Siguiente accion:
+
+- Realizar las pruebas externas y decidir si la mecanica pasa a Fase 2.
+
 ## 2026-07-18 - Publicacion del repositorio
 
 Fase: Fase 1 - Prototipo de mecanica

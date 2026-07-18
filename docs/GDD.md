@@ -32,6 +32,19 @@ creado por uno mismo en una cadena perfecta.
 
 Todos los valores son parametros de balance, no constantes definitivas.
 
+## Prototipo de Fase 1
+
+- El jugador se mueve hacia el punto tocado o arrastrado.
+- La arena tiene limites que contienen y obstaculos que finalizan la partida.
+- El recorrido se muestrea cada 0,05 segundos.
+- Cada cinco segundos se crea un eco del segmento anterior.
+- Cada eco repite su segmento en bucle y colisionar con el termina la partida.
+- La puntuacion suma supervivencia y ecos creados.
+- La pantalla de resultado permite reiniciar inmediatamente.
+
+Estos comportamientos estan implementados, pero su diversion y claridad deben
+validarse con al menos cinco personas antes de la Fase 2.
+
 ## Alcance del MVP
 
 - Un modo infinito.
