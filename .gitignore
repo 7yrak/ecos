@@ -1,0 +1,28 @@
+# Godot generated files
+.godot/
+
+# Android and exported builds
+android/build/
+build/
+dist/
+*.apk
+*.aab
+
+# Signing credentials
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# Local IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local environment files
+.env
+.env.*
+!.env.example
+local.properties

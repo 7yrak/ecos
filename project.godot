@@ -1,0 +1,29 @@
+; Engine configuration file.
+; Prefer editing this file through the Godot editor.
+
+config_version=5
+
+[application]
+
+config/name="ECOS"
+run/main_scene="res://scenes/app/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/image="res://assets/branding/icon.png"
+boot_splash/bg_color=Color(0.027, 0.059, 0.09, 1)
+config/icon="res://assets/branding/icon.png"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=360
+window/size/window_height_override=640
+window/stretch/mode="canvas_items"
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.027, 0.059, 0.09, 1)
