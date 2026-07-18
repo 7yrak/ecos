@@ -36,8 +36,14 @@ Android nativo.
 ./scripts/dev/godot.sh --editor --path .
 ./scripts/dev/godot.sh --path .
 ./scripts/dev/export_android_debug.sh
+./scripts/dev/export_android_release.sh
 ./scripts/dev/install_android_debug.sh
 ```
+
+La exportacion release lee la firma desde
+`~/.local/share/ecos/signing/release.env`. El keystore y su clave son secretos
+locales: no se versionan y deben respaldarse en un lugar seguro antes de publicar
+en Google Play.
 
 El dispositivo virtual local se llama `ecos_api35`. En este equipo debe iniciarse
 con `-gpu host`; SwiftShader presenta el issue conocido de Godot `#109550` y no

@@ -4,6 +4,37 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - APK release para pruebas externas
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Problema:
+
+- Play Protect bloqueo la APK anterior al intentar instalarla desde GitHub.
+- La APK estaba firmada con el certificado debug generico de Godot y declaraba
+  `android:debuggable=true`.
+
+Cambios:
+
+- Se instalo la plantilla oficial `android_release.apk` de Godot 4.7.1.
+- Se creo una clave local propia de ECOS, excluida del repositorio.
+- Se agrego `scripts/dev/export_android_release.sh` con firma mediante variables de
+  entorno y una comprobacion que rechaza APK depurables.
+- Se reemplazo el artefacto publico por `releases/ECOS-0.1.0-android.apk`.
+
+Verificacion:
+
+- La APK no declara `debuggable`, `testOnly` ni permisos de Android.
+- Las firmas APK v2 y v3 son validas.
+- La instalacion limpia en Android 15 termino correctamente, el juego inicio y el
+  log no mostro errores de aplicacion.
+- SHA-256: `0db110a3282e615ce3464c3d272b9a613b6113bd0c8104137f12b953cbbc456b`.
+
+Pendiente:
+
+- Probar la nueva descarga en el telefono que presento el bloqueo.
+- Respaldar la clave de firma fuera del equipo antes de una publicacion definitiva.
+
 ## 2026-07-18 - APK de Fase 1 disponible en GitHub
 
 Fase: Fase 1 - Prototipo de mecanica

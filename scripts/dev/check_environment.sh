@@ -42,6 +42,7 @@ check_command 'SDK Manager' "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanag
 check_file 'Android Platform 36' "$ANDROID_SDK_ROOT/platforms/android-36/android.jar"
 check_file 'Android Build Tools 36.0.0' "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner"
 check_file 'Plantilla Android debug' "$HOME/.local/share/godot/export_templates/4.7.1.stable/android_debug.apk"
+check_file 'Plantilla Android release' "$HOME/.local/share/godot/export_templates/4.7.1.stable/android_release.apk"
 
 if (( failures > 0 )); then
   printf '\nEntorno incompleto: %d requisito(s) pendiente(s).\n' "$failures"

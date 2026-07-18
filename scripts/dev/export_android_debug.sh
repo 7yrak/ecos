@@ -17,7 +17,7 @@ rm -f "$OUTPUT_PATH"
 "$PROJECT_ROOT/scripts/dev/godot.sh" \
   --headless \
   --path "$PROJECT_ROOT" \
-  --export-debug 'Android Debug' \
+  --export-debug 'Android' \
   "$OUTPUT_PATH"
 
 if [[ ! -s "$OUTPUT_PATH" ]]; then
