@@ -15,6 +15,7 @@
 
 - Git esta inicializado en la rama `main`.
 - Todo el codigo, la documentacion y la configuracion viven en este repositorio.
+- El remoto oficial es `https://github.com/7yrak/ecos.git`.
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
@@ -42,7 +43,6 @@ limites de arena y soporte equivalente para mouse durante el desarrollo.
 
 - No hay bloqueos tecnicos para comenzar la Fase 1.
 - La identidad `com.tyrak.ecos` sigue siendo provisional y no bloquea el prototipo.
-- No hay remoto `origin`; esto no bloquea el desarrollo local.
 
 ## Riesgos actuales
 

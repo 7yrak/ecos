@@ -3,6 +3,8 @@
 Juego arcade 2D para Android en el que los movimientos del jugador generan ecos
 que repiten su recorrido y modifican la partida.
 
+Repositorio oficial: <https://github.com/7yrak/ecos>
+
 ## Como retomar el proyecto
 
 1. Leer [`docs/ESTADO.md`](docs/ESTADO.md).

@@ -28,6 +28,37 @@ Siguiente accion:
 -
 ```
 
+## 2026-07-18 - Publicacion del repositorio
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Objetivo: publicar el historial local en el repositorio GitHub oficial de ECOS.
+
+Cambios:
+
+- Se configuro `https://github.com/7yrak/ecos.git` como remoto `origin`.
+- Se preparo la publicacion de la rama `main` con seguimiento remoto.
+
+Decisiones:
+
+- `https://github.com/7yrak/ecos` es el repositorio remoto oficial.
+- El repositorio remoto es publico.
+
+Verificacion:
+
+- GitHub CLI esta autenticado con acceso al repositorio.
+- El repositorio remoto estaba vacio antes de la primera publicacion.
+- No existia historial remoto que pudiera ser sobrescrito.
+
+Pendiente:
+
+- Agregar GitHub Actions cuando las pruebas automatizadas de la Fase 1 aporten
+  una validacion util.
+
+Siguiente accion:
+
+- Implementar movimiento tactil y limites de arena.
+
 ## 2026-07-18 - Versionado inicial
 
 Fase: Fase 1 - Prototipo de mecanica
