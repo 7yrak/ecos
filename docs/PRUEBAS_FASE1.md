@@ -5,7 +5,7 @@ una explicacion extensa.
 
 ## Preparacion
 
-1. Instalar la APK debug en un telefono Android.
+1. Instalar la APK release en un telefono Android.
 2. Entregar el telefono sin explicar la funcion de los ecos.
 3. Permitir hasta diez partidas o cinco minutos.
 4. No orientar al tester salvo que no pueda iniciar una partida.
@@ -23,11 +23,15 @@ una explicacion extensa.
 
 | Tester | Dispositivo | Partidas | Entendio el eco | Quiso repetir | Problemas | Comentario principal |
 |---|---|---:|---|---|---|---|
-| T01 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
+| T01 | Android, modelo pendiente | >=1 | Pendiente | Pendiente | Ninguno informado | Evaluacion espontanea: "super buena" |
 | T02 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T03 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T04 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
 | T05 | Pendiente | 0 | Pendiente | Pendiente | Pendiente | Pendiente |
+
+T01 confirmo el 2026-07-18 que pudo instalar y probar la APK release en un telefono
+real. Faltan registrar el numero de partidas y sus respuestas sobre comprension del
+eco e intencion de repetir.
 
 ## Criterio de salida
 

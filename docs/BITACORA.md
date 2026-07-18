@@ -4,6 +4,27 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Primera prueba externa positiva
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Resultado:
+
+- T01 confirmo que pudo instalar y probar la APK release en un telefono Android.
+- No informo fallos tecnicos y evaluo espontaneamente el juego como "super buena".
+- Se marco como cumplida la prueba en al menos un telefono fisico.
+
+Decision:
+
+- La Fase 1 permanece activa porque el criterio exige cinco testers, cuatro que
+  comprendan el eco y tres que quieran repetir.
+- No se infieren respuestas que T01 todavia no entrego.
+
+Siguiente accion:
+
+- Completar el registro de T01 y realizar cuatro pruebas adicionales antes de
+  comenzar la Fase 2.
+
 ## 2026-07-18 - APK release para pruebas externas
 
 Fase: Fase 1 - Prototipo de mecanica

@@ -7,9 +7,9 @@
 
 - Fecha de actualizacion: 2026-07-18
 - Fase activa: Fase 1 - Prototipo de mecanica
-- Hito activo: validacion de diversion con cinco personas
-- Estado general: implementacion tecnica de Fase 1 completada; prueba externa pendiente
-- Ultima sesion: prototipo jugable de movimiento y ecos validado en Android
+- Hito activo: validacion de diversion con cinco personas, 1 de 5 iniciada
+- Estado general: implementacion tecnica de Fase 1 completada; cuatro testers pendientes
+- Ultima sesion: primera prueba positiva en un telefono Android real
 
 ## Ultimo resultado verificable
 
@@ -31,11 +31,13 @@
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
 - Pasan 29 verificaciones headless, incluidos diez ciclos tecnicos consecutivos.
+- T01 instalo y probo la APK release en un telefono real sin informar fallos, y la
+  evaluo espontaneamente como "super buena"; faltan sus respuestas del protocolo.
 
 ## Siguiente accion exacta
 
-Instalar la APK en telefonos reales y ejecutar el protocolo de
-`docs/PRUEBAS_FASE1.md` con al menos cinco personas.
+Completar las respuestas de T01 y ejecutar `docs/PRUEBAS_FASE1.md` con cuatro
+personas adicionales.
 
 ## Tareas pendientes inmediatas
 
@@ -46,7 +48,7 @@ Instalar la APK en telefonos reales y ejecutar el protocolo de
 - [x] Grabar posiciones con tiempo monotono.
 - [x] Reproducir ecos con colisiones y reinicio.
 - [x] Completar diez ciclos tecnicos consecutivos sin errores.
-- [ ] Probar en al menos un telefono Android fisico.
+- [x] Probar en al menos un telefono Android fisico.
 - [ ] Obtener resultados de al menos cinco testers.
 - [ ] Decidir si la mecanica pasa a vertical slice o requiere iteracion.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
