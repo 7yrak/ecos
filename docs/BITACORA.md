@@ -4,6 +4,21 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - APK de Fase 1 disponible en GitHub
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Resultado:
+
+- Se agrego `releases/ECOS-0.1.0-debug.apk` al repositorio para permitir su descarga
+  directa desde GitHub.
+- El APK pesa 57,4 MB y conserva la firma debug validada de la Fase 1.
+- SHA-256: `e0ff8705b277e939916bba64491b27348fe49061cdc6a2cedd97e0ab6895b8bd`.
+
+Siguiente accion:
+
+- Descargar el APK desde el README y ejecutar el protocolo con cinco testers.
+
 ## Plantilla
 
 ```text

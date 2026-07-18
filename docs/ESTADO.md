@@ -20,6 +20,8 @@
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
 - La APK debug `0.1.0` (`versionCode 2`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.1.0-debug.apk` para descarga
+  directa desde GitHub.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
 - Se verifico visualmente la pantalla inicial y no hubo errores de aplicacion con
   el renderizado por GPU host.

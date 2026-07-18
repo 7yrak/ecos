@@ -6,6 +6,7 @@ android/build/
 build/
 dist/
 *.apk
+!releases/*.apk
 *.aab
 
 # Signing credentials
