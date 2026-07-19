@@ -7,9 +7,9 @@
 
 - Fecha de actualizacion: 2026-07-18
 - Fase activa: Fase 2 - Vertical slice
-- Hito activo: flujo de menu, tutorial, partida y resultado
-- Estado general: Fase 1 cerrada; primer entregable de Fase 2 en validacion
-- Ultima sesion: cierre de Fase 1 con ocho jugadores e implementacion del menu
+- Hito activo: variedad de arena y control de saturacion de ecos
+- Estado general: interfaz base de Fase 2 completada; variedad jugable pendiente
+- Ultima sesion: pantalla adaptable y ajustes persistentes validados en Android
 
 ## Ultimo resultado verificable
 
@@ -19,8 +19,8 @@
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
-- La APK release `0.2.0` (`versionCode 3`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.2.0-android.apk` para descarga
+- La APK release `0.2.1` (`versionCode 4`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.2.1-android.apk` para descarga
   directa desde GitHub.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
@@ -30,7 +30,7 @@
 - Cada tramo de cinco segundos se graba e instancia como un eco repetible.
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 37 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
+- Pasan 46 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
   el flujo completo de navegacion.
 - T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
   quiso superar su puntuacion y no informo fallos tecnicos.
@@ -42,13 +42,18 @@
   repetitiva y necesita variedad, menu y mejor presentacion.
 - El menu principal permite jugar y abrir un tutorial; el resultado permite repetir
   la ronda o volver al menu sin recargar toda la aplicacion.
-- La APK `0.2.0` se instalo y recorrio por toque en Android 15 sin errores de
-  aplicacion despues de una limpieza de cache.
+- El menu y la arena ocupan pantallas desde 9:16 hasta 20:9 sin barras negras; el
+  mundo de juego conserva sus coordenadas internas y se centra verticalmente.
+- Volumen, vibracion y sensibilidad se guardan en `user://settings.cfg` y se
+  restauran al relanzar la aplicacion.
+- La sensibilidad modifica velocidad y aceleracion; la vibracion se aplica al final
+  de una ronda cuando esta habilitada.
+- La APK `0.2.1` se instalo y recorrio por toque en Android 15 sin errores.
 
 ## Siguiente accion exacta
 
-Adaptar menu y arena a pantallas 19.5:9 y 20:9 sin barras negras ni cambios en la
-fisica del juego.
+Disenar e implementar progresion de arena con tres tipos de obstaculo y un limite
+de ecos activos que evite saturacion.
 
 ## Tareas pendientes inmediatas
 
@@ -57,8 +62,8 @@ fisica del juego.
 - [x] Agregar tutorial accesible desde el menu.
 - [x] Implementar navegacion entre menu, partida y resultado.
 - [x] Validar el flujo nuevo en Android.
-- [ ] Adaptar la interfaz y arena a relaciones de aspecto altas.
-- [ ] Agregar ajustes de sonido, vibracion y sensibilidad.
+- [x] Adaptar la interfaz y arena a relaciones de aspecto altas.
+- [x] Agregar ajustes de sonido, vibracion y sensibilidad.
 - [ ] Disenar progresion de arena y control de saturacion de ecos.
 - [ ] Implementar tres tipos de obstaculo.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.

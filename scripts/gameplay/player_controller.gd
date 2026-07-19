@@ -59,6 +59,12 @@ func set_movement_enabled(enabled: bool) -> void:
 		velocity = Vector2.ZERO
 
 
+func set_sensitivity(multiplier: float) -> void:
+	var clamped_multiplier := clampf(multiplier, 0.65, 1.35)
+	move_speed = 520.0 * clamped_multiplier
+	acceleration = 2400.0 * clamped_multiplier
+
+
 func reset_for_run(start_position: Vector2) -> void:
 	global_position = start_position
 	target_position = start_position

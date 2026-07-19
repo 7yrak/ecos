@@ -6,24 +6,42 @@ signal play_requested
 @onready var content: MarginContainer = $Content
 @onready var play_button: Button = $Content/Layout/Actions/Play
 @onready var tutorial_button: Button = $Content/Layout/Actions/Tutorial
+@onready var settings_button: Button = $Content/Layout/Actions/Settings
 @onready var tutorial_overlay: ColorRect = $TutorialOverlay
 @onready var tutorial_back_button: Button = $TutorialOverlay/Center/Panel/Content/Back
+@onready var settings_overlay: ColorRect = $SettingsOverlay
+@onready var volume_slider: HSlider = $SettingsOverlay/Center/Panel/Content/VolumeSlider
+@onready var volume_value: Label = $SettingsOverlay/Center/Panel/Content/VolumeHeader/Value
+@onready var vibration_toggle: CheckButton = $SettingsOverlay/Center/Panel/Content/VibrationRow/Toggle
+@onready var sensitivity_slider: HSlider = $SettingsOverlay/Center/Panel/Content/SensitivitySlider
+@onready var sensitivity_value: Label = $SettingsOverlay/Center/Panel/Content/SensitivityHeader/Value
+@onready var settings_back_button: Button = $SettingsOverlay/Center/Panel/Content/Back
+@onready var settings_store := get_node("/root/Settings") as SettingsStore
 
 
 func _ready() -> void:
 	play_button.pressed.connect(play_requested.emit)
 	tutorial_button.pressed.connect(_show_tutorial)
 	tutorial_back_button.pressed.connect(_hide_tutorial)
+	settings_button.pressed.connect(_show_settings)
+	settings_back_button.pressed.connect(_hide_settings)
+	volume_slider.value_changed.connect(_on_volume_changed)
+	vibration_toggle.toggled.connect(_on_vibration_toggled)
+	sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
 	tutorial_overlay.visible = false
+	settings_overlay.visible = false
+	_sync_settings()
 	_animate_entry()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not tutorial_overlay.visible:
-		return
 	if event.is_action_pressed("ui_cancel"):
-		_hide_tutorial()
-		get_viewport().set_input_as_handled()
+		if tutorial_overlay.visible:
+			_hide_tutorial()
+			get_viewport().set_input_as_handled()
+		elif settings_overlay.visible:
+			_hide_settings()
+			get_viewport().set_input_as_handled()
 
 
 func _show_tutorial() -> void:
@@ -34,6 +52,45 @@ func _show_tutorial() -> void:
 func _hide_tutorial() -> void:
 	tutorial_overlay.visible = false
 	tutorial_button.grab_focus()
+
+
+func _show_settings() -> void:
+	_sync_settings()
+	settings_overlay.visible = true
+	settings_back_button.grab_focus()
+
+
+func _hide_settings() -> void:
+	settings_overlay.visible = false
+	settings_button.grab_focus()
+
+
+func _sync_settings() -> void:
+	volume_slider.set_value_no_signal(settings_store.master_volume)
+	vibration_toggle.set_pressed_no_signal(settings_store.vibration_enabled)
+	sensitivity_slider.set_value_no_signal(settings_store.sensitivity)
+	_update_setting_labels()
+
+
+func _on_volume_changed(value: float) -> void:
+	settings_store.set_master_volume(value)
+	_update_setting_labels()
+
+
+func _on_vibration_toggled(enabled: bool) -> void:
+	settings_store.set_vibration_enabled(enabled)
+	_update_setting_labels()
+
+
+func _on_sensitivity_changed(value: float) -> void:
+	settings_store.set_sensitivity(value)
+	_update_setting_labels()
+
+
+func _update_setting_labels() -> void:
+	volume_value.text = "%d%%" % roundi(settings_store.master_volume * 100.0)
+	sensitivity_value.text = "%.2fx" % settings_store.sensitivity
+	vibration_toggle.text = "ACTIVA" if settings_store.vibration_enabled else "INACTIVA"
 
 
 func _animate_entry() -> void:

@@ -4,6 +4,37 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Pantalla adaptable y ajustes persistentes
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- Se activo el modo de expansion para ocupar pantallas entre 9:16 y 20:9.
+- El mundo jugable conserva 720 x 1280 y se centra verticalmente; HUD, overlays e
+  instrucciones se adaptan al viewport completo.
+- Se agrego `SettingsStore` como autoload con persistencia en `user://settings.cfg`.
+- El menu incorpora volumen, vibracion y sensibilidad.
+- La sensibilidad modifica velocidad y aceleracion del jugador.
+- El final de ronda solicita vibracion breve cuando el ajuste esta activo.
+- La exportacion excluye `tests/`, `scripts/dev/`, `build/` y `releases/`.
+- La version avanza a `0.2.1` (`versionCode 4`).
+
+Verificacion:
+
+- Pasan 46 verificaciones headless.
+- Se verifico un viewport 720 x 1600 en pruebas automatizadas.
+- En Android 15, menu y arena ocuparon 1080 x 2400 sin barras negras.
+- Los valores 50%, vibracion inactiva y sensibilidad 1.20x persistieron despues de
+  cerrar y relanzar la aplicacion.
+- No hubo errores de aplicacion.
+- Firmas APK v2 y v3 validas.
+- SHA-256: `63601a003b4c0d5ea19f26a4bb85e2431f0ffdd7dd1d6981a7c4eb14377b3ee8`.
+
+Siguiente accion:
+
+- Implementar progresion de arena, tres tipos de obstaculo y limite de ecos activos.
+
 ## 2026-07-18 - Fase 1 cerrada e inicio de Fase 2
 
 Fase: Fase 2 - Vertical slice

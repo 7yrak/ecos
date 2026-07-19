@@ -10,6 +10,7 @@ const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
 const START_POSITION := Vector2(360.0, 650.0)
+const DESIGN_HEIGHT := 1280.0
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
@@ -21,6 +22,7 @@ const START_POSITION := Vector2(360.0, 650.0)
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
 @onready var restart_button: Button = $UI/GameOver/Center/Panel/Content/Restart
 @onready var menu_button: Button = $UI/GameOver/Center/Panel/Content/Menu
+@onready var settings_store := get_node("/root/Settings") as SettingsStore
 
 var _state := RunState.PLAYING
 var _timeline: EchoTimeline
@@ -32,9 +34,11 @@ var _score := 0
 
 
 func _ready() -> void:
+	_center_world_for_viewport()
 	player.danger_hit.connect(_on_player_danger_hit)
 	restart_button.pressed.connect(_restart)
 	menu_button.pressed.connect(menu_requested.emit)
+	player.set_sensitivity(settings_store.sensitivity)
 	_start_run()
 
 
@@ -76,8 +80,9 @@ func _start_run() -> void:
 	_echo_count = 0
 	_score = 0
 	_timeline = EchoTimelineScript.new()
-	_timeline.add_sample(0.0, START_POSITION)
-	player.reset_for_run(START_POSITION)
+	var start_position := to_global(START_POSITION)
+	_timeline.add_sample(0.0, start_position)
+	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
 	instruction_label.modulate.a = 1.0
 	_update_hud()
@@ -122,6 +127,7 @@ func _end_run(reason: String) -> void:
 		(child as EchoPlayback).stop()
 	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS  %02d" % [reason, _run_time, _score, _echo_count]
 	game_over_overlay.visible = true
+	settings_store.vibrate(70)
 	restart_button.grab_focus()
 
 
@@ -133,6 +139,10 @@ func _clear_echoes() -> void:
 	for child in echoes.get_children():
 		(child as EchoPlayback).stop()
 		child.queue_free()
+
+
+func _center_world_for_viewport() -> void:
+	position.y = maxf(0.0, (get_viewport_rect().size.y - DESIGN_HEIGHT) * 0.5)
 
 
 func _update_hud() -> void:

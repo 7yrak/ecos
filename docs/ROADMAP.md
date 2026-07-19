@@ -47,6 +47,9 @@ Criterio de salida:
 
 Estado: activa desde el 2026-07-18.
 
+Avance: menu, tutorial, navegacion, interfaz adaptable y ajustes persistentes
+completados.
+
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
 Entregables:

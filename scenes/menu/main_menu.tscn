@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/menu/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/menu/menu_visual.gd" id="2_visual"]
@@ -77,6 +77,24 @@ content_margin_top = 42.0
 content_margin_right = 42.0
 content_margin_bottom = 42.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_slider"]
+bg_color = Color(0.02, 0.055, 0.075, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_slider_fill"]
+bg_color = Color(0.18, 0.82, 0.655, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+
 [node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -120,7 +138,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.2.0"
+text = "ECOS // 0.2.1"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]
@@ -208,6 +226,18 @@ theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
 theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
 text = "COMO JUGAR"
 
+[node name="Settings" type="Button" parent="Content/Layout/Actions"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBox_secondary")
+theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
+theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
+text = "AJUSTES"
+
 [node name="Footer" type="Label" parent="Content/Layout"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.58, 0.62, 0.9)
@@ -292,3 +322,136 @@ theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
 theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
 text = "ENTENDIDO"
+
+[node name="SettingsOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.82)
+
+[node name="Center" type="CenterContainer" parent="SettingsOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="SettingsOverlay/Center"]
+custom_minimum_size = Vector2(610, 760)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_tutorial")
+
+[node name="Content" type="VBoxContainer" parent="SettingsOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="Kicker" type="Label" parent="SettingsOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.36, 1)
+theme_override_font_sizes/font_size = 20
+text = "CONFIGURACION LOCAL"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="SettingsOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 1, 0.95, 1)
+theme_override_font_sizes/font_size = 48
+text = "AJUSTES"
+horizontal_alignment = 1
+
+[node name="VolumeHeader" type="HBoxContainer" parent="SettingsOverlay/Center/Panel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SettingsOverlay/Center/Panel/Content/VolumeHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "VOLUMEN"
+
+[node name="Value" type="Label" parent="SettingsOverlay/Center/Panel/Content/VolumeHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 24
+text = "100%"
+
+[node name="VolumeSlider" type="HSlider" parent="SettingsOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+max_value = 1.0
+step = 0.05
+value = 1.0
+theme_override_styles/slider = SubResource("StyleBox_slider")
+theme_override_styles/grabber_area = SubResource("StyleBox_slider_fill")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBox_slider_fill")
+
+[node name="VibrationRow" type="HBoxContainer" parent="SettingsOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SettingsOverlay/Center/Panel/Content/VibrationRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "VIBRACION"
+vertical_alignment = 1
+
+[node name="Toggle" type="CheckButton" parent="SettingsOverlay/Center/Panel/Content/VibrationRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 22
+button_pressed = true
+text = "ACTIVA"
+
+[node name="SensitivityHeader" type="HBoxContainer" parent="SettingsOverlay/Center/Panel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="SettingsOverlay/Center/Panel/Content/SensitivityHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "SENSIBILIDAD"
+
+[node name="Value" type="Label" parent="SettingsOverlay/Center/Panel/Content/SensitivityHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 24
+text = "1.00x"
+
+[node name="SensitivitySlider" type="HSlider" parent="SettingsOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+min_value = 0.65
+max_value = 1.35
+step = 0.05
+value = 1.0
+theme_override_styles/slider = SubResource("StyleBox_slider")
+theme_override_styles/grabber_area = SubResource("StyleBox_slider_fill")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBox_slider_fill")
+
+[node name="Hint" type="Label" parent="SettingsOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.58, 0.62, 1)
+theme_override_font_sizes/font_size = 19
+text = "La sensibilidad modifica velocidad y respuesta."
+horizontal_alignment = 1
+
+[node name="Back" type="Button" parent="SettingsOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBox_secondary")
+theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
+theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
+text = "GUARDAR Y VOLVER"

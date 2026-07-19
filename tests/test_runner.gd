@@ -13,10 +13,12 @@ func _init() -> void:
 
 
 func _run() -> void:
+	_ensure_settings_store()
 	_test_timeline_validation()
 	_test_timeline_interpolation()
 	_test_timeline_copy()
 	await _test_app_navigation()
+	await _test_responsive_layout()
 	await _test_run_scene()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -28,6 +30,14 @@ func _run() -> void:
 
 	print("Pruebas completadas: %d verificaciones" % _checks)
 	quit()
+
+
+func _ensure_settings_store() -> void:
+	if root.get_node_or_null("Settings") != null:
+		return
+	var settings := SettingsStore.new()
+	settings.name = "Settings"
+	root.add_child(settings)
 
 
 func _test_timeline_validation() -> void:
@@ -80,6 +90,29 @@ func _test_app_navigation() -> void:
 	(menu.get_node("TutorialOverlay/Center/Panel/Content/Back") as Button).pressed.emit()
 	_expect(not tutorial_overlay.visible, "el tutorial vuelve al menu")
 
+	var settings_overlay := menu.get_node("SettingsOverlay") as ColorRect
+	(menu.get_node("Content/Layout/Actions/Settings") as Button).pressed.emit()
+	_expect(settings_overlay.visible, "el menu abre los ajustes")
+	var settings_store := root.get_node("Settings") as SettingsStore
+	var previous_volume := settings_store.master_volume
+	var previous_vibration := settings_store.vibration_enabled
+	var previous_sensitivity := settings_store.sensitivity
+	var volume_slider := menu.get_node("SettingsOverlay/Center/Panel/Content/VolumeSlider") as HSlider
+	var vibration_toggle := menu.get_node("SettingsOverlay/Center/Panel/Content/VibrationRow/Toggle") as CheckButton
+	var sensitivity_slider := menu.get_node("SettingsOverlay/Center/Panel/Content/SensitivitySlider") as HSlider
+	_expect(is_equal_approx(volume_slider.max_value, 1.0), "volumen usa una escala normalizada")
+	volume_slider.value = 0.75
+	vibration_toggle.button_pressed = false
+	sensitivity_slider.value = 1.2
+	_expect(is_equal_approx(settings_store.master_volume, 0.75), "ajustes cambia el volumen")
+	_expect(not settings_store.vibration_enabled, "ajustes cambia la vibracion")
+	_expect(is_equal_approx(settings_store.sensitivity, 1.2), "ajustes cambia la sensibilidad")
+	settings_store.set_master_volume(previous_volume)
+	settings_store.set_vibration_enabled(previous_vibration)
+	settings_store.set_sensitivity(previous_sensitivity)
+	(menu.get_node("SettingsOverlay/Center/Panel/Content/Back") as Button).pressed.emit()
+	_expect(not settings_overlay.visible, "ajustes vuelve al menu")
+
 	(menu.get_node("Content/Layout/Actions/Play") as Button).pressed.emit()
 	await process_frame
 	_expect(app.current_screen is RunController, "jugar abre una partida")
@@ -90,6 +123,22 @@ func _test_app_navigation() -> void:
 	await process_frame
 	_expect(app.current_screen is MainMenu, "el resultado vuelve al menu")
 	app.queue_free()
+	await process_frame
+
+
+func _test_responsive_layout() -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(720, 1600)
+	root.add_child(viewport)
+	var run := RunScene.instantiate() as RunController
+	viewport.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	_expect(is_equal_approx(run.position.y, 160.0), "centra la arena en una pantalla 20:9")
+	_expect(is_equal_approx(run.player.global_position.y, 810.0), "centra el inicio sin alterar coordenadas internas")
+	var instruction := run.get_node("UI/Instruction") as Label
+	_expect(instruction.position.y > 1400.0, "ancla la instruccion al borde inferior")
+	viewport.queue_free()
 	await process_frame
 
 

@@ -65,6 +65,20 @@ del eco y quisieron repetir; no se informaron fallos tecnicos criticos.
 - "Mas cosas" no implica agregar sistemas sin validar; primero se priorizaran
   variedad durante la partida y claridad del flujo.
 
+## Vertical slice de Fase 2
+
+Implementado:
+
+- Menu principal animado, tutorial y flujo hacia partida y resultado.
+- Interfaz adaptable desde 9:16 hasta 20:9.
+- Ajustes persistentes de volumen, vibracion y sensibilidad.
+- Vibracion breve al terminar una ronda cuando esta habilitada.
+
+Siguiente iteracion:
+
+- Tres comportamientos de obstaculo introducidos progresivamente durante la ronda.
+- Limite de ecos activos para que la dificultad no termine en saturacion inevitable.
+
 ## Alcance del MVP
 
 - Un modo infinito.

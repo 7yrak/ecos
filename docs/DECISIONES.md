@@ -102,6 +102,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: la vertical slice debe mejorar presentacion y variedad antes de
   agregar monetizacion o progresion extensa.
 
+## D-011 - Pantalla adaptable y ajustes
+
+- Fecha: 2026-07-18
+- Estado: aceptada
+- Decision: usar `expand` entre 9:16 y 20:9, centrar el mundo de 720 x 1280 y
+  persistir ajustes mediante un autoload local.
+- Motivo: elimina barras negras sin alterar la fisica validada y mantiene las
+  preferencias separadas de la interfaz.
+- Consecuencia: los nuevos elementos de gameplay usan coordenadas internas de la
+  arena; volumen, vibracion y sensibilidad se consultan mediante `SettingsStore`.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

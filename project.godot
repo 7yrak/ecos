@@ -12,6 +12,10 @@ boot_splash/image="res://assets/branding/icon.png"
 boot_splash/bg_color=Color(0.027, 0.059, 0.09, 1)
 config/icon="res://assets/branding/icon.png"
 
+[autoload]
+
+Settings="*res://scripts/app/settings_store.gd"
+
 [display]
 
 window/size/viewport_width=720
@@ -19,6 +23,7 @@ window/size/viewport_height=1280
 window/size/window_width_override=360
 window/size/window_height_override=640
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 window/handheld/orientation=1
 
 [rendering]
