@@ -4,6 +4,43 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Presion de ecos y diseno de progresion
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- Cada segmento de cinco segundos calcula la distancia recorrida por el jugador.
+- Recorrer menos de 280 px eleva un nivel de presion y acelera todos los ecos a
+  1.2x, 1.4x o 1.6x; el limite evita que la dificultad crezca sin control.
+- Un segmento con movimiento suficiente reduce la presion de manera gradual.
+- El multiplicador aparece en el HUD y los cambios se anuncian con banner, sonido,
+  flash y un arco dorado en los ecos acelerados.
+- El tutorial explica que permanecer lento provoca ecos mas rapidos.
+- Se definio la economia de Fragmentos para Fase 3: siempre obtenibles jugando,
+  cosmeticos sin ventaja, recompensa minima solo para rondas validas y precios
+  iniciales de 30, 75 y 150 Fragmentos sujetos a balance.
+- Se definio Duelo de Ecos como concepto online 1v1 futuro, con arenas separadas,
+  igual semilla, intercambio de segmentos y servidor autoritativo.
+- La version avanza a `0.2.4` (`versionCode 7`).
+
+Verificacion:
+
+- Pasan 88 verificaciones headless sin fugas de recursos.
+- Las pruebas cubren tres niveles de presion, limite 1.6x, recuperacion, aplicacion
+  a ecos nuevos y existentes, reinicio y calculo de distancia.
+- La APK debug se instalo en Android 15 a 1080 x 2400 y mostro el aviso de ritmo
+  bajo, el HUD en 1.2x y el efecto del eco sin errores de aplicacion.
+- El release tiene firmas v2 y v3 validas, `targetSdk 36`, no solicita permisos y
+  excluye archivos sensibles y recursos de desarrollo.
+- SHA-256: `a4383eec8ddec2d9d5a96b81e0387f1264282716119927156d3cd60911fd6689`.
+
+Siguiente accion:
+
+- Validar `0.2.4` en Galaxy A25 y S25 alternando segmentos lentos y activos. Ajustar
+  el umbral o multiplicadores si castigan a jugadores normales y cerrar Fase 2 al
+  cumplir el criterio de rendimiento.
+
 ## 2026-07-18 - Feedback audiovisual procedural
 
 Fase: Fase 2 - Vertical slice

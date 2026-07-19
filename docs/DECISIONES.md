@@ -135,6 +135,39 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: la mezcla actual es provisional y debe ajustarse en dispositivos
   fisicos antes de producir o comprar audio final.
 
+## D-014 - Presion contra movimiento lento
+
+- Fecha: 2026-07-18
+- Estado: aceptada para balance
+- Decision: medir distancia por segmento y acelerar todos los ecos entre x1.2 y x1.6
+  cuando el recorrido sea inferior a 280 px.
+- Motivo: moverse extremadamente lento conserva recorridos faciles y puede convertirse
+  en una estrategia dominante que elimina el aumento de dificultad.
+- Consecuencia: la presion sube hasta tres niveles, se comunica en HUD y banner, y
+  baja gradualmente cuando el jugador vuelve a recorrer suficiente distancia.
+
+## D-015 - Fragmentos obtenibles mediante juego
+
+- Fecha: 2026-07-18
+- Estado: aceptada para Fase 3
+- Decision: toda apariencia inicial puede obtenerse jugando; no habra limite diario
+  duro ni mejoras de poder comprables.
+- Motivo: el progreso debe ser exigente pero alcanzable y no convertir la tienda en
+  un bloqueo artificial.
+- Consecuencia: partidas menores de diez segundos no pagan, el rendimiento aumenta
+  la recompensa y los precios se ajustan con datos de tiempo real de desbloqueo.
+
+## D-016 - Duelo de Ecos como primer modo online
+
+- Fecha: 2026-07-18
+- Estado: propuesta aceptada para investigacion futura
+- Decision: prototipar un 1v1 en arenas separadas donde cada segmento generado se
+  envia como peligro al rival.
+- Motivo: aprovecha la mecanica central y reduce la dependencia de sincronizar
+  movimiento directo entre telefonos.
+- Consecuencia: requiere servidor autoritativo, cuentas, matchmaking, reconexion y
+  anti-trampa; no entra al MVP local ni maneja Fragmentos hasta ser seguro.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

@@ -10,6 +10,9 @@ const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
 const MAX_ACTIVE_ECHOES := 4
+const MIN_SEGMENT_DISTANCE := 280.0
+const MAX_ECHO_PRESSURE := 3
+const ECHO_SPEED_STEP := 0.2
 const PATROL_PHASE_TIME := 12.0
 const PULSE_PHASE_TIME := 24.0
 const START_POSITION := Vector2(360.0, 650.0)
@@ -42,6 +45,9 @@ var _segment_time := 0.0
 var _sample_accumulator := 0.0
 var _echo_count := 0
 var _total_echo_count := 0
+var _echo_pressure := 0
+var _max_echo_pressure := 0
+var _echo_speed_multiplier := 1.0
 var _score := 0
 var _current_phase := 1
 var _phase_banner_time := 0.0
@@ -99,6 +105,9 @@ func _start_run() -> void:
 	_sample_accumulator = 0.0
 	_echo_count = 0
 	_total_echo_count = 0
+	_echo_pressure = 0
+	_max_echo_pressure = 0
+	_echo_speed_multiplier = 1.0
 	_score = 0
 	_current_phase = 1
 	_phase_banner_time = 0.0
@@ -128,11 +137,13 @@ func _record_samples() -> void:
 func _spawn_echo() -> void:
 	_timeline.add_sample(_segment_time, player.global_position)
 	if _timeline.is_playable():
+		_update_echo_pressure(_timeline.travel_distance())
 		if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
 			_retire_oldest_echo()
 		var echo := ECHO_SCENE.instantiate() as EchoPlayback
 		echoes.add_child(echo)
 		echo.configure(_timeline)
+		echo.set_playback_speed(_echo_speed_multiplier)
 		echo.hit_player.connect(_on_echo_hit_player)
 		_total_echo_count += 1
 		_echo_count = echoes.get_child_count()
@@ -163,7 +174,8 @@ func _end_run(reason: String) -> void:
 		(child as EchoPlayback).stop()
 	feedback.play_hit(player.global_position)
 	_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
-	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d" % [reason, _run_time, _score, _total_echo_count]
+	var max_speed := 1.0 + float(_max_echo_pressure) * ECHO_SPEED_STEP
+	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nPRESION MAX  x%.1f" % [reason, _run_time, _score, _total_echo_count, max_speed]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -186,6 +198,32 @@ func _retire_oldest_echo() -> void:
 	oldest.queue_free()
 
 
+func _update_echo_pressure(segment_distance: float) -> void:
+	var previous_pressure := _echo_pressure
+	if segment_distance < MIN_SEGMENT_DISTANCE:
+		_echo_pressure = mini(MAX_ECHO_PRESSURE, _echo_pressure + 1)
+	else:
+		_echo_pressure = maxi(0, _echo_pressure - 1)
+	_echo_speed_multiplier = 1.0 + float(_echo_pressure) * ECHO_SPEED_STEP
+	_max_echo_pressure = maxi(_max_echo_pressure, _echo_pressure)
+	_apply_echo_speed()
+	if _echo_pressure == previous_pressure:
+		return
+
+	if _echo_pressure > previous_pressure:
+		feedback.play_pressure(player.global_position)
+		_show_banner("RITMO BAJO // ECOS x%.1f" % _echo_speed_multiplier, Color(1.0, 0.48, 0.24), 2.0)
+		_flash_screen(Color(1.0, 0.34, 0.18), 0.1, 0.24)
+	else:
+		_show_banner("RITMO RECUPERADO // ECOS x%.1f" % _echo_speed_multiplier, Color(0.45, 1.0, 0.72), 1.5)
+		_flash_screen(Color(0.18, 0.82, 0.655), 0.07, 0.2)
+
+
+func _apply_echo_speed() -> void:
+	for child in echoes.get_children():
+		(child as EchoPlayback).set_playback_speed(_echo_speed_multiplier)
+
+
 func _update_progression() -> void:
 	var next_phase := 1
 	if _run_time >= PULSE_PHASE_TIME:
@@ -199,14 +237,19 @@ func _update_progression() -> void:
 	patrol_obstacle.set_progression_active(_current_phase >= 2)
 	pulse_obstacle.set_progression_active(_current_phase >= 3)
 	var phase_name := "PATRULLA ACTIVADA" if _current_phase == 2 else "PULSO ACTIVADO"
-	phase_banner.text = "ETAPA %d // %s" % [_current_phase, phase_name]
+	_show_banner("ETAPA %d // %s" % [_current_phase, phase_name], Color(1.0, 0.78, 0.38), 2.4)
+	feedback.play_phase(player.global_position)
+	_flash_screen(Color(1.0, 0.68, 0.25), 0.12, 0.3)
+
+
+func _show_banner(text: String, color: Color, duration: float) -> void:
+	phase_banner.text = text
+	phase_banner.add_theme_color_override("font_color", color)
 	phase_banner.modulate.a = 1.0
 	phase_banner.pivot_offset = phase_banner.size * 0.5
 	phase_banner.scale = Vector2.ONE * 0.82
 	phase_banner.visible = true
-	_phase_banner_time = 2.4
-	feedback.play_phase(player.global_position)
-	_flash_screen(Color(1.0, 0.68, 0.25), 0.12, 0.3)
+	_phase_banner_time = duration
 	create_tween().tween_property(phase_banner, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
@@ -245,4 +288,4 @@ func _update_hud() -> void:
 	time_label.text = "TIEMPO\n%05.1f" % _run_time
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d/%02d" % [_echo_count, MAX_ACTIVE_ECHOES]
-	phase_label.text = "ETAPA\n%d/3" % _current_phase
+	phase_label.text = "ETAPA %d/3\nECO x%.1f" % [_current_phase, _echo_speed_multiplier]

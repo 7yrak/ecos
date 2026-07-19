@@ -49,7 +49,8 @@ Estado: activa desde el 2026-07-18.
 
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos, limite de ecos y feedback audiovisual
-completados. Pendiente: validacion final en dispositivos fisicos.
+completados. El control de movimiento lento tambien esta implementado. Pendiente:
+validacion final en dispositivos fisicos.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
@@ -81,6 +82,9 @@ Entregables:
 - Generacion de arena mediante semillas.
 - Cinco modificadores de dificultad.
 - Moneda local y progresion.
+- Fragmentos obtenibles siempre mediante juego, sin contenido cosmetico obligatorio
+  exclusivo de pago.
+- Tienda con costos iniciales de 30, 75 y 150 Fragmentos sujetos a balance.
 - Diez cosmeticos desbloqueables.
 - Misiones sencillas y desafio diario.
 - Guardado local versionado.
@@ -89,6 +93,27 @@ Criterio de salida:
 
 - No se pierde el progreso al cerrar o actualizar el juego.
 - El contenido soporta varias sesiones sin mostrar todo en el primer dia.
+
+## Fase futura - Prototipo online
+
+Estado: idea aceptada; no bloquea el MVP local.
+
+Objetivo: validar si los ecos pueden sostener partidas 1v1 sin exigir movimiento
+compartido de baja latencia.
+
+Entregables:
+
+- Duelo de Ecos en arenas separadas con la misma semilla.
+- Intercambio de segmentos grabados entre rivales.
+- Servidor autoritativo para reloj, resultado y recompensas.
+- Matchmaking basico, reconexion y abandono.
+- Recompensas online desactivables hasta contar con control anti-trampa.
+
+Criterio de salida:
+
+- Dos dispositivos completan veinte partidas sin desincronizacion critica.
+- La partida sigue siendo comprensible con latencia variable y perdida de paquetes.
+- El modo local funciona aunque los servicios online no esten disponibles.
 
 ## Fase 4 - Medicion y monetizacion
 

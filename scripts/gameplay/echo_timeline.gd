@@ -55,5 +55,12 @@ func duration() -> float:
 	return _times[-1]
 
 
+func travel_distance() -> float:
+	var distance := 0.0
+	for index in range(1, _positions.size()):
+		distance += _positions[index - 1].distance_to(_positions[index])
+	return distance
+
+
 func is_playable() -> bool:
 	return sample_count() >= 2 and duration() > 0.0

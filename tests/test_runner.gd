@@ -22,6 +22,7 @@ func _run() -> void:
 	await _test_run_scene()
 	await _test_arena_progression()
 	await _test_echo_cap()
+	await _test_echo_pressure()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
 
@@ -65,6 +66,7 @@ func _test_timeline_interpolation() -> void:
 	_expect(timeline.sample_at(1.5).is_equal_approx(Vector2(20.0, 20.0)), "interpola el segundo tramo")
 	_expect(timeline.sample_at(3.0).is_equal_approx(Vector2(30.0, 20.0)), "limita despues del final")
 	_expect(is_equal_approx(timeline.duration(), 2.0), "informa la duracion")
+	_expect(is_equal_approx(timeline.travel_distance(), sqrt(200.0) + 20.0), "calcula la distancia total recorrida")
 
 
 func _test_timeline_copy() -> void:
@@ -164,13 +166,15 @@ func _test_run_scene() -> void:
 	var audio_ready := feedback.stream_data_size(GameplayFeedback.Cue.ECHO) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PHASE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PULSE) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.PRESSURE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0
-	_expect(audio_ready, "genera los cuatro sonidos procedurales")
+	_expect(audio_ready, "genera los cinco sonidos procedurales")
 
 	run._physics_process(5.1)
 	_expect(echoes.get_child_count() == 1, "crea un eco al completar el intervalo")
-	var echo := echoes.get_child(0) as Area2D
+	var echo := echoes.get_child(0) as EchoPlayback
 	_expect(echo.collision_layer == 2 and echo.collision_mask == 1, "capas fisicas del eco")
+	_expect(is_equal_approx(echo.playback_speed, 1.2), "un segmento inmovil acelera el primer eco")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.ECHO, "crear un eco reproduce su sonido")
 	_expect(feedback.active_ring_count() > 0, "crear un eco genera una onda visual")
 
@@ -213,7 +217,7 @@ func _test_arena_progression() -> void:
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA\n2/3", "el HUD informa la segunda etapa")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 2/3\nECO x1.0", "el HUD informa etapa y ritmo")
 	var patrol_start := patrol.position
 	patrol.set_physics_process(false)
 	patrol._physics_process(1.0)
@@ -236,7 +240,7 @@ func _test_arena_progression() -> void:
 	run._restart()
 	await process_frame
 	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA\n1/3", "repetir vuelve a la primera etapa")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 1/3\nECO x1.0", "repetir vuelve a la primera etapa")
 	run.queue_free()
 	await process_frame
 
@@ -254,6 +258,39 @@ func _test_echo_cap() -> void:
 	run._end_run("PRUEBA DE LIMITE")
 	var result := (run.get_node("UI/GameOver/Center/Panel/Content/Result") as Label).text
 	_expect(result.contains("ECOS CREADOS  06"), "el resultado conserva los ecos creados")
+	run.queue_free()
+	await process_frame
+
+
+func _test_echo_pressure() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	var feedback := run.get_node("Feedback") as GameplayFeedback
+	run._update_echo_pressure(0.0)
+	_expect(run._echo_pressure == 1, "un recorrido corto aumenta la presion")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.PRESSURE, "la presion reproduce una alerta")
+	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("ECOS x1.2"), "la alerta explica la aceleracion")
+	run._update_echo_pressure(0.0)
+	run._update_echo_pressure(0.0)
+	_expect(run._echo_pressure == RunController.MAX_ECHO_PRESSURE, "la presion tiene tres niveles")
+	_expect(is_equal_approx(run._echo_speed_multiplier, 1.6), "la presion maxima acelera a x1.6")
+
+	run._physics_process(5.1)
+	var echo := run.get_node("Echoes").get_child(0) as EchoPlayback
+	_expect(is_equal_approx(echo.playback_speed, 1.6), "el eco nuevo recibe la presion maxima")
+	run._update_echo_pressure(500.0)
+	_expect(run._echo_pressure == 2 and is_equal_approx(echo.playback_speed, 1.4), "moverse reduce la presion de ecos existentes")
+	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("RITMO RECUPERADO"), "la recuperacion se comunica al jugador")
+	run._update_echo_pressure(500.0)
+	run._update_echo_pressure(500.0)
+	_expect(run._echo_pressure == 0 and is_equal_approx(echo.playback_speed, 1.0), "la actividad recupera el ritmo normal")
+
+	run._update_echo_pressure(0.0)
+	run._restart()
+	await process_frame
+	_expect(run._echo_pressure == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "repetir reinicia la presion")
 	run.queue_free()
 	await process_frame
 

@@ -7,8 +7,8 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 
 ## Descargar APK
 
-- [Descargar ECOS 0.2.3 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.2.3-android.apk)
-- SHA-256: `8830f17a9cbab18dc64fc2d61e2f395db5354b6da6aa99d039c3055f8bcfb787`
+- [Descargar ECOS 0.2.4 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.2.4-android.apk)
+- SHA-256: `a4383eec8ddec2d9d5a96b81e0387f1264282716119927156d3cd60911fd6689`
 
 Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
 o gestor de archivos. Play Protect tambien puede pedir analizar la aplicacion porque
@@ -36,4 +36,6 @@ se distribuye fuera de Google Play. La APK no solicita permisos de Android.
 ## Estado
 
 La Fase 1 se completo con ocho jugadores validados. La Fase 2 esta activa e incluye
-menu, ajustes, tres etapas, audio procedural y feedback visual.
+menu, ajustes, tres etapas, audio procedural, feedback visual y presion contra el
+movimiento lento. La economia de Fragmentos y el primer modo online estan definidos
+para fases posteriores.
