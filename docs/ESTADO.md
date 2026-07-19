@@ -23,6 +23,8 @@
 - La APK release `0.2.8` (`versionCode 11`) se exporto y firmo para ARM64 y x86_64.
 - La APK instalable esta versionada en `releases/ECOS-0.2.8-android.apk` para descarga
   directa desde GitHub.
+- `releases/` conserva solo la APK vigente; los binarios anteriores se eliminan al
+  publicar cada version nueva.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
 - Se verifico visualmente la pantalla inicial y no hubo errores de aplicacion con

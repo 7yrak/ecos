@@ -216,6 +216,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   en su destino real. Se conservan la reproduccion unica, el limite de amenazas y los
   cazadores para segmentos lentos.
 
+## D-021 - Conservar solo la APK vigente
+
+- Fecha: 2026-07-19
+- Estado: aceptada
+- Decision: `releases/` contiene unicamente la APK de la version vigente; al publicar
+  una nueva se elimina el binario anterior en el mismo cambio.
+- Motivo: Git ya conserva el historial y duplicar APK antiguas aumenta innecesariamente
+  el tamano actual del repositorio.
+- Consecuencia: README y estado apuntan siempre al unico artefacto instalable actual;
+  las versiones anteriores se recuperan desde el historial de Git si fueran necesarias.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

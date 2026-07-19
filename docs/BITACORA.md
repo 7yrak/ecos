@@ -4,6 +4,29 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-19 - Un solo artefacto Android vigente
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- Se elimino `releases/ECOS-0.2.7-android.apk` del arbol actual.
+- `releases/` contiene unicamente `ECOS-0.2.8-android.apk`.
+- Se establecio como regla permanente eliminar la APK anterior en el mismo cambio
+  que publica una version nueva.
+- La bitacora conserva las referencias historicas, pero los binarios antiguos quedan
+  disponibles solo mediante el historial de Git.
+
+Verificacion:
+
+- El unico artefacto actual es `0.2.8`, con SHA-256
+  `891ee3a2f6dd6d906f9ee8de42e626a65e6df00e8ed5f4b2058b88cf9d335461`.
+
+Siguiente accion:
+
+- Aplicar esta limpieza en cada publicacion futura antes de enviar directamente a
+  `main`.
+
 ## 2026-07-19 - Restauracion del recorrido exacto de los ecos
 
 Fase: Fase 2 - Vertical slice
