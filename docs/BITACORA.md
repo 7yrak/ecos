@@ -4,6 +4,73 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-19 - Restauracion del recorrido exacto de los ecos
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- La prueba de `0.2.7` detecto una regresion conceptual: trasladar y rotar segmentos
+  hacia anclas del borde hacia que los ecos aparecieran desconectados del movimiento
+  que debian recordar.
+- Un movimiento realizado en un extremo podia reproducirse en otro lugar y dejar de
+  amenazar la zona recorrida; esto eliminaba la esencia de convivir con el propio
+  pasado.
+
+Cambios:
+
+- Cada aviso aparece ahora en la posicion exacta donde comenzo su ventana de cinco
+  segundos.
+- Cada eco conserva todas las muestras globales y repite una vez el origen, trayecto
+  y destino reales del jugador, sin rotacion, escala ni traslado.
+- La resonancia permanece en el destino real del recorrido antes de desaparecer.
+- Se eliminaron las cuatro anclas y la funcion de transformacion espacial para evitar
+  que esta regresion pueda reactivarse accidentalmente.
+- Los segmentos lentos aun generan cazadores y conservan la escalada de faltas; la
+  reproduccion unica, el limite de cuatro amenazas y las etapas no cambian.
+- El tutorial declara explicitamente que el eco repite exactamente el ultimo
+  recorrido.
+- La version avanza a `0.2.8` (`versionCode 11`).
+
+Verificacion:
+
+- Pasan 117 verificaciones headless sin fugas de recursos.
+- Las pruebas comprueban origen, movimiento intermedio y destino exactos, reproduccion
+  sin traslado, segundo segmento desde su propio inicio y coordenadas correctas en
+  relacion 20:9.
+- El release tiene firmas v2 y v3 validas, `targetSdk 36`, no solicita permisos y
+  excluye recursos de desarrollo.
+- APK: `releases/ECOS-0.2.8-android.apk`.
+- SHA-256: `891ee3a2f6dd6d906f9ee8de42e626a65e6df00e8ed5f4b2058b88cf9d335461`.
+
+Siguiente accion:
+
+- Instalar `0.2.8` en Galaxy A25 y S25 y confirmar primero que movimientos faciles
+  de reconocer en extremos opuestos vuelven exactamente sobre sus propias rutas.
+- Despues validar la dificultad de tres faltas lentas durante diez partidas antes de
+  cerrar la Fase 2.
+
+## 2026-07-19 - Revalidacion tecnica antes de pruebas fisicas
+
+Fase: Fase 2 - Vertical slice
+
+Resultado:
+
+- Se retomo el proyecto desde el punto documentado de `0.2.7`.
+- La comprobacion del entorno confirmo Godot 4.7.1, Java 21, Android SDK 36,
+  plantillas de exportacion y ADB disponibles.
+- Pasan nuevamente las 113 verificaciones headless sin fallos.
+- El arbol Git estaba limpio y no se modificaron codigo ni parametros de balance.
+- ADB no detecto dispositivos conectados, por lo que no fue posible instalar la APK
+  ni realizar las diez partidas fisicas pendientes.
+
+Siguiente accion:
+
+- Conectar el Galaxy A25 o S25 con depuracion USB autorizada, instalar `0.2.7` y
+  ejecutar el protocolo de tres faltas lentas separadas por recuperaciones activas.
+- No iniciar sistemas de Fase 3 ni cambiar `HUNTER_PLAYER_SPEED_RATIO` antes de
+  observar si el segundo cazador es justo en el dispositivo fisico.
+
 ## 2026-07-18 - Cierre de sesion y punto de reanudacion
 
 Fase: Fase 2 - Vertical slice

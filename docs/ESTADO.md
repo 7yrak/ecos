@@ -5,38 +5,40 @@
 
 ## Resumen
 
-- Fecha de actualizacion: 2026-07-18
+- Fecha de actualizacion: 2026-07-19
 - Fase activa: Fase 2 - Vertical slice
-- Hito activo: validacion externa para cerrar la vertical slice
-- Estado general: alcance funcional de Fase 2 completado; balance fisico pendiente
-- Ultima sesion: faltas lentas acumulativas y escalada de cazadores
+- Hito activo: validar la restauracion del recorrido exacto en dispositivos fisicos
+- Estado general: mecanica central restaurada; validacion fisica pendiente
+- Ultima sesion: ecos exactos sin rotacion, escala ni traslado
 
 ## Ultimo resultado verificable
 
 - Git esta inicializado en la rama `main`.
 - Todo el codigo, la documentacion y la configuracion viven en este repositorio.
 - El remoto oficial es `https://github.com/7yrak/ecos.git`.
-- El commit funcional base para reanudar es `ec6ec4b`.
+- El ultimo commit publicado antes de los cambios locales es `88e634d`.
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
-- La APK release `0.2.7` (`versionCode 10`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.2.7-android.apk` para descarga
+- La APK release `0.2.8` (`versionCode 11`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.2.8-android.apk` para descarga
   directa desde GitHub.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
 - Se verifico visualmente la pantalla inicial y no hubo errores de aplicacion con
   el renderizado por GPU host.
 - El jugador responde a toque, arrastre y mouse, con limites fisicos de arena.
-- Cada cinco segundos se abre una grieta en una de cuatro anclas alternadas del
-  borde, con 0.7 segundos de advertencia visual y sonora.
-- Un recorrido activo se rota hacia el centro, se adapta a los limites y se reproduce
-  una vez; luego deja una resonancia peligrosa durante cuatro segundos y desaparece.
+- Cada cinco segundos aparece un aviso durante 0.7 segundos en el punto exacto donde
+  comenzo el ultimo segmento del jugador.
+- Un eco conserva origen, muestras y destino reales, reproduce el recorrido una vez,
+  deja una resonancia peligrosa durante cuatro segundos y desaparece.
 - Un recorrido menor de 280 px crea un cazador que persigue al jugador.
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 113 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
+- Pasan 117 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
   el flujo completo de navegacion.
+- El 2026-07-19 se repitieron las 113 verificaciones y la comprobacion del entorno;
+  ambas finalizaron correctamente y el arbol Git de partida estaba limpio.
 - T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
   quiso superar su puntuacion y no informo fallos tecnicos.
 - T01 detecto repeticion despues de dominar el ritmo: la partida cambia poco y la
@@ -84,9 +86,10 @@
 
 ## Siguiente accion exacta
 
-Instalar `0.2.7` en Galaxy A25 y S25. Provocar tres episodios lentos separados por
-recuperaciones activas y confirmar que los cazadores x1.2, x1.4 y x1.6 aumentan la
-dificultad sin sentirse inevitables; completar diez partidas para cerrar el balance.
+Instalar `0.2.8` en Galaxy A25 y S25. Recorrer zonas reconocibles de extremos opuestos
+y confirmar que cada eco repite exactamente el origen, trayecto y destino reales.
+Luego provocar tres episodios lentos separados por recuperaciones activas y validar
+los cazadores x1.2, x1.4 y x1.6 durante diez partidas.
 
 ## Tareas pendientes inmediatas
 
@@ -101,8 +104,8 @@ dificultad sin sentirse inevitables; completar diez partidas para cerrar el bala
 - [x] Implementar tres tipos de obstaculo.
 - [x] Agregar sonido y efectos visuales de impacto y cambio de etapa.
 - [x] Detectar movimiento lento y aumentar progresivamente la velocidad de los ecos.
-- [x] Descartar el origen comun despues de comprobar que volvia predecible la partida.
-- [x] Implementar grietas alternadas, trayectoria unica, resonancia y cazadores.
+- [x] Reproducir cada segmento una sola vez y terminarlo como resonancia.
+- [x] Restaurar el origen, trayectoria y destino exactos de cada eco.
 - [x] Eliminar el limite superior de presion solicitado en la prueba fisica.
 - [x] Acumular faltas lentas y escalar cazadores aunque la presion se recupere.
 - [x] Definir las reglas iniciales de Fragmentos y el concepto online 1v1.
@@ -112,7 +115,9 @@ dificultad sin sentirse inevitables; completar diez partidas para cerrar el bala
 
 ## Bloqueos
 
-- No hay bloqueos tecnicos para continuar la Fase 2.
+- No hay un telefono Android conectado por ADB en el entorno de desarrollo; la
+  validacion fisica necesaria para cerrar la Fase 2 no puede ejecutarse hasta
+  conectar el Galaxy A25 o S25 con depuracion USB autorizada.
 - La identidad `com.tyrak.ecos` sigue siendo provisional y no bloquea el prototipo.
 
 ## Riesgos actuales
@@ -122,6 +127,8 @@ dificultad sin sentirse inevitables; completar diez partidas para cerrar el bala
   con necesidades de accesibilidad; debe ajustarse con pruebas fisicas.
 - Una presion muy alta puede volver ilegible el movimiento; se mantiene sin limite
   por diseno, pero debe observarse su comportamiento real en sesiones largas.
+- Cualquier transformacion espacial futura de un recorrido romperia otra vez la
+  relacion entre la accion del jugador y su eco; no debe usarse para agregar variedad.
 - Las faltas no se perdonan durante una ronda; si el segundo cazador resulta
   inevitable, debe ajustarse la proporcion base sin eliminar la reincidencia.
 - Agregar contenido sin una curva clara puede ocultar el problema en vez de resolverlo.

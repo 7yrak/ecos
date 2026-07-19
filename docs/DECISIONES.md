@@ -182,7 +182,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-018 - Grietas, trayectoria unica y cazadores
 
 - Fecha: 2026-07-18
-- Estado: aceptada para balance
+- Estado: reemplazada parcialmente por D-020
 - Decision: crear ecos desde anclas alternadas del perimetro con 0.7 segundos de
   aviso; reproducir una ruta transformada una vez, terminar como resonancia y usar
   cazadores para segmentos lentos.
@@ -202,6 +202,19 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: la presion temporal aun baja al moverse activamente, pero las faltas
   no; el segundo cazador supera la velocidad normal del jugador y la progresion no
   tiene limite superior ni puede neutralizarse aumentando la sensibilidad.
+
+## D-020 - Los ecos conservan el recorrido real
+
+- Fecha: 2026-07-19
+- Estado: aceptada
+- Decision: cada eco de trayectoria nace donde comenzo su segmento y reproduce una
+  sola vez las coordenadas exactas que recorrio el jugador, sin rotar, escalar ni
+  trasladar las muestras a anclas externas.
+- Motivo: transformar los recorridos separo las amenazas de las decisiones pasadas
+  del jugador y elimino la mecanica central expresada por el nombre ECOS.
+- Consecuencia: el aviso aparece en el origen real del segmento y la resonancia queda
+  en su destino real. Se conservan la reproduccion unica, el limite de amenazas y los
+  cazadores para segmentos lentos.
 
 ## Decisiones pendientes del usuario
 

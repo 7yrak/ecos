@@ -19,13 +19,6 @@ const PATROL_PHASE_TIME := 12.0
 const PULSE_PHASE_TIME := 24.0
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
-const ECHO_BOUNDS := Rect2(76.0, 208.0, 568.0, 884.0)
-const RIFT_ANCHORS := [
-	Vector2(96.0, 238.0),
-	Vector2(624.0, 238.0),
-	Vector2(96.0, 1062.0),
-	Vector2(624.0, 1062.0),
-]
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
@@ -62,7 +55,6 @@ var _score := 0
 var _current_phase := 1
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
-var _last_rift_anchor := -1
 var _run_id := 0
 
 
@@ -125,7 +117,6 @@ func _start_run() -> void:
 	_score = 0
 	_current_phase = 1
 	_phase_banner_time = 0.0
-	_last_rift_anchor = -1
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
 	upper_obstacle.reset_for_run(true)
@@ -155,15 +146,13 @@ func _spawn_echo() -> void:
 		var distance := _timeline.travel_distance()
 		var hunter := distance < MIN_SEGMENT_DISTANCE
 		_update_echo_pressure(distance)
-		var anchor_index := _select_rift_anchor()
-		var anchor := to_global(RIFT_ANCHORS[anchor_index])
-		var segment := _timeline.duplicate_timeline() if hunter else _timeline.transformed_to_anchor(anchor, _echo_bounds_global())
+		var segment := _timeline.duplicate_timeline()
+		var spawn_position := segment.sample_at(0.0)
 		var rift = RIFT_SCRIPT.new()
 		rifts.add_child(rift)
-		rift.configure(segment, anchor, hunter, RIFT_WARNING_TIME, _run_id)
+		rift.configure(segment, spawn_position, hunter, RIFT_WARNING_TIME, _run_id)
 		rift.opened.connect(_on_rift_opened)
-		_last_rift_anchor = anchor_index
-		feedback.play_rift(anchor, hunter)
+		feedback.play_rift(spawn_position, hunter)
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -247,26 +236,6 @@ func _retire_oldest_echo() -> void:
 	oldest.stop()
 	echoes.remove_child(oldest)
 	oldest.queue_free()
-
-
-func _select_rift_anchor() -> int:
-	var selected := 0
-	var best_score := -INF
-	for index in RIFT_ANCHORS.size():
-		if index == _last_rift_anchor:
-			continue
-		var anchor := to_global(RIFT_ANCHORS[index])
-		var score := anchor.distance_to(player.global_position)
-		for child in echoes.get_children():
-			score += minf(300.0, anchor.distance_to((child as EchoPlayback).global_position)) * 0.25
-		if score > best_score:
-			best_score = score
-			selected = index
-	return selected
-
-
-func _echo_bounds_global() -> Rect2:
-	return Rect2(to_global(ECHO_BOUNDS.position), ECHO_BOUNDS.size)
 
 
 func _update_echo_pressure(segment_distance: float) -> void:
