@@ -1,6 +1,8 @@
 class_name RunController
 extends Node2D
 
+signal menu_requested
+
 enum RunState { PLAYING, GAME_OVER }
 
 const EchoTimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
@@ -18,6 +20,7 @@ const START_POSITION := Vector2(360.0, 650.0)
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
 @onready var restart_button: Button = $UI/GameOver/Center/Panel/Content/Restart
+@onready var menu_button: Button = $UI/GameOver/Center/Panel/Content/Menu
 
 var _state := RunState.PLAYING
 var _timeline: EchoTimeline
@@ -31,6 +34,7 @@ var _score := 0
 func _ready() -> void:
 	player.danger_hit.connect(_on_player_danger_hit)
 	restart_button.pressed.connect(_restart)
+	menu_button.pressed.connect(menu_requested.emit)
 	_start_run()
 
 
@@ -64,6 +68,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _start_run() -> void:
+	_clear_echoes()
 	_state = RunState.PLAYING
 	_run_time = 0.0
 	_segment_time = 0.0
@@ -121,7 +126,13 @@ func _end_run(reason: String) -> void:
 
 
 func _restart() -> void:
-	get_tree().reload_current_scene()
+	_start_run()
+
+
+func _clear_echoes() -> void:
+	for child in echoes.get_children():
+		(child as EchoPlayback).stop()
+		child.queue_free()
 
 
 func _update_hud() -> void:

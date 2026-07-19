@@ -5,7 +5,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 SIGNING_ENV="${ECOS_SIGNING_ENV:-$HOME/.local/share/ecos/signing/release.env}"
-OUTPUT_PATH="$PROJECT_ROOT/build/android/ECOS-0.1.0-android.apk"
+OUTPUT_PATH="$PROJECT_ROOT/build/android/ECOS-0.2.0-android.apk"
 
 if [[ ! -f "$SIGNING_ENV" ]]; then
   printf 'No existe la configuracion de firma: %s\n' "$SIGNING_ENV" >&2

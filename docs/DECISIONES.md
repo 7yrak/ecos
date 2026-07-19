@@ -91,6 +91,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: velocidad, duracion y frecuencia se consideran parametros de balance
   que pueden cambiar despues de las pruebas con jugadores.
 
+## D-010 - Salida de Fase 1 y prioridad de la vertical slice
+
+- Fecha: 2026-07-18
+- Estado: aceptada
+- Decision: cerrar la Fase 1 con ocho jugadores validados e iniciar la Fase 2 por
+  el flujo de menu, tutorial, partida y resultado.
+- Motivo: los ocho jugadores entendieron el eco y quisieron repetir, pero reportaron
+  repeticion y falta de presentacion despues de varias partidas.
+- Consecuencia: la vertical slice debe mejorar presentacion y variedad antes de
+  agregar monetizacion o progresion extensa.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

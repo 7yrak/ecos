@@ -1,0 +1,294 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/menu/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/menu/menu_visual.gd" id="2_visual"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_badge"]
+bg_color = Color(0.18, 0.82, 0.655, 0.1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.82, 0.655, 0.48)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_primary"]
+bg_color = Color(0.18, 0.82, 0.655, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.18, 0.82, 0.655, 0.22)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_primary_hover"]
+bg_color = Color(0.584, 1, 0.796, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.584, 1, 0.796, 0.32)
+shadow_size = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_secondary"]
+bg_color = Color(0.035, 0.09, 0.115, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.58, 0.62, 0.48)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_secondary_hover"]
+bg_color = Color(0.08, 0.18, 0.2, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.82, 0.655, 0.9)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_tutorial"]
+bg_color = Color(0.027, 0.075, 0.098, 0.99)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.18, 0.82, 0.655, 0.72)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+content_margin_left = 42.0
+content_margin_top = 42.0
+content_margin_right = 42.0
+content_margin_bottom = 42.0
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Visual" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_visual")
+
+[node name="Content" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 54
+theme_override_constants/margin_top = 52
+theme_override_constants/margin_right = 54
+theme_override_constants/margin_bottom = 44
+
+[node name="Layout" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="Top" type="HBoxContainer" parent="Content/Layout"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="Version" type="Label" parent="Content/Layout/Top"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
+theme_override_font_sizes/font_size = 20
+text = "ECOS // 0.2.0"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Content/Layout/Top"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Status" type="Label" parent="Content/Layout/Top"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.45, 0.9)
+theme_override_font_sizes/font_size = 18
+text = "SENAL ACTIVA"
+vertical_alignment = 1
+
+[node name="Hero" type="VBoxContainer" parent="Content/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Eyebrow" type="Label" parent="Content/Layout/Hero"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.36, 1)
+theme_override_font_sizes/font_size = 24
+text = "HUYE DE LO QUE FUISTE"
+
+[node name="Title" type="Label" parent="Content/Layout/Hero"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 1, 0.95, 1)
+theme_override_font_sizes/font_size = 108
+text = "ECOS"
+
+[node name="Rule" type="ColorRect" parent="Content/Layout/Hero"]
+custom_minimum_size = Vector2(190, 5)
+layout_mode = 2
+size_flags_horizontal = 0
+color = Color(0.18, 0.82, 0.655, 1)
+
+[node name="Description" type="Label" parent="Content/Layout/Hero"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.82, 0.84, 1)
+theme_override_font_sizes/font_size = 27
+text = "Cada movimiento deja una amenaza.\nSobrevive a tu propio recorrido."
+vertical_alignment = 1
+
+[node name="Badge" type="PanelContainer" parent="Content/Layout/Hero"]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_badge")
+
+[node name="Text" type="Label" parent="Content/Layout/Hero/Badge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.73, 0.94, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+text = "01  MUEVETE   02  RECUERDA   03  SOBREVIVE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Actions" type="VBoxContainer" parent="Content/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Play" type="Button" parent="Content/Layout/Actions"]
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.027, 0.059, 0.09, 1)
+theme_override_colors/font_hover_color = Color(0.027, 0.059, 0.09, 1)
+theme_override_colors/font_pressed_color = Color(0.027, 0.059, 0.09, 1)
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBox_primary")
+theme_override_styles/hover = SubResource("StyleBox_primary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_primary_hover")
+theme_override_styles/focus = SubResource("StyleBox_primary")
+text = "JUGAR"
+
+[node name="Tutorial" type="Button" parent="Content/Layout/Actions"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBox_secondary")
+theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
+theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
+text = "COMO JUGAR"
+
+[node name="Footer" type="Label" parent="Content/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.58, 0.62, 0.9)
+theme_override_font_sizes/font_size = 18
+text = "PROTOTIPO FASE 2  /  SIN ANUNCIOS"
+horizontal_alignment = 1
+
+[node name="TutorialOverlay" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.82)
+
+[node name="Center" type="CenterContainer" parent="TutorialOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="TutorialOverlay/Center"]
+custom_minimum_size = Vector2(610, 760)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_tutorial")
+
+[node name="Content" type="VBoxContainer" parent="TutorialOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 26
+alignment = 1
+
+[node name="Kicker" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.36, 1)
+theme_override_font_sizes/font_size = 20
+text = "TRANSMISION 001"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 1, 0.95, 1)
+theme_override_font_sizes/font_size = 46
+text = "COMO SOBREVIVIR"
+horizontal_alignment = 1
+
+[node name="StepOne" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "01  TOCA Y ARRASTRA\nMueve la luz verde por la arena."
+vertical_alignment = 1
+
+[node name="StepTwo" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "02  OBSERVA TU ECO\nCada cinco segundos repite tu recorrido."
+vertical_alignment = 1
+
+[node name="StepThree" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
+theme_override_font_sizes/font_size = 24
+text = "03  NO LO TOQUES\nEvita ecos rojos y obstaculos."
+vertical_alignment = 1
+
+[node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBox_secondary")
+theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
+theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
+text = "ENTENDIDO"

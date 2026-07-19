@@ -24,7 +24,7 @@ Criterio de salida:
 
 ## Fase 1 - Prototipo de mecanica
 
-Estado: implementacion tecnica completada; 1 de 5 pruebas externas completada.
+Estado: completada el 2026-07-18 con 8 jugadores validados.
 
 Objetivo: demostrar que controlar al jugador y convivir con sus ecos es divertido.
 
@@ -45,12 +45,15 @@ Criterio de salida:
 
 ## Fase 2 - Vertical slice
 
+Estado: activa desde el 2026-07-18.
+
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
 Entregables:
 
 - Flujo completo: inicio, partida, resultado y repeticion.
 - Menu principal con identidad visual y acceso claro a jugar, tutorial y ajustes.
+- Interfaz adaptable desde 9:16 hasta 20:9.
 - Una arena terminada.
 - Tres obstaculos.
 - Progresion dentro de la partida que introduzca variedad sin depender solamente

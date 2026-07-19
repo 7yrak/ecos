@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/run_controller.gd" id="1_run"]
 [ext_resource type="Script" path="res://scripts/gameplay/arena_visual.gd" id="2_arena"]
@@ -41,6 +41,30 @@ corner_radius_bottom_left = 16
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_restart_hover"]
 bg_color = Color(0.584, 1, 0.796, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_menu"]
+bg_color = Color(0.035, 0.09, 0.115, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.58, 0.62, 0.7)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_menu_hover"]
+bg_color = Color(0.08, 0.18, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18, 0.82, 0.655, 0.9)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
@@ -199,7 +223,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="UI/GameOver/Center"]
-custom_minimum_size = Vector2(560, 520)
+custom_minimum_size = Vector2(560, 640)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_game_over")
 
@@ -233,3 +257,15 @@ theme_override_styles/hover = SubResource("StyleBox_restart_hover")
 theme_override_styles/pressed = SubResource("StyleBox_restart_hover")
 theme_override_styles/focus = SubResource("StyleBox_restart")
 text = "REPETIR"
+
+[node name="Menu" type="Button" parent="UI/GameOver/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBox_menu")
+theme_override_styles/hover = SubResource("StyleBox_menu_hover")
+theme_override_styles/pressed = SubResource("StyleBox_menu_hover")
+theme_override_styles/focus = SubResource("StyleBox_menu_hover")
+text = "MENU PRINCIPAL"

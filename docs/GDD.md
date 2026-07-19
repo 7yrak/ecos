@@ -42,8 +42,8 @@ Todos los valores son parametros de balance, no constantes definitivas.
 - La puntuacion suma supervivencia y ecos creados.
 - La pantalla de resultado permite reiniciar inmediatamente.
 
-Estos comportamientos estan implementados, pero su diversion y claridad deben
-validarse con al menos cinco personas antes de la Fase 2.
+Estos comportamientos fueron validados con ocho personas. Todas entendieron la regla
+del eco y quisieron repetir; no se informaron fallos tecnicos criticos.
 
 ### Aprendizaje de T01
 
@@ -56,10 +56,10 @@ validarse con al menos cinco personas antes de la Fase 2.
 - La vertical slice debe probar variacion durante la partida y una curva de
   dificultad que no dependa solamente de agregar ecos.
 
-### Feedback adicional pendiente de cuantificar
+### Aprendizaje de T02-T08
 
-- Varios jugadores indicaron que el prototipo necesita un menu y mas elementos de
-  presentacion para resultar llamativo.
+- Siete jugadores adicionales indicaron que el prototipo necesita un menu y mas
+  elementos de presentacion para resultar llamativo.
 - Este comentario refuerza el alcance de la vertical slice: identidad visual, menu
   principal, tutorial, ajustes y resultados deben formar un flujo coherente.
 - "Mas cosas" no implica agregar sistemas sin validar; primero se priorizaran

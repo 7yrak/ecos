@@ -6,10 +6,10 @@
 ## Resumen
 
 - Fecha de actualizacion: 2026-07-18
-- Fase activa: Fase 1 - Prototipo de mecanica
-- Hito activo: validacion de diversion con cinco personas, 1 de 5 completada
-- Estado general: implementacion tecnica de Fase 1 completada; cuatro testers pendientes
-- Ultima sesion: primera prueba positiva en un telefono Android real
+- Fase activa: Fase 2 - Vertical slice
+- Hito activo: flujo de menu, tutorial, partida y resultado
+- Estado general: Fase 1 cerrada; primer entregable de Fase 2 en validacion
+- Ultima sesion: cierre de Fase 1 con ocho jugadores e implementacion del menu
 
 ## Ultimo resultado verificable
 
@@ -19,8 +19,8 @@
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
-- La APK release `0.1.0` (`versionCode 2`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.1.0-android.apk` para descarga
+- La APK release `0.2.0` (`versionCode 3`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.2.0-android.apk` para descarga
   directa desde GitHub.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
@@ -30,46 +30,48 @@
 - Cada tramo de cinco segundos se graba e instancia como un eco repetible.
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 29 verificaciones headless, incluidos diez ciclos tecnicos consecutivos.
+- Pasan 37 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
+  el flujo completo de navegacion.
 - T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
   quiso superar su puntuacion y no informo fallos tecnicos.
 - T01 detecto repeticion despues de dominar el ritmo: la partida cambia poco y la
   acumulacion de ecos dificulta continuar superandose.
-- Otros jugadores solicitaron un menu y una presentacion mas llamativa; el numero y
-  sus respuestas del protocolo aun no estan registrados.
+- T02-T08 jugaron unas diez partidas en promedio en Galaxy A25 y S25; los siete
+  entendieron el eco, quisieron repetir y no informaron fallos tecnicos.
+- Los ocho testers confirmaron que la mecanica motiva inicialmente, pero termina
+  repetitiva y necesita variedad, menu y mejor presentacion.
+- El menu principal permite jugar y abrir un tutorial; el resultado permite repetir
+  la ronda o volver al menu sin recargar toda la aplicacion.
+- La APK `0.2.0` se instalo y recorrio por toque en Android 15 sin errores de
+  aplicacion despues de una limpieza de cache.
 
 ## Siguiente accion exacta
 
-Ejecutar `docs/PRUEBAS_FASE1.md` con cuatro personas adicionales y comprobar si
-tambien perciben repeticion o saturacion de ecos. Registrar cuantos jugadores
-solicitaron menu y sus respuestas individuales.
+Adaptar menu y arena a pantallas 19.5:9 y 20:9 sin barras negras ni cambios en la
+fisica del juego.
 
 ## Tareas pendientes inmediatas
 
-- [x] Crear una escena de arena y limites visibles.
-- [x] Implementar entrada tactil y de mouse.
-- [x] Implementar movimiento suave y limitado al area jugable.
-- [x] Definir la estructura de datos de una muestra de recorrido.
-- [x] Grabar posiciones con tiempo monotono.
-- [x] Reproducir ecos con colisiones y reinicio.
-- [x] Completar diez ciclos tecnicos consecutivos sin errores.
-- [x] Probar en al menos un telefono Android fisico.
-- [ ] Obtener resultados de al menos cinco testers.
-- [ ] Confirmar con T02-T05 si la repeticion y saturacion de ecos es un patron.
-- [ ] Decidir si la mecanica pasa a vertical slice o requiere iteracion.
+- [x] Cerrar Fase 1 con al menos cinco testers.
+- [x] Crear menu principal con identidad visual.
+- [x] Agregar tutorial accesible desde el menu.
+- [x] Implementar navegacion entre menu, partida y resultado.
+- [x] Validar el flujo nuevo en Android.
+- [ ] Adaptar la interfaz y arena a relaciones de aspecto altas.
+- [ ] Agregar ajustes de sonido, vibracion y sensibilidad.
+- [ ] Disenar progresion de arena y control de saturacion de ecos.
+- [ ] Implementar tres tipos de obstaculo.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
 
 ## Bloqueos
 
-- No hay bloqueos tecnicos para probar la Fase 1.
-- La salida de la fase depende de cinco pruebas con personas reales.
+- No hay bloqueos tecnicos para continuar la Fase 2.
 - La identidad `com.tyrak.ecos` sigue siendo provisional y no bloquea el prototipo.
 
 ## Riesgos actuales
 
-- Integrar anuncios antes de validar la diversion puede desperdiciar trabajo.
-- Una mecanica de repeticion imprecisa puede sentirse injusta; el prototipo debe
-  probar la grabacion temporal antes de crear arte definitivo.
+- Aumentar dificultad solo mediante ecos produce saturacion y repeticion.
+- Agregar contenido sin una curva clara puede ocultar el problema en vez de resolverlo.
 - La monetizacion no garantiza ingresos; depende de adquisicion y retencion.
 
 ## Regla de cierre de sesion

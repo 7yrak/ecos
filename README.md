@@ -7,8 +7,8 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 
 ## Descargar APK
 
-- [Descargar ECOS 0.1.0 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.1.0-android.apk)
-- SHA-256: `0db110a3282e615ce3464c3d272b9a613b6113bd0c8104137f12b953cbbc456b`
+- [Descargar ECOS 0.2.0 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.2.0-android.apk)
+- SHA-256: `615ab27e7de94036b70fd9df7cbe86b345d53ec5bc771e441cd9ef67c7ba6d38`
 
 Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
 o gestor de archivos. Play Protect tambien puede pedir analizar la aplicacion porque
@@ -35,5 +35,5 @@ se distribuye fuera de Google Play. La APK no solicita permisos de Android.
 
 ## Estado
 
-La implementacion tecnica de la Fase 1 esta completada. Falta probar la mecanica
-con cinco personas antes de comenzar la vertical slice de Fase 2.
+La Fase 1 se completo con ocho jugadores validados. La Fase 2 esta activa y ya
+incluye menu principal, tutorial y navegacion completa hacia la partida.

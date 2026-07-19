@@ -2,6 +2,7 @@ extends SceneTree
 
 const TimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const RunScene = preload("res://scenes/gameplay/run.tscn")
+const AppScene = preload("res://scenes/app/main.tscn")
 
 var _failures := 0
 var _checks := 0
@@ -15,6 +16,7 @@ func _run() -> void:
 	_test_timeline_validation()
 	_test_timeline_interpolation()
 	_test_timeline_copy()
+	await _test_app_navigation()
 	await _test_run_scene()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -65,6 +67,32 @@ func _test_timeline_copy() -> void:
 	_expect(original.sample_count() == 3, "el original puede seguir grabando")
 
 
+func _test_app_navigation() -> void:
+	var app := AppScene.instantiate() as AppController
+	root.add_child(app)
+	await process_frame
+	_expect(app.current_screen is MainMenu, "la aplicacion inicia en el menu")
+
+	var menu := app.current_screen as MainMenu
+	var tutorial_overlay := menu.get_node("TutorialOverlay") as ColorRect
+	(menu.get_node("Content/Layout/Actions/Tutorial") as Button).pressed.emit()
+	_expect(tutorial_overlay.visible, "el menu abre el tutorial")
+	(menu.get_node("TutorialOverlay/Center/Panel/Content/Back") as Button).pressed.emit()
+	_expect(not tutorial_overlay.visible, "el tutorial vuelve al menu")
+
+	(menu.get_node("Content/Layout/Actions/Play") as Button).pressed.emit()
+	await process_frame
+	_expect(app.current_screen is RunController, "jugar abre una partida")
+
+	var run := app.current_screen as RunController
+	run._end_run("PRUEBA DE NAVEGACION")
+	(run.get_node("UI/GameOver/Center/Panel/Content/Menu") as Button).pressed.emit()
+	await process_frame
+	_expect(app.current_screen is MainMenu, "el resultado vuelve al menu")
+	app.queue_free()
+	await process_frame
+
+
 func _test_run_scene() -> void:
 	var run = RunScene.instantiate()
 	root.add_child(run)
@@ -87,6 +115,11 @@ func _test_run_scene() -> void:
 	run._end_run("PRUEBA")
 	_expect(not player.movement_enabled, "el fin bloquea el movimiento")
 	_expect(run.get_node("UI/GameOver").visible, "el fin muestra el resultado")
+	run._restart()
+	await process_frame
+	_expect(player.movement_enabled, "repetir reactiva el movimiento")
+	_expect(not run.get_node("UI/GameOver").visible, "repetir oculta el resultado")
+	_expect(echoes.get_child_count() == 0, "repetir limpia los ecos")
 	run.queue_free()
 	await process_frame
 

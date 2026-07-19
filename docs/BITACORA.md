@@ -4,6 +4,48 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Fase 1 cerrada e inicio de Fase 2
+
+Fase: Fase 2 - Vertical slice
+
+Validacion de Fase 1:
+
+- T02-T08 representan siete jugadores adicionales en Galaxy A25 y S25.
+- Jugaron unas diez partidas en promedio; 7 de 7 entendieron el eco y 7 de 7
+  quisieron repetir hasta percibir repeticion.
+- Con T01, el total es de ocho testers, todos con comprension y repeticion voluntaria,
+  sin fallos tecnicos criticos.
+- La Fase 1 cumple su criterio de salida y queda cerrada.
+
+Cambios de Fase 2:
+
+- Se agrego un controlador de aplicacion que intercambia menu y partida.
+- Se creo un menu principal animado con identidad visual, acceso a jugar y tutorial.
+- El tutorial explica movimiento, ecos y peligros en tres pasos.
+- El resultado ahora permite repetir la ronda sin recargar la aplicacion o volver
+  al menu principal.
+- La suite cubre el flujo nuevo y aumento de 29 a 37 verificaciones.
+- La APK release avanza a `0.2.0` (`versionCode 3`).
+
+Verificacion:
+
+- Las 37 verificaciones headless pasan.
+- La APK se instalo sobre la version anterior y tambien se probo con datos limpios
+  en Android 15.
+- Menu, tutorial, partida, resultado y regreso al menu respondieron por toque.
+- No hubo errores de aplicacion en el inicio limpio.
+- Firmas APK v2 y v3 validas.
+- SHA-256: `615ab27e7de94036b70fd9df7cbe86b345d53ec5bc771e441cd9ef67c7ba6d38`.
+
+Pendiente:
+
+- Adaptar el contenido 9:16 a pantallas 19.5:9 y 20:9 para eliminar barras negras.
+- Implementar ajustes y comenzar la variacion de arena y obstaculos.
+
+Siguiente accion:
+
+- Resolver la adaptacion responsive sin alterar la fisica validada.
+
 ## 2026-07-18 - Solicitud de menu y mejor presentacion
 
 Fase: Fase 1 - Prototipo de mecanica
