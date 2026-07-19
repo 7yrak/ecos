@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/arena_obstacle.gd" id="1_obstacle"]
+
+[node name="ArenaObstacle" type="AnimatableBody2D" groups=["danger"]]
+collision_layer = 4
+collision_mask = 0
+sync_to_physics = false
+script = ExtResource("1_obstacle")
+
+[node name="Collision" type="CollisionShape2D" parent="."]

@@ -1,20 +1,15 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/run_controller.gd" id="1_run"]
 [ext_resource type="Script" path="res://scripts/gameplay/arena_visual.gd" id="2_arena"]
 [ext_resource type="PackedScene" path="res://scenes/gameplay/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/arena_obstacle.tscn" id="4_obstacle"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape_vertical_wall"]
 size = Vector2(32, 940)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape_horizontal_wall"]
 size = Vector2(624, 32)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape_obstacle_one"]
-size = Vector2(200, 30)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape_obstacle_two"]
-size = Vector2(180, 30)
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_game_over"]
 bg_color = Color(0.035, 0.09, 0.115, 0.98)
@@ -112,21 +107,25 @@ shape = SubResource("RectangleShape_horizontal_wall")
 
 [node name="Obstacles" type="Node2D" parent="."]
 
-[node name="Upper" type="StaticBody2D" parent="Obstacles" groups=["danger"]]
+[node name="Upper" parent="Obstacles" instance=ExtResource("4_obstacle")]
 position = Vector2(210, 470)
-collision_layer = 4
-collision_mask = 0
+obstacle_size = Vector2(200, 30)
 
-[node name="Collision" type="CollisionShape2D" parent="Obstacles/Upper"]
-shape = SubResource("RectangleShape_obstacle_one")
-
-[node name="Lower" type="StaticBody2D" parent="Obstacles" groups=["danger"]]
+[node name="Lower" parent="Obstacles" instance=ExtResource("4_obstacle")]
 position = Vector2(510, 820)
-collision_layer = 4
-collision_mask = 0
+obstacle_size = Vector2(180, 30)
 
-[node name="Collision" type="CollisionShape2D" parent="Obstacles/Lower"]
-shape = SubResource("RectangleShape_obstacle_two")
+[node name="Patrol" parent="Obstacles" instance=ExtResource("4_obstacle")]
+position = Vector2(570, 650)
+kind = 1
+obstacle_size = Vector2(120, 28)
+movement_offset = Vector2(0, 300)
+movement_period = 5.5
+
+[node name="Pulse" parent="Obstacles" instance=ExtResource("4_obstacle")]
+position = Vector2(230, 650)
+kind = 2
+obstacle_size = Vector2(190, 30)
 
 [node name="Echoes" type="Node2D" parent="."]
 
@@ -159,15 +158,15 @@ theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Brand" type="Label" parent="UI/TopBar/Margin/Stats"]
-custom_minimum_size = Vector2(144, 0)
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 1)
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 36
 text = "ECOS"
 vertical_alignment = 1
 
 [node name="Time" type="Label" parent="UI/TopBar/Margin/Stats"]
-custom_minimum_size = Vector2(156, 0)
+custom_minimum_size = Vector2(118, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.84, 1)
 theme_override_font_sizes/font_size = 24
@@ -176,7 +175,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Score" type="Label" parent="UI/TopBar/Margin/Stats"]
-custom_minimum_size = Vector2(166, 0)
+custom_minimum_size = Vector2(126, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.84, 1)
 theme_override_font_sizes/font_size = 24
@@ -185,11 +184,39 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Echoes" type="Label" parent="UI/TopBar/Margin/Stats"]
-custom_minimum_size = Vector2(136, 0)
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.55, 0.45, 1)
 theme_override_font_sizes/font_size = 24
-text = "ECOS\n00"
+text = "ECOS\n00/04"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Phase" type="Label" parent="UI/TopBar/Margin/Stats"]
+custom_minimum_size = Vector2(124, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.68, 0.25, 1)
+theme_override_font_sizes/font_size = 24
+text = "ETAPA\n1/3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PhaseBanner" type="Label" parent="UI"]
+visible = false
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -270.0
+offset_top = 176.0
+offset_right = 270.0
+offset_bottom = 238.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0.018, 0.043, 0.063, 0.95)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 28
+text = "ETAPA 2 // PATRULLA ACTIVADA"
 horizontal_alignment = 1
 vertical_alignment = 1
 

@@ -7,8 +7,8 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 
 ## Descargar APK
 
-- [Descargar ECOS 0.2.1 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.2.1-android.apk)
-- SHA-256: `63601a003b4c0d5ea19f26a4bb85e2431f0ffdd7dd1d6981a7c4eb14377b3ee8`
+- [Descargar ECOS 0.2.2 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.2.2-android.apk)
+- SHA-256: `7886fdcb454c0de0cacaa0f9df432a0e781a87b03043805ff41c7f21f49585f8`
 
 Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
 o gestor de archivos. Play Protect tambien puede pedir analizar la aplicacion porque
@@ -36,4 +36,4 @@ se distribuye fuera de Google Play. La APK no solicita permisos de Android.
 ## Estado
 
 La Fase 1 se completo con ocho jugadores validados. La Fase 2 esta activa e incluye
-menu, tutorial, navegacion, pantalla adaptable y ajustes persistentes.
+menu, ajustes, tres etapas de arena y limite de cuatro ecos activos.

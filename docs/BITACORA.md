@@ -4,6 +4,37 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Progresion de arena y limite de ecos
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- Se creo `ArenaObstacle`, un componente reutilizable con modos fijo, patrulla y
+  pulso.
+- La partida comienza con dos barreras fijas, activa la patrulla a los 12 segundos
+  y el pulso a los 24.
+- El pulso alterna aviso, peligro y ventana segura con color propio.
+- El HUD informa etapa y ocupacion de ecos.
+- Se limito la arena a cuatro ecos activos; el quinto retira al mas antiguo.
+- El total de ecos creados se conserva para puntuacion y resultado.
+- El tutorial explica los colores y el limite.
+- La version avanza a `0.2.2` (`versionCode 5`).
+
+Verificacion:
+
+- Pasan 66 verificaciones headless.
+- Las pruebas cubren activacion, movimiento, pulso, reinicio y limite de ecos.
+- Se comprobo la presentacion inicial en Android 15 a 1080 x 2400.
+- El proceso Android no registro errores de aplicacion.
+- La APK no solicita permisos y tiene firmas v2 y v3 validas.
+- SHA-256: `7886fdcb454c0de0cacaa0f9df432a0e781a87b03043805ff41c7f21f49585f8`.
+
+Siguiente accion:
+
+- Agregar respuesta sonora y efectos de impacto y etapa, y validar el balance con
+  jugadores externos.
+
 ## 2026-07-18 - Pantalla adaptable y ajustes persistentes
 
 Fase: Fase 2 - Vertical slice

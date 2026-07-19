@@ -113,6 +113,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: los nuevos elementos de gameplay usan coordenadas internas de la
   arena; volumen, vibracion y sensibilidad se consultan mediante `SettingsStore`.
 
+## D-012 - Dificultad por etapas y limite de ecos
+
+- Fecha: 2026-07-18
+- Estado: aceptada
+- Decision: introducir barreras fijas al inicio, patrulla a los 12 segundos y pulso
+  a los 24; mantener como maximo cuatro ecos activos.
+- Motivo: la validacion mostro que acumular ecos sin limite vuelve la dificultad
+  repetitiva e inevitable.
+- Consecuencia: el quinto eco reemplaza al mas antiguo, pero el total creado sigue
+  contando para puntuacion y resultado; los tiempos quedan como parametros de balance.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

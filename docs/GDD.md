@@ -25,6 +25,7 @@ creado por uno mismo en una cadena perfecta.
 
 - Una partida dura normalmente entre 45 y 90 segundos.
 - Se crea un eco cada 5 segundos.
+- Permanecen activos como maximo cuatro ecos; el mas antiguo se retira al crear otro.
 - Cada eco reproduce una ventana anterior del movimiento.
 - Chocar con un eco o peligro termina la partida.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
@@ -73,11 +74,14 @@ Implementado:
 - Interfaz adaptable desde 9:16 hasta 20:9.
 - Ajustes persistentes de volumen, vibracion y sensibilidad.
 - Vibracion breve al terminar una ronda cuando esta habilitada.
+- Tres tipos de obstaculo: barrera fija, patrulla movil y pulso intermitente.
+- Tres etapas: fija desde el inicio, patrulla a los 12 segundos y pulso a los 24.
+- Limite de cuatro ecos activos sin perder el total creado para la puntuacion.
 
 Siguiente iteracion:
 
-- Tres comportamientos de obstaculo introducidos progresivamente durante la ronda.
-- Limite de ecos activos para que la dificultad no termine en saturacion inevitable.
+- Sonido, efectos de impacto y transiciones de etapa con mayor respuesta audiovisual.
+- Pruebas externas para ajustar tiempos, velocidad y ventanas seguras.
 
 ## Alcance del MVP
 

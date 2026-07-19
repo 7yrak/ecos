@@ -9,14 +9,23 @@ const EchoTimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
+const MAX_ACTIVE_ECHOES := 4
+const PATROL_PHASE_TIME := 12.0
+const PULSE_PHASE_TIME := 24.0
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
+@onready var upper_obstacle: ArenaObstacle = $Obstacles/Upper
+@onready var lower_obstacle: ArenaObstacle = $Obstacles/Lower
+@onready var patrol_obstacle: ArenaObstacle = $Obstacles/Patrol
+@onready var pulse_obstacle: ArenaObstacle = $Obstacles/Pulse
 @onready var time_label: Label = $UI/TopBar/Margin/Stats/Time
 @onready var score_label: Label = $UI/TopBar/Margin/Stats/Score
 @onready var echo_label: Label = $UI/TopBar/Margin/Stats/Echoes
+@onready var phase_label: Label = $UI/TopBar/Margin/Stats/Phase
+@onready var phase_banner: Label = $UI/PhaseBanner
 @onready var instruction_label: Label = $UI/Instruction
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
@@ -30,7 +39,10 @@ var _run_time := 0.0
 var _segment_time := 0.0
 var _sample_accumulator := 0.0
 var _echo_count := 0
+var _total_echo_count := 0
 var _score := 0
+var _current_phase := 1
+var _phase_banner_time := 0.0
 
 
 func _ready() -> void:
@@ -61,12 +73,14 @@ func _physics_process(delta: float) -> void:
 	_segment_time += delta
 	_sample_accumulator += delta
 	_record_samples()
+	_update_progression()
 
 	if _segment_time >= ECHO_INTERVAL:
 		_spawn_echo()
 
-	_score = int(_run_time * 10.0) + _echo_count * 100
+	_score = int(_run_time * 10.0) + _total_echo_count * 100
 	_update_hud()
+	_update_phase_banner(delta)
 	if _run_time > 3.5:
 		instruction_label.modulate.a = move_toward(instruction_label.modulate.a, 0.0, delta * 0.7)
 
@@ -78,12 +92,20 @@ func _start_run() -> void:
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
 	_echo_count = 0
+	_total_echo_count = 0
 	_score = 0
+	_current_phase = 1
+	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
+	upper_obstacle.reset_for_run(true)
+	lower_obstacle.reset_for_run(true)
+	patrol_obstacle.reset_for_run(false)
+	pulse_obstacle.reset_for_run(false)
 	var start_position := to_global(START_POSITION)
 	_timeline.add_sample(0.0, start_position)
 	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
+	phase_banner.visible = false
 	instruction_label.modulate.a = 1.0
 	_update_hud()
 
@@ -98,11 +120,14 @@ func _record_samples() -> void:
 func _spawn_echo() -> void:
 	_timeline.add_sample(_segment_time, player.global_position)
 	if _timeline.is_playable():
+		if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
+			_retire_oldest_echo()
 		var echo := ECHO_SCENE.instantiate() as EchoPlayback
 		echo.configure(_timeline)
 		echo.hit_player.connect(_on_echo_hit_player)
 		echoes.add_child(echo)
-		_echo_count += 1
+		_total_echo_count += 1
+		_echo_count = echoes.get_child_count()
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -123,9 +148,11 @@ func _end_run(reason: String) -> void:
 		return
 	_state = RunState.GAME_OVER
 	player.set_movement_enabled(false)
+	patrol_obstacle.set_physics_process(false)
+	pulse_obstacle.set_physics_process(false)
 	for child in echoes.get_children():
 		(child as EchoPlayback).stop()
-	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS  %02d" % [reason, _run_time, _score, _echo_count]
+	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d" % [reason, _run_time, _score, _total_echo_count]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -141,6 +168,42 @@ func _clear_echoes() -> void:
 		child.queue_free()
 
 
+func _retire_oldest_echo() -> void:
+	var oldest := echoes.get_child(0) as EchoPlayback
+	oldest.stop()
+	echoes.remove_child(oldest)
+	oldest.queue_free()
+
+
+func _update_progression() -> void:
+	var next_phase := 1
+	if _run_time >= PULSE_PHASE_TIME:
+		next_phase = 3
+	elif _run_time >= PATROL_PHASE_TIME:
+		next_phase = 2
+	if next_phase == _current_phase:
+		return
+
+	_current_phase = next_phase
+	patrol_obstacle.set_progression_active(_current_phase >= 2)
+	pulse_obstacle.set_progression_active(_current_phase >= 3)
+	var phase_name := "PATRULLA ACTIVADA" if _current_phase == 2 else "PULSO ACTIVADO"
+	phase_banner.text = "ETAPA %d // %s" % [_current_phase, phase_name]
+	phase_banner.modulate.a = 1.0
+	phase_banner.visible = true
+	_phase_banner_time = 2.4
+
+
+func _update_phase_banner(delta: float) -> void:
+	if _phase_banner_time <= 0.0:
+		return
+	_phase_banner_time = maxf(0.0, _phase_banner_time - delta)
+	if _phase_banner_time < 0.6:
+		phase_banner.modulate.a = _phase_banner_time / 0.6
+	if _phase_banner_time <= 0.0:
+		phase_banner.visible = false
+
+
 func _center_world_for_viewport() -> void:
 	position.y = maxf(0.0, (get_viewport_rect().size.y - DESIGN_HEIGHT) * 0.5)
 
@@ -148,4 +211,5 @@ func _center_world_for_viewport() -> void:
 func _update_hud() -> void:
 	time_label.text = "TIEMPO\n%05.1f" % _run_time
 	score_label.text = "PUNTOS\n%04d" % _score
-	echo_label.text = "ECOS\n%02d" % _echo_count
+	echo_label.text = "ECOS\n%02d/%02d" % [_echo_count, MAX_ACTIVE_ECHOES]
+	phase_label.text = "ETAPA\n%d/3" % _current_phase

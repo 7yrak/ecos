@@ -2,10 +2,6 @@ class_name ArenaVisual
 extends Node2D
 
 const PLAY_RECT := Rect2(48.0, 180.0, 624.0, 940.0)
-const OBSTACLE_RECTS := [
-	Rect2(110.0, 455.0, 200.0, 30.0),
-	Rect2(420.0, 805.0, 180.0, 30.0),
-]
 
 
 func _ready() -> void:
@@ -22,6 +18,3 @@ func _draw() -> void:
 		draw_line(Vector2(PLAY_RECT.position.x, y), Vector2(PLAY_RECT.end.x, y), Color(0.18, 0.82, 0.655, 0.055), 1.0)
 
 	draw_rect(PLAY_RECT, Color(0.18, 0.82, 0.655, 0.55), false, 3.0)
-	for obstacle in OBSTACLE_RECTS:
-		draw_rect(obstacle, Color(1.0, 0.38, 0.31, 0.18), true)
-		draw_rect(obstacle, Color(1.0, 0.45, 0.36, 0.8), false, 3.0)

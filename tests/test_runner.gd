@@ -20,6 +20,8 @@ func _run() -> void:
 	await _test_app_navigation()
 	await _test_responsive_layout()
 	await _test_run_scene()
+	await _test_arena_progression()
+	await _test_echo_cap()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
 
@@ -150,7 +152,7 @@ func _test_run_scene() -> void:
 
 	var player := run.get_node("Player") as CharacterBody2D
 	var echoes := run.get_node("Echoes") as Node2D
-	var obstacle := run.get_node("Obstacles/Upper") as StaticBody2D
+	var obstacle := run.get_node("Obstacles/Upper") as ArenaObstacle
 	_expect(player != null, "la partida contiene al jugador")
 	_expect(player.collision_layer == 1 and player.collision_mask == 4, "capas fisicas del jugador")
 	_expect(obstacle.is_in_group("danger") and obstacle.collision_layer == 4, "obstaculo peligroso configurado")
@@ -169,6 +171,71 @@ func _test_run_scene() -> void:
 	_expect(player.movement_enabled, "repetir reactiva el movimiento")
 	_expect(not run.get_node("UI/GameOver").visible, "repetir oculta el resultado")
 	_expect(echoes.get_child_count() == 0, "repetir limpia los ecos")
+	run.queue_free()
+	await process_frame
+
+
+func _test_arena_progression() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	var upper := run.get_node("Obstacles/Upper") as ArenaObstacle
+	var patrol := run.get_node("Obstacles/Patrol") as ArenaObstacle
+	var pulse := run.get_node("Obstacles/Pulse") as ArenaObstacle
+	_expect(upper.kind == ArenaObstacle.Kind.STATIC, "la primera etapa usa barreras fijas")
+	_expect(patrol.kind == ArenaObstacle.Kind.PATROL, "configura el obstaculo patrulla")
+	_expect(pulse.kind == ArenaObstacle.Kind.PULSE, "configura el obstaculo de pulso")
+	_expect(not patrol.progression_active and not patrol.visible, "la patrulla comienza inactiva")
+	_expect(not pulse.progression_active and not pulse.visible, "el pulso comienza inactivo")
+
+	run._run_time = RunController.PATROL_PHASE_TIME
+	run._update_progression()
+	_expect(patrol.progression_active and patrol.visible, "la segunda etapa activa la patrulla")
+	_expect(not pulse.progression_active, "la segunda etapa mantiene el pulso inactivo")
+	await process_frame
+	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
+	run._update_hud()
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA\n2/3", "el HUD informa la segunda etapa")
+	var patrol_start := patrol.position
+	patrol.set_physics_process(false)
+	patrol._physics_process(1.0)
+	_expect(not patrol.position.is_equal_approx(patrol_start), "la patrulla recorre la arena")
+
+	run._run_time = RunController.PULSE_PHASE_TIME
+	run._update_progression()
+	_expect(pulse.progression_active and pulse.visible, "la tercera etapa activa el pulso")
+	pulse.set_physics_process(false)
+	pulse._physics_process(pulse.pulse_warning_duration + 0.1)
+	_expect(pulse.collision_active, "el pulso se vuelve peligroso despues del aviso")
+	await process_frame
+	_expect(not pulse.collision_shape.disabled, "el pulso peligroso activa su colision")
+	pulse._physics_process(pulse.pulse_active_duration + 0.1)
+	_expect(not pulse.collision_active, "el pulso abre una ventana segura")
+	await process_frame
+	_expect(pulse.collision_shape.disabled, "la ventana segura desactiva su colision")
+
+	run._restart()
+	await process_frame
+	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA\n1/3", "repetir vuelve a la primera etapa")
+	run.queue_free()
+	await process_frame
+
+
+func _test_echo_cap() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	for _cycle in 6:
+		run._physics_process(5.1)
+	var echoes := run.get_node("Echoes") as Node2D
+	_expect(echoes.get_child_count() == RunController.MAX_ACTIVE_ECHOES, "limita los ecos activos a cuatro")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Echoes") as Label).text == "ECOS\n04/04", "el HUD muestra el limite de ecos")
+	run._end_run("PRUEBA DE LIMITE")
+	var result := (run.get_node("UI/GameOver/Center/Panel/Content/Result") as Label).text
+	_expect(result.contains("ECOS CREADOS  06"), "el resultado conserva los ecos creados")
 	run.queue_free()
 	await process_frame
 

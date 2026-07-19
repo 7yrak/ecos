@@ -47,8 +47,8 @@ Criterio de salida:
 
 Estado: activa desde el 2026-07-18.
 
-Avance: menu, tutorial, navegacion, interfaz adaptable y ajustes persistentes
-completados.
+Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
+progresion de arena, tres obstaculos y limite de ecos completados.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
