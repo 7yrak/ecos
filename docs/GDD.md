@@ -77,11 +77,13 @@ Implementado:
 - Tres tipos de obstaculo: barrera fija, patrulla movil y pulso intermitente.
 - Tres etapas: fija desde el inicio, patrulla a los 12 segundos y pulso a los 24.
 - Limite de cuatro ecos activos sin perder el total creado para la puntuacion.
+- Sonidos procedurales diferentes para eco, etapa, pulso e impacto.
+- Ondas expansivas y flashes comunican eventos sin ocultar el HUD.
 
 Siguiente iteracion:
 
-- Sonido, efectos de impacto y transiciones de etapa con mayor respuesta audiovisual.
 - Pruebas externas para ajustar tiempos, velocidad y ventanas seguras.
+- Ajuste de volumen y mezcla segun la respuesta en dispositivos fisicos.
 
 ## Alcance del MVP
 

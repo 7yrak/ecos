@@ -124,6 +124,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: el quinto eco reemplaza al mas antiguo, pero el total creado sigue
   contando para puntuacion y resultado; los tiempos quedan como parametros de balance.
 
+## D-013 - Feedback procedural sin assets externos
+
+- Fecha: 2026-07-18
+- Estado: aceptada
+- Decision: sintetizar en memoria cuatro sonidos breves y dibujar ondas vectoriales
+  para eco, etapa, pulso e impacto.
+- Motivo: permite validar respuesta audiovisual sin licencias, descargas ni una
+  dependencia de contenido definitivo durante la vertical slice.
+- Consecuencia: la mezcla actual es provisional y debe ajustarse en dispositivos
+  fisicos antes de producir o comprar audio final.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

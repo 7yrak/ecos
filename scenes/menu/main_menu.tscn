@@ -138,7 +138,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.2.2"
+text = "ECOS // 0.2.3"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]

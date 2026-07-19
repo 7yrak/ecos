@@ -17,6 +17,7 @@ const DESIGN_HEIGHT := 1280.0
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
+@onready var feedback: GameplayFeedback = $Feedback
 @onready var upper_obstacle: ArenaObstacle = $Obstacles/Upper
 @onready var lower_obstacle: ArenaObstacle = $Obstacles/Lower
 @onready var patrol_obstacle: ArenaObstacle = $Obstacles/Patrol
@@ -26,6 +27,7 @@ const DESIGN_HEIGHT := 1280.0
 @onready var echo_label: Label = $UI/TopBar/Margin/Stats/Echoes
 @onready var phase_label: Label = $UI/TopBar/Margin/Stats/Phase
 @onready var phase_banner: Label = $UI/PhaseBanner
+@onready var impact_flash: ColorRect = $UI/ImpactFlash
 @onready var instruction_label: Label = $UI/Instruction
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
@@ -43,11 +45,13 @@ var _total_echo_count := 0
 var _score := 0
 var _current_phase := 1
 var _phase_banner_time := 0.0
+var _flash_tween: Tween
 
 
 func _ready() -> void:
 	_center_world_for_viewport()
 	player.danger_hit.connect(_on_player_danger_hit)
+	pulse_obstacle.danger_state_changed.connect(_on_pulse_state_changed)
 	restart_button.pressed.connect(_restart)
 	menu_button.pressed.connect(menu_requested.emit)
 	player.set_sensitivity(settings_store.sensitivity)
@@ -87,6 +91,8 @@ func _physics_process(delta: float) -> void:
 
 func _start_run() -> void:
 	_clear_echoes()
+	if is_instance_valid(_flash_tween):
+		_flash_tween.kill()
 	_state = RunState.PLAYING
 	_run_time = 0.0
 	_segment_time = 0.0
@@ -97,6 +103,7 @@ func _start_run() -> void:
 	_current_phase = 1
 	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
+	feedback.clear_active()
 	upper_obstacle.reset_for_run(true)
 	lower_obstacle.reset_for_run(true)
 	patrol_obstacle.reset_for_run(false)
@@ -106,6 +113,7 @@ func _start_run() -> void:
 	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
 	phase_banner.visible = false
+	impact_flash.visible = false
 	instruction_label.modulate.a = 1.0
 	_update_hud()
 
@@ -123,11 +131,12 @@ func _spawn_echo() -> void:
 		if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
 			_retire_oldest_echo()
 		var echo := ECHO_SCENE.instantiate() as EchoPlayback
+		echoes.add_child(echo)
 		echo.configure(_timeline)
 		echo.hit_player.connect(_on_echo_hit_player)
-		echoes.add_child(echo)
 		_total_echo_count += 1
 		_echo_count = echoes.get_child_count()
+		feedback.play_echo(echo.global_position)
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -152,6 +161,8 @@ func _end_run(reason: String) -> void:
 	pulse_obstacle.set_physics_process(false)
 	for child in echoes.get_children():
 		(child as EchoPlayback).stop()
+	feedback.play_hit(player.global_position)
+	_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d" % [reason, _run_time, _score, _total_echo_count]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
@@ -190,8 +201,13 @@ func _update_progression() -> void:
 	var phase_name := "PATRULLA ACTIVADA" if _current_phase == 2 else "PULSO ACTIVADO"
 	phase_banner.text = "ETAPA %d // %s" % [_current_phase, phase_name]
 	phase_banner.modulate.a = 1.0
+	phase_banner.pivot_offset = phase_banner.size * 0.5
+	phase_banner.scale = Vector2.ONE * 0.82
 	phase_banner.visible = true
 	_phase_banner_time = 2.4
+	feedback.play_phase(player.global_position)
+	_flash_screen(Color(1.0, 0.68, 0.25), 0.12, 0.3)
+	create_tween().tween_property(phase_banner, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _update_phase_banner(delta: float) -> void:
@@ -202,6 +218,23 @@ func _update_phase_banner(delta: float) -> void:
 		phase_banner.modulate.a = _phase_banner_time / 0.6
 	if _phase_banner_time <= 0.0:
 		phase_banner.visible = false
+
+
+func _on_pulse_state_changed(active: bool) -> void:
+	if not active or _state != RunState.PLAYING:
+		return
+	feedback.play_pulse(pulse_obstacle.global_position)
+	_flash_screen(Color(1.0, 0.3, 0.22), 0.07, 0.18)
+
+
+func _flash_screen(color: Color, peak_alpha: float, duration: float) -> void:
+	if is_instance_valid(_flash_tween):
+		_flash_tween.kill()
+	impact_flash.color = Color(color, peak_alpha)
+	impact_flash.visible = true
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(impact_flash, "color:a", 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_flash_tween.tween_callback(func() -> void: impact_flash.visible = false)
 
 
 func _center_world_for_viewport() -> void:

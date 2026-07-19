@@ -1,6 +1,8 @@
 class_name ArenaObstacle
 extends AnimatableBody2D
 
+signal danger_state_changed(active: bool)
+
 enum Kind { STATIC, PATROL, PULSE }
 
 const DANGER_COLOR := Color(1.0, 0.38, 0.31, 1.0)
@@ -75,8 +77,11 @@ func _refresh_state() -> void:
 func _set_collision_active(active: bool) -> void:
 	if collision_active == active and collision_shape.disabled == not active:
 		return
+	var changed := collision_active != active
 	collision_active = active
 	collision_shape.set_deferred("disabled", not active)
+	if changed and kind == Kind.PULSE and progression_active:
+		danger_state_changed.emit(active)
 
 
 func _draw() -> void:

@@ -140,6 +140,9 @@ func _test_responsive_layout() -> void:
 	_expect(is_equal_approx(run.player.global_position.y, 810.0), "centra el inicio sin alterar coordenadas internas")
 	var instruction := run.get_node("UI/Instruction") as Label
 	_expect(instruction.position.y > 1400.0, "ancla la instruccion al borde inferior")
+	run._physics_process(5.1)
+	var responsive_echo := run.get_node("Echoes").get_child(0) as EchoPlayback
+	_expect(responsive_echo.global_position.is_equal_approx(run.player.global_position), "el eco conserva su posicion global en 20:9")
 	viewport.queue_free()
 	await process_frame
 
@@ -152,25 +155,36 @@ func _test_run_scene() -> void:
 
 	var player := run.get_node("Player") as CharacterBody2D
 	var echoes := run.get_node("Echoes") as Node2D
+	var feedback := run.get_node("Feedback") as GameplayFeedback
 	var obstacle := run.get_node("Obstacles/Upper") as ArenaObstacle
 	_expect(player != null, "la partida contiene al jugador")
 	_expect(player.collision_layer == 1 and player.collision_mask == 4, "capas fisicas del jugador")
 	_expect(obstacle.is_in_group("danger") and obstacle.collision_layer == 4, "obstaculo peligroso configurado")
 	_expect(echoes.get_child_count() == 0, "la partida comienza sin ecos")
+	var audio_ready := feedback.stream_data_size(GameplayFeedback.Cue.ECHO) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.PHASE) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.PULSE) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0
+	_expect(audio_ready, "genera los cuatro sonidos procedurales")
 
 	run._physics_process(5.1)
 	_expect(echoes.get_child_count() == 1, "crea un eco al completar el intervalo")
 	var echo := echoes.get_child(0) as Area2D
 	_expect(echo.collision_layer == 2 and echo.collision_mask == 1, "capas fisicas del eco")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.ECHO, "crear un eco reproduce su sonido")
+	_expect(feedback.active_ring_count() > 0, "crear un eco genera una onda visual")
 
 	run._end_run("PRUEBA")
 	_expect(not player.movement_enabled, "el fin bloquea el movimiento")
 	_expect(run.get_node("UI/GameOver").visible, "el fin muestra el resultado")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.HIT, "el impacto reproduce su sonido")
+	_expect(run.get_node("UI/ImpactFlash").visible, "el impacto activa el flash visual")
 	run._restart()
 	await process_frame
 	_expect(player.movement_enabled, "repetir reactiva el movimiento")
 	_expect(not run.get_node("UI/GameOver").visible, "repetir oculta el resultado")
 	_expect(echoes.get_child_count() == 0, "repetir limpia los ecos")
+	_expect(feedback.active_ring_count() == 0, "repetir limpia las ondas visuales")
 	run.queue_free()
 	await process_frame
 
@@ -183,6 +197,7 @@ func _test_arena_progression() -> void:
 	var upper := run.get_node("Obstacles/Upper") as ArenaObstacle
 	var patrol := run.get_node("Obstacles/Patrol") as ArenaObstacle
 	var pulse := run.get_node("Obstacles/Pulse") as ArenaObstacle
+	var feedback := run.get_node("Feedback") as GameplayFeedback
 	_expect(upper.kind == ArenaObstacle.Kind.STATIC, "la primera etapa usa barreras fijas")
 	_expect(patrol.kind == ArenaObstacle.Kind.PATROL, "configura el obstaculo patrulla")
 	_expect(pulse.kind == ArenaObstacle.Kind.PULSE, "configura el obstaculo de pulso")
@@ -193,6 +208,8 @@ func _test_arena_progression() -> void:
 	run._update_progression()
 	_expect(patrol.progression_active and patrol.visible, "la segunda etapa activa la patrulla")
 	_expect(not pulse.progression_active, "la segunda etapa mantiene el pulso inactivo")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.PHASE, "el cambio de etapa reproduce su sonido")
+	_expect(run.get_node("UI/ImpactFlash").visible, "el cambio de etapa activa una transicion visual")
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
@@ -208,6 +225,7 @@ func _test_arena_progression() -> void:
 	pulse.set_physics_process(false)
 	pulse._physics_process(pulse.pulse_warning_duration + 0.1)
 	_expect(pulse.collision_active, "el pulso se vuelve peligroso despues del aviso")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.PULSE, "el pulso peligroso emite una alerta")
 	await process_frame
 	_expect(not pulse.collision_shape.disabled, "el pulso peligroso activa su colision")
 	pulse._physics_process(pulse.pulse_active_duration + 0.1)

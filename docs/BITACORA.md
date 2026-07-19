@@ -4,6 +4,39 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Feedback audiovisual procedural
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- Se creo `GameplayFeedback` con cuatro sonidos PCM sintetizados en memoria.
+- Crear un eco, cambiar de etapa, activar el pulso y chocar tienen tonos distintos.
+- Los mismos eventos generan ondas expansivas y flashes de pantalla.
+- La transicion de etapa incorpora una entrada visual con escala.
+- Los reproductores se reutilizan y se limpian al destruir o reiniciar la partida.
+- En modo headless se validan datos y eventos sin iniciar el driver de audio falso.
+- Se corrigio el doble desplazamiento de ecos en pantallas altas al configurarlos
+  despues de agregarlos al arbol.
+- La version avanza a `0.2.3` (`versionCode 6`).
+
+Verificacion:
+
+- Pasan 76 verificaciones headless sin fugas de recursos.
+- Se comprobo la posicion global del eco en un viewport 20:9.
+- La APK debug se instalo en Android 15 a 1080 x 2400.
+- Se capturo la onda del primer eco y no hubo errores de audio ni GDScript.
+- El release tiene firmas v2 y v3 validas, no solicita permisos y excluye recursos
+  de desarrollo.
+- El AVD termino antes de reinstalar el release final; la prueba en telefono fisico
+  queda pendiente.
+- SHA-256: `8830f17a9cbab18dc64fc2d61e2f395db5354b6da6aa99d039c3055f8bcfb787`.
+
+Siguiente accion:
+
+- Validar `0.2.3` en Galaxy A25 y S25 y cerrar Fase 2 si sonido, claridad, dificultad
+  y rendimiento cumplen el criterio de salida.
+
 ## 2026-07-18 - Progresion de arena y limite de ecos
 
 Fase: Fase 2 - Vertical slice
