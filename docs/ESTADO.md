@@ -35,11 +35,14 @@
   quiso superar su puntuacion y no informo fallos tecnicos.
 - T01 detecto repeticion despues de dominar el ritmo: la partida cambia poco y la
   acumulacion de ecos dificulta continuar superandose.
+- Otros jugadores solicitaron un menu y una presentacion mas llamativa; el numero y
+  sus respuestas del protocolo aun no estan registrados.
 
 ## Siguiente accion exacta
 
 Ejecutar `docs/PRUEBAS_FASE1.md` con cuatro personas adicionales y comprobar si
-tambien perciben repeticion o saturacion de ecos.
+tambien perciben repeticion o saturacion de ecos. Registrar cuantos jugadores
+solicitaron menu y sus respuestas individuales.
 
 ## Tareas pendientes inmediatas
 

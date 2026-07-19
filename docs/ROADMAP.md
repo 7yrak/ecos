@@ -50,6 +50,7 @@ Objetivo: representar la calidad visual y sonora esperada del producto final.
 Entregables:
 
 - Flujo completo: inicio, partida, resultado y repeticion.
+- Menu principal con identidad visual y acceso claro a jugar, tutorial y ajustes.
 - Una arena terminada.
 - Tres obstaculos.
 - Progresion dentro de la partida que introduzca variedad sin depender solamente

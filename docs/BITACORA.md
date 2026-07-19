@@ -4,6 +4,30 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Solicitud de menu y mejor presentacion
+
+Fase: Fase 1 - Prototipo de mecanica
+
+Resultado:
+
+- Se recibio feedback adicional de varios jugadores: el prototipo necesita un menu
+  y mas elementos de presentacion para resultar llamativo.
+- El comentario coincide con el alcance previsto de la Fase 2, que incluye inicio,
+  tutorial, ajustes, partida y resultado.
+
+Decision:
+
+- Se agrega un menu principal con identidad visual como entregable explicito de la
+  vertical slice.
+- No se agregaran sistemas indefinidos bajo "mas cosas"; se priorizaran variedad de
+  juego, claridad y presentacion.
+- Este feedback no cuenta aun como T02-T05 porque faltan cantidad de jugadores y
+  respuestas individuales del protocolo.
+
+Siguiente accion:
+
+- Identificar a cada tester adicional y completar su registro de Fase 1.
+
 ## 2026-07-18 - Resultado completo de T01
 
 Fase: Fase 1 - Prototipo de mecanica

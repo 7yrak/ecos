@@ -56,6 +56,15 @@ validarse con al menos cinco personas antes de la Fase 2.
 - La vertical slice debe probar variacion durante la partida y una curva de
   dificultad que no dependa solamente de agregar ecos.
 
+### Feedback adicional pendiente de cuantificar
+
+- Varios jugadores indicaron que el prototipo necesita un menu y mas elementos de
+  presentacion para resultar llamativo.
+- Este comentario refuerza el alcance de la vertical slice: identidad visual, menu
+  principal, tutorial, ajustes y resultados deben formar un flujo coherente.
+- "Mas cosas" no implica agregar sistemas sin validar; primero se priorizaran
+  variedad durante la partida y claridad del flujo.
+
 ## Alcance del MVP
 
 - Un modo infinito.
