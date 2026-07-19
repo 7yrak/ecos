@@ -22,7 +22,7 @@ func _run() -> void:
 	await _test_run_scene()
 	await _test_arena_progression()
 	await _test_echo_cap()
-	await _test_echo_origin_and_history()
+	await _test_rift_lifecycle()
 	await _test_echo_pressure()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -68,6 +68,10 @@ func _test_timeline_interpolation() -> void:
 	_expect(timeline.sample_at(3.0).is_equal_approx(Vector2(30.0, 20.0)), "limita despues del final")
 	_expect(is_equal_approx(timeline.duration(), 2.0), "informa la duracion")
 	_expect(is_equal_approx(timeline.travel_distance(), sqrt(200.0) + 20.0), "calcula la distancia total recorrida")
+	var bounds := Rect2(10.0, 10.0, 180.0, 180.0)
+	var anchored := timeline.transformed_to_anchor(Vector2(20.0, 20.0), bounds)
+	_expect(anchored.sample_at(0.0).is_equal_approx(Vector2(20.0, 20.0)), "transforma la ruta desde una grieta")
+	_expect(bounds.has_point(anchored.sample_at(2.0)), "mantiene la ruta transformada dentro de la arena")
 
 
 func _test_timeline_copy() -> void:
@@ -144,8 +148,8 @@ func _test_responsive_layout() -> void:
 	var instruction := run.get_node("UI/Instruction") as Label
 	_expect(instruction.position.y > 1400.0, "ancla la instruccion al borde inferior")
 	run._physics_process(5.1)
-	var responsive_echo := run.get_node("Echoes").get_child(0) as EchoPlayback
-	_expect(responsive_echo.global_position.is_equal_approx(run.player.global_position), "el eco conserva su posicion global en 20:9")
+	var responsive_echo := await _open_latest_rift(run)
+	_expect(run._echo_bounds_global().has_point(responsive_echo.global_position), "la grieta conserva su posicion global en 20:9")
 	viewport.queue_free()
 	await process_frame
 
@@ -165,17 +169,21 @@ func _test_run_scene() -> void:
 	_expect(obstacle.is_in_group("danger") and obstacle.collision_layer == 4, "obstaculo peligroso configurado")
 	_expect(echoes.get_child_count() == 0, "la partida comienza sin ecos")
 	var audio_ready := feedback.stream_data_size(GameplayFeedback.Cue.ECHO) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.RIFT) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PHASE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PULSE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PRESSURE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0
-	_expect(audio_ready, "genera los cinco sonidos procedurales")
+	_expect(audio_ready, "genera los seis sonidos procedurales")
 
 	run._physics_process(5.1)
-	_expect(echoes.get_child_count() == 1, "crea un eco al completar el intervalo")
-	var echo := echoes.get_child(0) as EchoPlayback
+	_expect(echoes.get_child_count() == 0 and run.rifts.get_child_count() == 1, "avisa la grieta antes de crear el eco")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.RIFT, "la grieta reproduce su sonido")
+	var echo := await _open_latest_rift(run)
+	_expect(echoes.get_child_count() == 1, "crea un eco al abrir la grieta")
 	_expect(echo.collision_layer == 2 and echo.collision_mask == 1, "capas fisicas del eco")
 	_expect(is_equal_approx(echo.playback_speed, 1.2), "un segmento inmovil acelera el primer eco")
+	_expect(echo.mode == EchoPlayback.Mode.HUNTER, "un segmento inmovil crea un cazador")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.ECHO, "crear un eco reproduce su sonido")
 	_expect(feedback.active_ring_count() > 0, "crear un eco genera una onda visual")
 
@@ -189,7 +197,14 @@ func _test_run_scene() -> void:
 	_expect(player.movement_enabled, "repetir reactiva el movimiento")
 	_expect(not run.get_node("UI/GameOver").visible, "repetir oculta el resultado")
 	_expect(echoes.get_child_count() == 0, "repetir limpia los ecos")
+	_expect(run.rifts.get_child_count() == 0, "repetir limpia las grietas pendientes")
 	_expect(feedback.active_ring_count() == 0, "repetir limpia las ondas visuales")
+	run._physics_process(5.1)
+	var stale_rift = run.rifts.get_child(0)
+	stale_rift.set_physics_process(false)
+	run._end_run("PRUEBA DE GRIETA")
+	stale_rift._physics_process(RunController.RIFT_WARNING_TIME + 0.1)
+	_expect(echoes.get_child_count() == 0, "una grieta no abre despues del fin")
 	run.queue_free()
 	await process_frame
 
@@ -253,6 +268,7 @@ func _test_echo_cap() -> void:
 	run.set_physics_process(false)
 	for _cycle in 6:
 		run._physics_process(5.1)
+		await _open_latest_rift(run)
 	var echoes := run.get_node("Echoes") as Node2D
 	_expect(echoes.get_child_count() == RunController.MAX_ACTIVE_ECHOES, "limita los ecos activos a cuatro")
 	_expect((run.get_node("UI/TopBar/Margin/Stats/Echoes") as Label).text == "ECOS\n04/04", "el HUD muestra el limite de ecos")
@@ -263,26 +279,35 @@ func _test_echo_cap() -> void:
 	await process_frame
 
 
-func _test_echo_origin_and_history() -> void:
+func _test_rift_lifecycle() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
 	await process_frame
 	run.set_physics_process(false)
-	var origin := run.to_global(RunController.START_POSITION)
+	var origin := run.player.global_position
 	run.player.global_position = origin + Vector2(320.0, 0.0)
 	run._physics_process(5.1)
-	var first_echo := run.get_node("Echoes").get_child(0) as EchoPlayback
-	_expect(first_echo.global_position.is_equal_approx(origin), "el primer eco nace en el origen")
-	var first_duration := first_echo._timeline.duration()
+	var first_rift = run.rifts.get_child(0)
+	var first_anchor: Vector2 = first_rift.global_position
+	_expect(not first_rift.hunter, "un recorrido activo crea una grieta de trayectoria")
+	_expect(not first_anchor.is_equal_approx(origin), "la grieta aparece lejos del origen del jugador")
+	var trace := await _open_latest_rift(run)
+	_expect(trace.mode == EchoPlayback.Mode.TRACE, "la grieta activa reproduce el recorrido")
+	trace.set_physics_process(false)
+	trace._physics_process(20.0)
+	var trace_endpoint := trace.global_position
+	_expect(trace.mode == EchoPlayback.Mode.RESONANCE, "la trayectoria termina como resonancia")
+	trace._physics_process(0.5)
+	_expect(trace.global_position.is_equal_approx(trace_endpoint), "la resonancia no vuelve al inicio")
+	trace._physics_process(trace.resonance_duration)
+	await process_frame
+	await process_frame
+	_expect(run.echoes.get_child_count() == 0, "la resonancia desaparece al terminar")
 
-	run.player.global_position = origin + Vector2(320.0, 320.0)
+	run.player.global_position = origin + Vector2(-320.0, 0.0)
 	run._physics_process(5.1)
-	var second_echo := run.get_node("Echoes").get_child(1) as EchoPlayback
-	_expect(second_echo.global_position.is_equal_approx(origin), "todos los ecos nacen en el mismo origen")
-	_expect(first_echo._timeline.duration() > first_duration, "el eco existente recibe el historial nuevo")
-	first_echo.set_physics_process(false)
-	first_echo._physics_process(20.0)
-	_expect(first_echo.global_position.is_equal_approx(run.player.global_position), "el eco llega al final sin volver al origen")
+	var second_rift = run.rifts.get_child(0)
+	_expect(not second_rift.global_position.is_equal_approx(first_anchor), "las grietas no repiten el ancla anterior")
 	run.queue_free()
 	await process_frame
 
@@ -303,8 +328,14 @@ func _test_echo_pressure() -> void:
 	_expect(is_equal_approx(run._echo_speed_multiplier, 2.2), "la velocidad aumenta sin tope configurado")
 
 	run._physics_process(5.1)
-	var echo := run.get_node("Echoes").get_child(0) as EchoPlayback
+	var pending_rift = run.rifts.get_child(0)
+	_expect(pending_rift.hunter, "el recorrido lento prepara un cazador")
+	var echo := await _open_latest_rift(run)
 	_expect(is_equal_approx(echo.playback_speed, 2.4), "el eco nuevo recibe toda la presion acumulada")
+	var hunter_distance := echo.global_position.distance_to(run.player.global_position)
+	echo.set_physics_process(false)
+	echo._physics_process(0.25)
+	_expect(echo.global_position.distance_to(run.player.global_position) < hunter_distance, "el cazador persigue al jugador")
 	run._update_echo_pressure(500.0)
 	_expect(run._echo_pressure == 6 and is_equal_approx(echo.playback_speed, 2.2), "moverse reduce la presion de ecos existentes")
 	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("RITMO RECUPERADO"), "la recuperacion se comunica al jugador")
@@ -358,6 +389,7 @@ func _test_ten_run_cycles() -> void:
 		await process_frame
 		run.set_physics_process(false)
 		run._physics_process(5.1)
+		await _open_latest_rift(run)
 		if run.get_node("Echoes").get_child_count() == 1:
 			run._end_run("CICLO %d" % cycle)
 			if run.get_node("UI/GameOver").visible:
@@ -365,6 +397,14 @@ func _test_ten_run_cycles() -> void:
 		run.queue_free()
 		await process_frame
 	_expect(completed_cycles == 10, "completa diez ciclos tecnicos consecutivos")
+
+
+func _open_latest_rift(run: RunController) -> EchoPlayback:
+	var rift = run.rifts.get_child(run.rifts.get_child_count() - 1)
+	rift.set_physics_process(false)
+	rift._physics_process(RunController.RIFT_WARNING_TIME + 0.1)
+	await process_frame
+	return run.echoes.get_child(run.echoes.get_child_count() - 1) as EchoPlayback
 
 
 func _expect(condition: bool, description: String) -> void:

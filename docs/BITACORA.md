@@ -4,6 +4,51 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Grietas de Eco y cazadores
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- La prueba de `0.2.5` determino que hacer aparecer todos los ecos en el mismo origen
+  fue una mala decision: el patron era predecible, aburrido y poco coherente.
+- Se aprobo reemplazarlo por grietas variables, reproduccion unica y cazadores para
+  impedir que quedarse quieto produzca rutas sin peligro.
+
+Cambios:
+
+- Cuatro anclas en el perimetro compiten por distancia al jugador y amenazas; una
+  grieta nunca repite el ancla inmediatamente anterior.
+- Cada grieta avisa durante 0.7 segundos con forma, color y sonido propios.
+- Los segmentos activos se rotan hacia el centro y se escalan para permanecer dentro
+  de la arena antes de reproducirse una sola vez.
+- Al terminar la ruta, el eco se convierte en una resonancia peligrosa durante cuatro
+  segundos y desaparece sin reinicios ni teletransportes.
+- Un segmento menor de 280 px crea un cazador dorado que persigue al jugador durante
+  seis segundos; su velocidad usa la presion ilimitada existente.
+- Grietas, ecos y resonancias cuentan dentro del limite de cuatro amenazas, expiran
+  correctamente y se limpian al terminar o reiniciar una partida.
+- Se agrego un sexto sonido procedural para la apertura de grietas.
+- El tutorial explica grietas, resonancias y cazadores.
+- La version avanza a `0.2.6` (`versionCode 9`).
+
+Verificacion:
+
+- Pasan 104 verificaciones headless sin fugas de recursos.
+- La suite cubre transformacion dentro de limites, advertencia, anclas alternadas,
+  trayectoria, cazador, resonancia, expiracion, presion, reinicio y limite activo.
+- La APK debug se instalo en Android 15 a 1080 x 2400. Se observaron la grieta roja,
+  el recorrido, la resonancia, la grieta dorada y el cazador sin errores de aplicacion.
+- El tutorial completo es legible en relacion 20:9.
+- El release tiene firmas v2 y v3 validas, `targetSdk 36`, no solicita permisos y
+  excluye recursos de desarrollo.
+- SHA-256: `6503cfeddd0e7502336b7e5e6d817367a273099f2228097f563ad1c25c1219c6`.
+
+Siguiente accion:
+
+- Validar `0.2.6` en Galaxy A25 y S25 durante diez partidas y ajustar advertencia,
+  duracion de resonancia o velocidad base del cazador segun la experiencia real.
+
 ## 2026-07-18 - Ecos desde el origen y presion ilimitada
 
 Fase: Fase 2 - Vertical slice

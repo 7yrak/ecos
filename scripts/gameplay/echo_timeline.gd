@@ -45,6 +45,43 @@ func duplicate_timeline() -> EchoTimeline:
 	return result
 
 
+func transformed_to_anchor(anchor: Vector2, bounds: Rect2) -> EchoTimeline:
+	var result := EchoTimeline.new()
+	if _positions.is_empty():
+		return result
+
+	var source_origin := _positions[0]
+	var direction := Vector2.ZERO
+	for position in _positions:
+		var offset := position - source_origin
+		if offset.length() >= 24.0:
+			direction = offset
+			break
+	if direction.is_zero_approx():
+		direction = Vector2.RIGHT
+
+	var inward := anchor.direction_to(bounds.get_center())
+	var rotation := direction.angle_to(inward)
+	var rotated_offsets := PackedVector2Array()
+	var scale := 1.0
+	for position in _positions:
+		var offset := (position - source_origin).rotated(rotation)
+		rotated_offsets.append(offset)
+		if offset.x > 0.0:
+			scale = minf(scale, (bounds.end.x - anchor.x) / offset.x)
+		elif offset.x < 0.0:
+			scale = minf(scale, (anchor.x - bounds.position.x) / -offset.x)
+		if offset.y > 0.0:
+			scale = minf(scale, (bounds.end.y - anchor.y) / offset.y)
+		elif offset.y < 0.0:
+			scale = minf(scale, (anchor.y - bounds.position.y) / -offset.y)
+	scale = clampf(scale, 0.0, 1.0)
+
+	for index in _times.size():
+		result.add_sample(_times[index], anchor + rotated_offsets[index] * scale)
+	return result
+
+
 func sample_count() -> int:
 	return _positions.size()
 

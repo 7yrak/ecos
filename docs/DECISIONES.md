@@ -171,13 +171,25 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-017 - Ecos desde el origen y presion sin limite
 
 - Fecha: 2026-07-18
-- Estado: aceptada para balance
+- Estado: reemplazada por D-018 despues de prueba fisica
 - Decision: mantener una ruta acumulada desde el inicio, crear cada eco en el origen
   y aumentar su velocidad 0.2x por cada segmento lento sin imponer un maximo.
 - Motivo: los segmentos independientes hacian aparecer ecos en puntos intermedios y
   el limite 1.6x permitia sostener indefinidamente la estrategia de movimiento lento.
 - Consecuencia: los ecos siguen el historial compartido sin reiniciar ni
   teletransportarse; cada segmento activo reduce un nivel de presion hasta x1.0.
+
+## D-018 - Grietas, trayectoria unica y cazadores
+
+- Fecha: 2026-07-18
+- Estado: aceptada para balance
+- Decision: crear ecos desde anclas alternadas del perimetro con 0.7 segundos de
+  aviso; reproducir una ruta transformada una vez, terminar como resonancia y usar
+  cazadores para segmentos lentos.
+- Motivo: originar todos los ecos en el mismo punto volvio la partida predecible y
+  aburrida, mientras los reinicios de ruta no tenian una explicacion visual coherente.
+- Consecuencia: ninguna ruta se reinicia o teletransporta; las amenazas expiran,
+  quedarse quieto genera persecucion y la presion mantiene su crecimiento ilimitado.
 
 ## Decisiones pendientes del usuario
 

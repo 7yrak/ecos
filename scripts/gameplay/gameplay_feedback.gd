@@ -1,7 +1,7 @@
 class_name GameplayFeedback
 extends Node2D
 
-enum Cue { ECHO, PHASE, PULSE, PRESSURE, HIT }
+enum Cue { ECHO, RIFT, PHASE, PULSE, PRESSURE, HIT }
 
 const SAMPLE_RATE := 22050
 const PLAYER_COUNT := 4
@@ -16,6 +16,7 @@ var _next_player := 0
 func _ready() -> void:
 	_streams = [
 		_create_tone(520.0, 820.0, 0.13, 0.28),
+		_create_tone(240.0, 620.0, 0.18, 0.28),
 		_create_tone(360.0, 980.0, 0.24, 0.3),
 		_create_tone(920.0, 680.0, 0.1, 0.22),
 		_create_tone(310.0, 120.0, 0.2, 0.3),
@@ -39,6 +40,12 @@ func _exit_tree() -> void:
 func play_echo(world_position: Vector2) -> void:
 	_play(Cue.ECHO)
 	_spawn_ring(world_position, Color(1.0, 0.45, 0.36, 0.85), 2.0)
+
+
+func play_rift(world_position: Vector2, hunter: bool) -> void:
+	_play(Cue.RIFT)
+	var color := Color(1.0, 0.68, 0.25, 0.95) if hunter else Color(1.0, 0.34, 0.28, 0.9)
+	_spawn_ring(world_position, color, 2.6)
 
 
 func play_phase(world_position: Vector2) -> void:

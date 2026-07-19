@@ -130,6 +130,8 @@ obstacle_size = Vector2(190, 30)
 
 [node name="Echoes" type="Node2D" parent="."]
 
+[node name="Rifts" type="Node2D" parent="."]
+
 [node name="Feedback" type="Node2D" parent="."]
 z_index = 4
 script = ExtResource("5_feedback")

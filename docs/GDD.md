@@ -26,10 +26,14 @@ creado por uno mismo en una cadena perfecta.
 - Una partida dura normalmente entre 45 y 90 segundos.
 - Se crea un eco cada 5 segundos.
 - Permanecen activos como maximo cuatro ecos; el mas antiguo se retira al crear otro.
-- Cada eco nace en el origen y sigue el historial acumulado del jugador con retraso.
-- Los ecos no reinician ventanas ni se teletransportan al terminar un tramo.
+- Una grieta alterna entre cuatro anclas del borde y avisa 0.7 segundos antes.
+- Un recorrido activo se rota hacia el centro, se adapta a la arena y se reproduce
+  una sola vez desde la grieta.
+- Al terminar, el eco deja una resonancia peligrosa durante cuatro segundos y
+  desaparece; nunca se teletransporta para reiniciar una ruta.
 - Recorrer menos de 280 px en una ventana aumenta la velocidad de todos los ecos;
-  no hay limite superior y moverse activamente reduce la presion de forma gradual.
+  la grieta crea un cazador y no hay limite superior de presion.
+- Moverse activamente reduce la presion de forma gradual.
 - Chocar con un eco o peligro termina la partida.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
 - La dificultad aumenta agregando velocidad, ecos y modificadores.
@@ -42,8 +46,8 @@ Todos los valores son parametros de balance, no constantes definitivas.
 - La arena tiene limites que contienen y obstaculos que finalizan la partida.
 - El recorrido se muestrea cada 0,05 segundos.
 - La Fase 1 creaba un eco de cada segmento independiente de cinco segundos.
-- La Fase 2 reemplazo esos bucles por ecos retardados que parten del origen y siguen
-  una ruta acumulada compartida; colisionar con ellos termina la partida.
+- La Fase 2 reemplazo esos bucles por grietas que transforman cada segmento, lo
+  reproducen una vez y dejan una resonancia temporal; colisionar termina la partida.
 - La puntuacion suma supervivencia y ecos creados.
 - La pantalla de resultado permite reiniciar inmediatamente.
 
@@ -83,7 +87,9 @@ Implementado:
 - Limite de cuatro ecos activos sin perder el total creado para la puntuacion.
 - Sonidos procedurales diferentes para eco, etapa, pulso e impacto.
 - Ondas expansivas y flashes comunican eventos sin ocultar el HUD.
-- Ecos retardados que nacen siempre en el origen y siguen el recorrido acumulado.
+- Grietas alternadas con advertencia visual y sonora antes de crear una amenaza.
+- Ecos de trayectoria unica que terminan como resonancias temporales.
+- Ecos cazadores para recorridos inferiores al umbral de movimiento.
 - Presion de ritmo reversible desde x1.0, sin limite superior, para impedir la
   estrategia de movimiento extremadamente lento.
 

@@ -7,18 +7,28 @@ enum RunState { PLAYING, GAME_OVER }
 
 const EchoTimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
+const RIFT_SCRIPT := preload("res://scripts/gameplay/echo_rift_warning.gd")
 const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
 const MAX_ACTIVE_ECHOES := 4
 const MIN_SEGMENT_DISTANCE := 280.0
 const ECHO_SPEED_STEP := 0.2
+const RIFT_WARNING_TIME := 0.7
 const PATROL_PHASE_TIME := 12.0
 const PULSE_PHASE_TIME := 24.0
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
+const ECHO_BOUNDS := Rect2(76.0, 208.0, 568.0, 884.0)
+const RIFT_ANCHORS := [
+	Vector2(96.0, 238.0),
+	Vector2(624.0, 238.0),
+	Vector2(96.0, 1062.0),
+	Vector2(624.0, 1062.0),
+]
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
+@onready var rifts: Node2D = $Rifts
 @onready var feedback: GameplayFeedback = $Feedback
 @onready var upper_obstacle: ArenaObstacle = $Obstacles/Upper
 @onready var lower_obstacle: ArenaObstacle = $Obstacles/Lower
@@ -42,8 +52,6 @@ var _timeline: EchoTimeline
 var _run_time := 0.0
 var _segment_time := 0.0
 var _sample_accumulator := 0.0
-var _segment_distance := 0.0
-var _last_sample_position := Vector2.ZERO
 var _echo_count := 0
 var _total_echo_count := 0
 var _echo_pressure := 0
@@ -53,6 +61,8 @@ var _score := 0
 var _current_phase := 1
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
+var _last_rift_anchor := -1
+var _run_id := 0
 
 
 func _ready() -> void:
@@ -98,13 +108,14 @@ func _physics_process(delta: float) -> void:
 
 func _start_run() -> void:
 	_clear_echoes()
+	_clear_rifts()
+	_run_id += 1
 	if is_instance_valid(_flash_tween):
 		_flash_tween.kill()
 	_state = RunState.PLAYING
 	_run_time = 0.0
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
-	_segment_distance = 0.0
 	_echo_count = 0
 	_total_echo_count = 0
 	_echo_pressure = 0
@@ -113,6 +124,7 @@ func _start_run() -> void:
 	_score = 0
 	_current_phase = 1
 	_phase_banner_time = 0.0
+	_last_rift_anchor = -1
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
 	upper_obstacle.reset_for_run(true)
@@ -121,7 +133,6 @@ func _start_run() -> void:
 	pulse_obstacle.reset_for_run(false)
 	var start_position := to_global(START_POSITION)
 	_timeline.add_sample(0.0, start_position)
-	_last_sample_position = start_position
 	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
 	phase_banner.visible = false
@@ -133,36 +144,59 @@ func _start_run() -> void:
 func _record_samples() -> void:
 	while _sample_accumulator >= SAMPLE_INTERVAL:
 		_sample_accumulator -= SAMPLE_INTERVAL
-		var sample_time := _run_time - _sample_accumulator
-		_record_position(sample_time, player.global_position)
-
-
-func _record_position(sample_time: float, sample_position: Vector2) -> void:
-	if not _timeline.add_sample(sample_time, sample_position):
-		return
-	_segment_distance += _last_sample_position.distance_to(sample_position)
-	_last_sample_position = sample_position
+		var sample_time := _segment_time - _sample_accumulator
+		_timeline.add_sample(sample_time, player.global_position)
 
 
 func _spawn_echo() -> void:
-	_record_position(_run_time, player.global_position)
+	_timeline.add_sample(_segment_time, player.global_position)
 	if _timeline.is_playable():
-		_update_echo_pressure(_segment_distance)
-		if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
-			_retire_oldest_echo()
-		var echo := ECHO_SCENE.instantiate() as EchoPlayback
-		echoes.add_child(echo)
-		echo.configure(_timeline, true)
-		echo.set_playback_speed(_echo_speed_multiplier)
-		echo.hit_player.connect(_on_echo_hit_player)
-		_total_echo_count += 1
-		_echo_count = echoes.get_child_count()
-		feedback.play_echo(echo.global_position)
+		var distance := _timeline.travel_distance()
+		var hunter := distance < MIN_SEGMENT_DISTANCE
+		_update_echo_pressure(distance)
+		var anchor_index := _select_rift_anchor()
+		var anchor := to_global(RIFT_ANCHORS[anchor_index])
+		var segment := _timeline.duplicate_timeline() if hunter else _timeline.transformed_to_anchor(anchor, _echo_bounds_global())
+		var rift = RIFT_SCRIPT.new()
+		rifts.add_child(rift)
+		rift.configure(segment, anchor, hunter, RIFT_WARNING_TIME, _run_id)
+		rift.opened.connect(_on_rift_opened)
+		_last_rift_anchor = anchor_index
+		feedback.play_rift(anchor, hunter)
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
-	_segment_distance = 0.0
-	_last_sample_position = player.global_position
+	_timeline = EchoTimelineScript.new()
+	_timeline.add_sample(0.0, player.global_position)
+
+
+func _on_rift_opened(rift) -> void:
+	if _state != RunState.PLAYING or rift.run_id != _run_id:
+		return
+	if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
+		_retire_oldest_echo()
+	var echo := ECHO_SCENE.instantiate() as EchoPlayback
+	echoes.add_child(echo)
+	if rift.hunter:
+		echo.configure_hunter(rift.global_position, player)
+	else:
+		echo.configure_trace(rift.timeline)
+	echo.set_playback_speed(_echo_speed_multiplier)
+	echo.hit_player.connect(_on_echo_hit_player)
+	echo.expired.connect(_on_echo_expired)
+	_total_echo_count += 1
+	_echo_count = echoes.get_child_count()
+	feedback.play_echo(echo.global_position)
+	_update_hud()
+
+
+func _on_echo_expired(_echo: EchoPlayback) -> void:
+	_refresh_echo_count.call_deferred()
+
+
+func _refresh_echo_count() -> void:
+	_echo_count = echoes.get_child_count()
+	_update_hud()
 
 
 func _on_player_danger_hit(_collider: Node) -> void:
@@ -178,6 +212,7 @@ func _end_run(reason: String) -> void:
 		return
 	_state = RunState.GAME_OVER
 	player.set_movement_enabled(false)
+	_clear_rifts()
 	patrol_obstacle.set_physics_process(false)
 	pulse_obstacle.set_physics_process(false)
 	for child in echoes.get_children():
@@ -201,11 +236,36 @@ func _clear_echoes() -> void:
 		child.queue_free()
 
 
+func _clear_rifts() -> void:
+	for child in rifts.get_children():
+		child.queue_free()
+
+
 func _retire_oldest_echo() -> void:
 	var oldest := echoes.get_child(0) as EchoPlayback
 	oldest.stop()
 	echoes.remove_child(oldest)
 	oldest.queue_free()
+
+
+func _select_rift_anchor() -> int:
+	var selected := 0
+	var best_score := -INF
+	for index in RIFT_ANCHORS.size():
+		if index == _last_rift_anchor:
+			continue
+		var anchor := to_global(RIFT_ANCHORS[index])
+		var score := anchor.distance_to(player.global_position)
+		for child in echoes.get_children():
+			score += minf(300.0, anchor.distance_to((child as EchoPlayback).global_position)) * 0.25
+		if score > best_score:
+			best_score = score
+			selected = index
+	return selected
+
+
+func _echo_bounds_global() -> Rect2:
+	return Rect2(to_global(ECHO_BOUNDS.position), ECHO_BOUNDS.size)
 
 
 func _update_echo_pressure(segment_distance: float) -> void:

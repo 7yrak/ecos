@@ -9,7 +9,7 @@
 - Fase activa: Fase 2 - Vertical slice
 - Hito activo: validacion externa para cerrar la vertical slice
 - Estado general: alcance funcional de Fase 2 completado; balance fisico pendiente
-- Ultima sesion: ecos acumulativos desde el origen y presion sin limite superior
+- Ultima sesion: grietas alternadas, rutas unicas, resonancias y cazadores
 
 ## Ultimo resultado verificable
 
@@ -19,19 +19,22 @@
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
-- La APK release `0.2.5` (`versionCode 8`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.2.5-android.apk` para descarga
+- La APK release `0.2.6` (`versionCode 9`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.2.6-android.apk` para descarga
   directa desde GitHub.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
 - Se verifico visualmente la pantalla inicial y no hubo errores de aplicacion con
   el renderizado por GPU host.
 - El jugador responde a toque, arrastre y mouse, con limites fisicos de arena.
-- El recorrido se acumula desde el inicio; cada cinco segundos nace en el origen un
-  eco retardado que sigue ese historial compartido sin reiniciar ventanas.
+- Cada cinco segundos se abre una grieta en una de cuatro anclas alternadas del
+  borde, con 0.7 segundos de advertencia visual y sonora.
+- Un recorrido activo se rota hacia el centro, se adapta a los limites y se reproduce
+  una vez; luego deja una resonancia peligrosa durante cuatro segundos y desaparece.
+- Un recorrido menor de 280 px crea un cazador que persigue al jugador.
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 92 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
+- Pasan 104 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
   el flujo completo de navegacion.
 - T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
   quiso superar su puntuacion y no informo fallos tecnicos.
@@ -54,8 +57,8 @@
 - Solo cuatro ecos permanecen activos y el resultado conserva el total creado.
 - La presentacion inicial se comprobo en Android 15 a 1080 x 2400 sin errores de
   aplicacion; patrulla, pulso y reinicio se validaron de forma automatizada.
-- Eco, etapa, pulso e impacto tienen sonidos PCM sintetizados en memoria.
-- Eco, etapa, pulso e impacto generan ondas o flashes visuales no bloqueantes.
+- Grieta, eco, etapa, pulso, presion e impacto tienen sonidos PCM sintetizados.
+- Los eventos generan ondas o flashes visuales no bloqueantes.
 - Se corrigio la posicion global de ecos en relaciones 20:9.
 - La compilacion debug mostro la onda del eco en Android 15 sin errores de audio ni
   GDScript. El release final se verifico por firma y metadatos; falta probarlo en un
@@ -64,8 +67,8 @@
   presion 0.2x sin limite superior configurado.
 - Recuperar un ritmo activo reduce la presion de a un nivel por segmento; HUD,
   banner, sonido y efecto dorado comunican el cambio sin detener la partida.
-- El origen compartido se comprobo en Android 15 a 1080 x 2400 con dos ecos activos
-  y una partida de 11.1 segundos sin errores; la presion se reinicia entre partidas.
+- Grieta normal, trayectoria, resonancia, grieta cazadora y tutorial se comprobaron
+  en Android 15 a 1080 x 2400 sin errores; la presion se reinicia entre partidas.
 - La Fase 3 define Fragmentos ganables jugando, precios iniciales para cosmeticos y
   proteccion contra rondas demasiado cortas usadas para cultivar moneda.
 - El primer concepto online es Duelo de Ecos 1v1: arenas separadas con igual semilla
@@ -73,9 +76,9 @@
 
 ## Siguiente accion exacta
 
-Instalar `0.2.5` en Galaxy A25 y S25. Confirmar que todos los ecos nacen en el punto
-inicial, probar varios segmentos lentos para superar x1.6 y luego moverse activamente
-para validar la recuperacion; completar diez partidas para decidir el cierre de Fase 2.
+Instalar `0.2.6` en Galaxy A25 y S25. Completar diez partidas y validar que el aviso
+de grieta permite reaccionar, que las rutas no reinician, que la resonancia dura lo
+justo y que quedarse quieto genera cazadores comprensibles pero peligrosos.
 
 ## Tareas pendientes inmediatas
 
@@ -90,7 +93,8 @@ para validar la recuperacion; completar diez partidas para decidir el cierre de 
 - [x] Implementar tres tipos de obstaculo.
 - [x] Agregar sonido y efectos visuales de impacto y cambio de etapa.
 - [x] Detectar movimiento lento y aumentar progresivamente la velocidad de los ecos.
-- [x] Hacer que los ecos nazcan en el origen y sigan una ruta acumulada sin bucles.
+- [x] Descartar el origen comun despues de comprobar que volvia predecible la partida.
+- [x] Implementar grietas alternadas, trayectoria unica, resonancia y cazadores.
 - [x] Eliminar el limite superior de presion solicitado en la prueba fisica.
 - [x] Definir las reglas iniciales de Fragmentos y el concepto online 1v1.
 - [ ] Validar tiempos de etapa y limite de ecos con jugadores externos.
