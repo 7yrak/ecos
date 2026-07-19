@@ -26,9 +26,10 @@ creado por uno mismo en una cadena perfecta.
 - Una partida dura normalmente entre 45 y 90 segundos.
 - Se crea un eco cada 5 segundos.
 - Permanecen activos como maximo cuatro ecos; el mas antiguo se retira al crear otro.
-- Cada eco reproduce una ventana anterior del movimiento.
+- Cada eco nace en el origen y sigue el historial acumulado del jugador con retraso.
+- Los ecos no reinician ventanas ni se teletransportan al terminar un tramo.
 - Recorrer menos de 280 px en una ventana aumenta la velocidad de todos los ecos;
-  moverse activamente reduce esa presion de forma gradual.
+  no hay limite superior y moverse activamente reduce la presion de forma gradual.
 - Chocar con un eco o peligro termina la partida.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
 - La dificultad aumenta agregando velocidad, ecos y modificadores.
@@ -40,8 +41,9 @@ Todos los valores son parametros de balance, no constantes definitivas.
 - El jugador se mueve hacia el punto tocado o arrastrado.
 - La arena tiene limites que contienen y obstaculos que finalizan la partida.
 - El recorrido se muestrea cada 0,05 segundos.
-- Cada cinco segundos se crea un eco del segmento anterior.
-- Cada eco repite su segmento en bucle y colisionar con el termina la partida.
+- La Fase 1 creaba un eco de cada segmento independiente de cinco segundos.
+- La Fase 2 reemplazo esos bucles por ecos retardados que parten del origen y siguen
+  una ruta acumulada compartida; colisionar con ellos termina la partida.
 - La puntuacion suma supervivencia y ecos creados.
 - La pantalla de resultado permite reiniciar inmediatamente.
 
@@ -81,8 +83,9 @@ Implementado:
 - Limite de cuatro ecos activos sin perder el total creado para la puntuacion.
 - Sonidos procedurales diferentes para eco, etapa, pulso e impacto.
 - Ondas expansivas y flashes comunican eventos sin ocultar el HUD.
-- Presion de ritmo reversible entre x1.0 y x1.6 para impedir la estrategia de
-  movimiento extremadamente lento.
+- Ecos retardados que nacen siempre en el origen y siguen el recorrido acumulado.
+- Presion de ritmo reversible desde x1.0, sin limite superior, para impedir la
+  estrategia de movimiento extremadamente lento.
 
 Siguiente iteracion:
 

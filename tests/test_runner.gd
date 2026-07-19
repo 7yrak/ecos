@@ -22,6 +22,7 @@ func _run() -> void:
 	await _test_run_scene()
 	await _test_arena_progression()
 	await _test_echo_cap()
+	await _test_echo_origin_and_history()
 	await _test_echo_pressure()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -262,6 +263,30 @@ func _test_echo_cap() -> void:
 	await process_frame
 
 
+func _test_echo_origin_and_history() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	var origin := run.to_global(RunController.START_POSITION)
+	run.player.global_position = origin + Vector2(320.0, 0.0)
+	run._physics_process(5.1)
+	var first_echo := run.get_node("Echoes").get_child(0) as EchoPlayback
+	_expect(first_echo.global_position.is_equal_approx(origin), "el primer eco nace en el origen")
+	var first_duration := first_echo._timeline.duration()
+
+	run.player.global_position = origin + Vector2(320.0, 320.0)
+	run._physics_process(5.1)
+	var second_echo := run.get_node("Echoes").get_child(1) as EchoPlayback
+	_expect(second_echo.global_position.is_equal_approx(origin), "todos los ecos nacen en el mismo origen")
+	_expect(first_echo._timeline.duration() > first_duration, "el eco existente recibe el historial nuevo")
+	first_echo.set_physics_process(false)
+	first_echo._physics_process(20.0)
+	_expect(first_echo.global_position.is_equal_approx(run.player.global_position), "el eco llega al final sin volver al origen")
+	run.queue_free()
+	await process_frame
+
+
 func _test_echo_pressure() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
@@ -272,19 +297,19 @@ func _test_echo_pressure() -> void:
 	_expect(run._echo_pressure == 1, "un recorrido corto aumenta la presion")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.PRESSURE, "la presion reproduce una alerta")
 	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("ECOS x1.2"), "la alerta explica la aceleracion")
-	run._update_echo_pressure(0.0)
-	run._update_echo_pressure(0.0)
-	_expect(run._echo_pressure == RunController.MAX_ECHO_PRESSURE, "la presion tiene tres niveles")
-	_expect(is_equal_approx(run._echo_speed_multiplier, 1.6), "la presion maxima acelera a x1.6")
+	for _level in 5:
+		run._update_echo_pressure(0.0)
+	_expect(run._echo_pressure == 6, "la presion supera el antiguo limite")
+	_expect(is_equal_approx(run._echo_speed_multiplier, 2.2), "la velocidad aumenta sin tope configurado")
 
 	run._physics_process(5.1)
 	var echo := run.get_node("Echoes").get_child(0) as EchoPlayback
-	_expect(is_equal_approx(echo.playback_speed, 1.6), "el eco nuevo recibe la presion maxima")
+	_expect(is_equal_approx(echo.playback_speed, 2.4), "el eco nuevo recibe toda la presion acumulada")
 	run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 2 and is_equal_approx(echo.playback_speed, 1.4), "moverse reduce la presion de ecos existentes")
+	_expect(run._echo_pressure == 6 and is_equal_approx(echo.playback_speed, 2.2), "moverse reduce la presion de ecos existentes")
 	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("RITMO RECUPERADO"), "la recuperacion se comunica al jugador")
-	run._update_echo_pressure(500.0)
-	run._update_echo_pressure(500.0)
+	for _level in 6:
+		run._update_echo_pressure(500.0)
 	_expect(run._echo_pressure == 0 and is_equal_approx(echo.playback_speed, 1.0), "la actividad recupera el ritmo normal")
 
 	run._update_echo_pressure(0.0)

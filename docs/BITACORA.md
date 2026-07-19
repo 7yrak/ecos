@@ -4,6 +4,46 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Ecos desde el origen y presion ilimitada
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- Una prueba fisica detecto que los segmentos independientes hacian aparecer cada
+  eco en el punto donde comenzaba el tramo anterior, un comportamiento poco natural.
+- La misma prueba aprobo el castigo por movimiento lento, pero solicito que su
+  velocidad continuara creciendo mientras el jugador no recuperara el ritmo.
+
+Cambios:
+
+- La partida conserva una sola ruta acumulada desde el punto inicial.
+- Cada eco nace exclusivamente en ese origen y sigue el historial compartido con su
+  retraso correspondiente.
+- Se elimino el bucle por `fmod`: al alcanzar el final disponible, el eco espera las
+  siguientes muestras en lugar de teletransportarse al comienzo de un tramo.
+- La distancia de cada ventana se calcula por separado sin cortar la ruta principal.
+- Cada tramo menor de 280 px suma 0.2x a todos los ecos sin limite superior; cada
+  tramo activo resta un nivel hasta volver a x1.0.
+- El tutorial explica el origen comun y que la aceleracion no tiene limite.
+- La version avanza a `0.2.5` (`versionCode 8`).
+
+Verificacion:
+
+- Pasan 92 verificaciones headless sin fugas de recursos.
+- Las pruebas confirman origen comun, historial vivo, ausencia de teletransporte,
+  presion superior al antiguo x1.6, recuperacion y reinicio.
+- La APK debug se instalo en Android 15 a 1080 x 2400. Una ruta sin cruces llego a
+  11.1 segundos con dos ecos activos en posiciones diferentes y sin errores.
+- El release tiene firmas v2 y v3 validas, `targetSdk 36`, no solicita permisos y
+  excluye recursos de desarrollo.
+- SHA-256: `10d147c1e5f4f4c04540791eeddc97a136c254207a33b0e2ff466adcb4996d28`.
+
+Siguiente accion:
+
+- Validar `0.2.5` en Galaxy A25 y S25 durante diez partidas, confirmando el origen
+  comun y observando la legibilidad de velocidades superiores a x1.6.
+
 ## 2026-07-18 - Presion de ecos y diseno de progresion
 
 Fase: Fase 2 - Vertical slice

@@ -49,8 +49,9 @@ Estado: activa desde el 2026-07-18.
 
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos, limite de ecos y feedback audiovisual
-completados. El control de movimiento lento tambien esta implementado. Pendiente:
-validacion final en dispositivos fisicos.
+completados. Los ecos acumulativos desde el origen y el control ilimitado de
+movimiento lento tambien estan implementados. Pendiente: validacion final en
+dispositivos fisicos.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 

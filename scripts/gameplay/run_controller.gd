@@ -11,7 +11,6 @@ const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
 const MAX_ACTIVE_ECHOES := 4
 const MIN_SEGMENT_DISTANCE := 280.0
-const MAX_ECHO_PRESSURE := 3
 const ECHO_SPEED_STEP := 0.2
 const PATROL_PHASE_TIME := 12.0
 const PULSE_PHASE_TIME := 24.0
@@ -43,6 +42,8 @@ var _timeline: EchoTimeline
 var _run_time := 0.0
 var _segment_time := 0.0
 var _sample_accumulator := 0.0
+var _segment_distance := 0.0
+var _last_sample_position := Vector2.ZERO
 var _echo_count := 0
 var _total_echo_count := 0
 var _echo_pressure := 0
@@ -103,6 +104,7 @@ func _start_run() -> void:
 	_run_time = 0.0
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
+	_segment_distance = 0.0
 	_echo_count = 0
 	_total_echo_count = 0
 	_echo_pressure = 0
@@ -119,6 +121,7 @@ func _start_run() -> void:
 	pulse_obstacle.reset_for_run(false)
 	var start_position := to_global(START_POSITION)
 	_timeline.add_sample(0.0, start_position)
+	_last_sample_position = start_position
 	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
 	phase_banner.visible = false
@@ -130,19 +133,26 @@ func _start_run() -> void:
 func _record_samples() -> void:
 	while _sample_accumulator >= SAMPLE_INTERVAL:
 		_sample_accumulator -= SAMPLE_INTERVAL
-		var sample_time := _segment_time - _sample_accumulator
-		_timeline.add_sample(sample_time, player.global_position)
+		var sample_time := _run_time - _sample_accumulator
+		_record_position(sample_time, player.global_position)
+
+
+func _record_position(sample_time: float, sample_position: Vector2) -> void:
+	if not _timeline.add_sample(sample_time, sample_position):
+		return
+	_segment_distance += _last_sample_position.distance_to(sample_position)
+	_last_sample_position = sample_position
 
 
 func _spawn_echo() -> void:
-	_timeline.add_sample(_segment_time, player.global_position)
+	_record_position(_run_time, player.global_position)
 	if _timeline.is_playable():
-		_update_echo_pressure(_timeline.travel_distance())
+		_update_echo_pressure(_segment_distance)
 		if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
 			_retire_oldest_echo()
 		var echo := ECHO_SCENE.instantiate() as EchoPlayback
 		echoes.add_child(echo)
-		echo.configure(_timeline)
+		echo.configure(_timeline, true)
 		echo.set_playback_speed(_echo_speed_multiplier)
 		echo.hit_player.connect(_on_echo_hit_player)
 		_total_echo_count += 1
@@ -151,8 +161,8 @@ func _spawn_echo() -> void:
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
-	_timeline = EchoTimelineScript.new()
-	_timeline.add_sample(0.0, player.global_position)
+	_segment_distance = 0.0
+	_last_sample_position = player.global_position
 
 
 func _on_player_danger_hit(_collider: Node) -> void:
@@ -201,7 +211,7 @@ func _retire_oldest_echo() -> void:
 func _update_echo_pressure(segment_distance: float) -> void:
 	var previous_pressure := _echo_pressure
 	if segment_distance < MIN_SEGMENT_DISTANCE:
-		_echo_pressure = mini(MAX_ECHO_PRESSURE, _echo_pressure + 1)
+		_echo_pressure += 1
 	else:
 		_echo_pressure = maxi(0, _echo_pressure - 1)
 	_echo_speed_multiplier = 1.0 + float(_echo_pressure) * ECHO_SPEED_STEP

@@ -83,7 +83,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-009 - Control y segmentacion de ecos
 
 - Fecha: 2026-07-18
-- Estado: aceptada para prueba de Fase 1
+- Estado: reemplazada en Fase 2 por D-017
 - Decision: mover hacia la posicion tocada y generar un eco por cada segmento de
   cinco segundos.
 - Motivo: el control se entiende con un dedo y los segmentos independientes mantienen
@@ -138,7 +138,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-014 - Presion contra movimiento lento
 
 - Fecha: 2026-07-18
-- Estado: aceptada para balance
+- Estado: reemplazada por D-017
 - Decision: medir distancia por segmento y acelerar todos los ecos entre x1.2 y x1.6
   cuando el recorrido sea inferior a 280 px.
 - Motivo: moverse extremadamente lento conserva recorridos faciles y puede convertirse
@@ -167,6 +167,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   movimiento directo entre telefonos.
 - Consecuencia: requiere servidor autoritativo, cuentas, matchmaking, reconexion y
   anti-trampa; no entra al MVP local ni maneja Fragmentos hasta ser seguro.
+
+## D-017 - Ecos desde el origen y presion sin limite
+
+- Fecha: 2026-07-18
+- Estado: aceptada para balance
+- Decision: mantener una ruta acumulada desde el inicio, crear cada eco en el origen
+  y aumentar su velocidad 0.2x por cada segmento lento sin imponer un maximo.
+- Motivo: los segmentos independientes hacian aparecer ecos en puntos intermedios y
+  el limite 1.6x permitia sostener indefinidamente la estrategia de movimiento lento.
+- Consecuencia: los ecos siguen el historial compartido sin reiniciar ni
+  teletransportarse; cada segmento activo reduce un nivel de presion hasta x1.0.
 
 ## Decisiones pendientes del usuario
 

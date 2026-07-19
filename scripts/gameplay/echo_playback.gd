@@ -23,14 +23,14 @@ func _physics_process(delta: float) -> void:
 		return
 
 	_age += delta
-	_playback_time = fmod(_playback_time + delta * playback_speed, _timeline.duration())
+	_playback_time = minf(_playback_time + delta * playback_speed, _timeline.duration())
 	global_position = _timeline.sample_at(_playback_time)
 	monitoring = _age >= collision_grace and not _hit_reported
 	queue_redraw()
 
 
-func configure(timeline: EchoTimeline) -> void:
-	_timeline = timeline.duplicate_timeline()
+func configure(timeline: EchoTimeline, follow_updates := false) -> void:
+	_timeline = timeline if follow_updates else timeline.duplicate_timeline()
 	_playback_time = 0.0
 	_age = 0.0
 	_hit_reported = false
@@ -39,7 +39,7 @@ func configure(timeline: EchoTimeline) -> void:
 
 
 func set_playback_speed(multiplier: float) -> void:
-	playback_speed = clampf(multiplier, 1.0, 2.0)
+	playback_speed = maxf(multiplier, 1.0)
 	queue_redraw()
 
 
