@@ -9,7 +9,7 @@
 - Fase activa: Fase 2 - Vertical slice
 - Hito activo: validacion externa para cerrar la vertical slice
 - Estado general: alcance funcional de Fase 2 completado; balance fisico pendiente
-- Ultima sesion: grietas alternadas, rutas unicas, resonancias y cazadores
+- Ultima sesion: faltas lentas acumulativas y escalada de cazadores
 
 ## Ultimo resultado verificable
 
@@ -19,8 +19,8 @@
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
-- La APK release `0.2.6` (`versionCode 9`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.2.6-android.apk` para descarga
+- La APK release `0.2.7` (`versionCode 10`) se exporto y firmo para ARM64 y x86_64.
+- La APK instalable esta versionada en `releases/ECOS-0.2.7-android.apk` para descarga
   directa desde GitHub.
 - La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
 - La APK se instalo y ejecuto en un emulador Android 15 x86_64.
@@ -34,7 +34,7 @@
 - Un recorrido menor de 280 px crea un cazador que persigue al jugador.
 - Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
 - El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 104 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
+- Pasan 113 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
   el flujo completo de navegacion.
 - T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
   quiso superar su puntuacion y no informo fallos tecnicos.
@@ -67,8 +67,15 @@
   presion 0.2x sin limite superior configurado.
 - Recuperar un ritmo activo reduce la presion de a un nivel por segmento; HUD,
   banner, sonido y efecto dorado comunican el cambio sin detener la partida.
+- Cada episodio lento suma una falta permanente durante la ronda. El primer cazador
+  se mueve a 0.96x de la velocidad del jugador, el segundo a 1.12x y el tercero a
+  1.28x; los siguientes siguen aumentando sin depender de la sensibilidad.
+- Recuperar la presion no borra faltas ni reduce la velocidad minima de un cazador
+  ya invocado.
 - Grieta normal, trayectoria, resonancia, grieta cazadora y tutorial se comprobaron
-  en Android 15 a 1080 x 2400 sin errores; la presion se reinicia entre partidas.
+  en Android 15 a 1080 x 2400 sin errores.
+- El indicador `F1 CAZA x1.2`, el aviso y el resultado de faltas son legibles en
+  Android; presion y faltas se reinician entre partidas.
 - La Fase 3 define Fragmentos ganables jugando, precios iniciales para cosmeticos y
   proteccion contra rondas demasiado cortas usadas para cultivar moneda.
 - El primer concepto online es Duelo de Ecos 1v1: arenas separadas con igual semilla
@@ -76,9 +83,9 @@
 
 ## Siguiente accion exacta
 
-Instalar `0.2.6` en Galaxy A25 y S25. Completar diez partidas y validar que el aviso
-de grieta permite reaccionar, que las rutas no reinician, que la resonancia dura lo
-justo y que quedarse quieto genera cazadores comprensibles pero peligrosos.
+Instalar `0.2.7` en Galaxy A25 y S25. Provocar tres episodios lentos separados por
+recuperaciones activas y confirmar que los cazadores x1.2, x1.4 y x1.6 aumentan la
+dificultad sin sentirse inevitables; completar diez partidas para cerrar el balance.
 
 ## Tareas pendientes inmediatas
 
@@ -96,6 +103,7 @@ justo y que quedarse quieto genera cazadores comprensibles pero peligrosos.
 - [x] Descartar el origen comun despues de comprobar que volvia predecible la partida.
 - [x] Implementar grietas alternadas, trayectoria unica, resonancia y cazadores.
 - [x] Eliminar el limite superior de presion solicitado en la prueba fisica.
+- [x] Acumular faltas lentas y escalar cazadores aunque la presion se recupere.
 - [x] Definir las reglas iniciales de Fragmentos y el concepto online 1v1.
 - [ ] Validar tiempos de etapa y limite de ecos con jugadores externos.
 - [ ] Validar el umbral y los multiplicadores de presion en telefonos fisicos.
@@ -113,6 +121,8 @@ justo y que quedarse quieto genera cazadores comprensibles pero peligrosos.
   con necesidades de accesibilidad; debe ajustarse con pruebas fisicas.
 - Una presion muy alta puede volver ilegible el movimiento; se mantiene sin limite
   por diseno, pero debe observarse su comportamiento real en sesiones largas.
+- Las faltas no se perdonan durante una ronda; si el segundo cazador resulta
+  inevitable, debe ajustarse la proporcion base sin eliminar la reincidencia.
 - Agregar contenido sin una curva clara puede ocultar el problema en vez de resolverlo.
 - La monetizacion no garantiza ingresos; depende de adquisicion y retencion.
 

@@ -23,6 +23,7 @@ func _run() -> void:
 	await _test_arena_progression()
 	await _test_echo_cap()
 	await _test_rift_lifecycle()
+	await _test_hunter_escalation()
 	await _test_echo_pressure()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -233,7 +234,7 @@ func _test_arena_progression() -> void:
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 2/3\nECO x1.0", "el HUD informa etapa y ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 2/3\nF0 CAZA x1.0", "el HUD informa etapa, faltas y ritmo")
 	var patrol_start := patrol.position
 	patrol.set_physics_process(false)
 	patrol._physics_process(1.0)
@@ -256,7 +257,7 @@ func _test_arena_progression() -> void:
 	run._restart()
 	await process_frame
 	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 1/3\nECO x1.0", "repetir vuelve a la primera etapa")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 1/3\nF0 CAZA x1.0", "repetir limpia las faltas de ritmo")
 	run.queue_free()
 	await process_frame
 
@@ -312,6 +313,34 @@ func _test_rift_lifecycle() -> void:
 	await process_frame
 
 
+func _test_hunter_escalation() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	run._physics_process(5.1)
+	var first := await _open_latest_rift(run)
+	_expect(first.hunter_speed() < run.player.move_speed, "el primer cazador todavia se puede superar")
+	_expect((run.phase_banner as Label).text.contains("FALTA LENTA 1"), "el primer castigo muestra su nivel")
+	run._update_echo_pressure(500.0)
+	_expect(run._echo_pressure == 0 and run._slow_offenses == 1, "recuperarse conserva la primera falta")
+	_expect(is_equal_approx(first.playback_speed, 1.2), "el primer cazador conserva su velocidad minima")
+
+	run._physics_process(5.1)
+	var second := await _open_latest_rift(run)
+	_expect(second.hunter_speed() > run.player.move_speed, "el segundo cazador supera la velocidad del jugador")
+	_expect((run.phase_banner as Label).text.contains("FALTA LENTA 2"), "el segundo castigo muestra reincidencia")
+	var second_speed := second.hunter_speed()
+	run._update_echo_pressure(500.0)
+
+	run._physics_process(5.1)
+	var third := await _open_latest_rift(run)
+	_expect(third.hunter_speed() > second_speed, "el tercer cazador vuelve a aumentar la velocidad")
+	_expect(run._echo_pressure == 1 and run._slow_offenses == 3, "tres episodios lentos acumulan tres faltas")
+	run.queue_free()
+	await process_frame
+
+
 func _test_echo_pressure() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
@@ -321,7 +350,7 @@ func _test_echo_pressure() -> void:
 	run._update_echo_pressure(0.0)
 	_expect(run._echo_pressure == 1, "un recorrido corto aumenta la presion")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.PRESSURE, "la presion reproduce una alerta")
-	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("ECOS x1.2"), "la alerta explica la aceleracion")
+	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("CAZADOR x1.2"), "la alerta explica la aceleracion")
 	for _level in 5:
 		run._update_echo_pressure(0.0)
 	_expect(run._echo_pressure == 6, "la presion supera el antiguo limite")
@@ -337,16 +366,17 @@ func _test_echo_pressure() -> void:
 	echo._physics_process(0.25)
 	_expect(echo.global_position.distance_to(run.player.global_position) < hunter_distance, "el cazador persigue al jugador")
 	run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 6 and is_equal_approx(echo.playback_speed, 2.2), "moverse reduce la presion de ecos existentes")
+	_expect(run._echo_pressure == 6 and is_equal_approx(run._echo_speed_multiplier, 2.2), "moverse reduce la presion temporal")
+	_expect(is_equal_approx(echo.playback_speed, 2.4), "recuperarse no reduce un cazador ya invocado")
 	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("RITMO RECUPERADO"), "la recuperacion se comunica al jugador")
 	for _level in 6:
 		run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 0 and is_equal_approx(echo.playback_speed, 1.0), "la actividad recupera el ritmo normal")
+	_expect(run._echo_pressure == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "la actividad recupera el ritmo normal")
 
 	run._update_echo_pressure(0.0)
 	run._restart()
 	await process_frame
-	_expect(run._echo_pressure == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "repetir reinicia la presion")
+	_expect(run._echo_pressure == 0 and run._slow_offenses == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "repetir reinicia presion y faltas")
 	run.queue_free()
 	await process_frame
 

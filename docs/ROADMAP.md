@@ -50,8 +50,8 @@ Estado: activa desde el 2026-07-18.
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos, limite de ecos y feedback audiovisual
 completados. Las grietas alternadas, rutas de una sola reproduccion, resonancias,
-cazadores y presion ilimitada tambien estan implementados. Pendiente: validacion
-final en dispositivos fisicos.
+cazadores y faltas lentas acumulativas tambien estan implementados. Pendiente:
+validacion final en dispositivos fisicos.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 

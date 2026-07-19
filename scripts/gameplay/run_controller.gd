@@ -13,6 +13,7 @@ const SAMPLE_INTERVAL := 0.05
 const MAX_ACTIVE_ECHOES := 4
 const MIN_SEGMENT_DISTANCE := 280.0
 const ECHO_SPEED_STEP := 0.2
+const HUNTER_PLAYER_SPEED_RATIO := 0.8
 const RIFT_WARNING_TIME := 0.7
 const PATROL_PHASE_TIME := 12.0
 const PULSE_PHASE_TIME := 24.0
@@ -55,7 +56,7 @@ var _sample_accumulator := 0.0
 var _echo_count := 0
 var _total_echo_count := 0
 var _echo_pressure := 0
-var _max_echo_pressure := 0
+var _slow_offenses := 0
 var _echo_speed_multiplier := 1.0
 var _score := 0
 var _current_phase := 1
@@ -119,7 +120,7 @@ func _start_run() -> void:
 	_echo_count = 0
 	_total_echo_count = 0
 	_echo_pressure = 0
-	_max_echo_pressure = 0
+	_slow_offenses = 0
 	_echo_speed_multiplier = 1.0
 	_score = 0
 	_current_phase = 1
@@ -178,7 +179,8 @@ func _on_rift_opened(rift) -> void:
 	var echo := ECHO_SCENE.instantiate() as EchoPlayback
 	echoes.add_child(echo)
 	if rift.hunter:
-		echo.configure_hunter(rift.global_position, player)
+		echo.hunter_base_speed = player.move_speed * HUNTER_PLAYER_SPEED_RATIO
+		echo.configure_hunter(rift.global_position, player, _hunter_speed_multiplier())
 	else:
 		echo.configure_trace(rift.timeline)
 	echo.set_playback_speed(_echo_speed_multiplier)
@@ -219,8 +221,7 @@ func _end_run(reason: String) -> void:
 		(child as EchoPlayback).stop()
 	feedback.play_hit(player.global_position)
 	_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
-	var max_speed := 1.0 + float(_max_echo_pressure) * ECHO_SPEED_STEP
-	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nPRESION MAX  x%.1f" % [reason, _run_time, _score, _total_echo_count, max_speed]
+	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CAZA x%.1f" % [reason, _run_time, _score, _total_echo_count, _slow_offenses, _hunter_speed_multiplier()]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -272,17 +273,17 @@ func _update_echo_pressure(segment_distance: float) -> void:
 	var previous_pressure := _echo_pressure
 	if segment_distance < MIN_SEGMENT_DISTANCE:
 		_echo_pressure += 1
+		_slow_offenses += 1
 	else:
 		_echo_pressure = maxi(0, _echo_pressure - 1)
 	_echo_speed_multiplier = 1.0 + float(_echo_pressure) * ECHO_SPEED_STEP
-	_max_echo_pressure = maxi(_max_echo_pressure, _echo_pressure)
 	_apply_echo_speed()
 	if _echo_pressure == previous_pressure:
 		return
 
 	if _echo_pressure > previous_pressure:
 		feedback.play_pressure(player.global_position)
-		_show_banner("RITMO BAJO // ECOS x%.1f" % _echo_speed_multiplier, Color(1.0, 0.48, 0.24), 2.0)
+		_show_banner("FALTA LENTA %d // CAZADOR x%.1f" % [_slow_offenses, _hunter_speed_multiplier()], Color(1.0, 0.48, 0.24), 2.0)
 		_flash_screen(Color(1.0, 0.34, 0.18), 0.1, 0.24)
 	else:
 		_show_banner("RITMO RECUPERADO // ECOS x%.1f" % _echo_speed_multiplier, Color(0.45, 1.0, 0.72), 1.5)
@@ -292,6 +293,10 @@ func _update_echo_pressure(segment_distance: float) -> void:
 func _apply_echo_speed() -> void:
 	for child in echoes.get_children():
 		(child as EchoPlayback).set_playback_speed(_echo_speed_multiplier)
+
+
+func _hunter_speed_multiplier() -> float:
+	return 1.0 + float(_slow_offenses) * ECHO_SPEED_STEP
 
 
 func _update_progression() -> void:
@@ -358,4 +363,4 @@ func _update_hud() -> void:
 	time_label.text = "TIEMPO\n%05.1f" % _run_time
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d/%02d" % [_echo_count, MAX_ACTIVE_ECHOES]
-	phase_label.text = "ETAPA %d/3\nECO x%.1f" % [_current_phase, _echo_speed_multiplier]
+	phase_label.text = "ETAPA %d/3\nF%d CAZA x%.1f" % [_current_phase, _slow_offenses, _hunter_speed_multiplier()]

@@ -34,6 +34,9 @@ creado por uno mismo en una cadena perfecta.
 - Recorrer menos de 280 px en una ventana aumenta la velocidad de todos los ecos;
   la grieta crea un cazador y no hay limite superior de presion.
 - Moverse activamente reduce la presion de forma gradual.
+- Las faltas lentas se acumulan durante toda la partida aunque la presion temporal
+  se recupere: el primer cazador alcanza 0.96x de la velocidad del jugador, el
+  segundo 1.12x, el tercero 1.28x y los siguientes continuan aumentando.
 - Chocar con un eco o peligro termina la partida.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
 - La dificultad aumenta agregando velocidad, ecos y modificadores.
@@ -92,6 +95,8 @@ Implementado:
 - Ecos cazadores para recorridos inferiores al umbral de movimiento.
 - Presion de ritmo reversible desde x1.0, sin limite superior, para impedir la
   estrategia de movimiento extremadamente lento.
+- Reincidencia acumulativa que vuelve cada nuevo cazador mas rapido sin depender
+  del ajuste de sensibilidad.
 
 Siguiente iteracion:
 

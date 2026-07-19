@@ -4,6 +4,46 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Faltas lentas y cazadores progresivos
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- La prueba de `0.2.6` confirmo que el cazador es una buena respuesta al movimiento
+  lento, pero su velocidad fija permitia esquivarlo con facilidad.
+- Se solicito que la segunda, tercera y siguientes infracciones fueran cada vez mas
+  peligrosas para castigar la repeticion de la estrategia.
+
+Cambios:
+
+- Se separo la presion temporal de las faltas lentas acumuladas durante la ronda.
+- Moverse activamente reduce la presion, pero no elimina las faltas anteriores.
+- La velocidad base del cazador equivale a 0.8x de la velocidad real del jugador,
+  por lo que respeta cualquier ajuste de sensibilidad.
+- La primera falta crea un cazador a 0.96x, la segunda a 1.12x y la tercera a 1.28x;
+  cada falta posterior agrega 0.2x sin limite superior.
+- Cada cazador conserva su velocidad minima aunque despues baje la presion.
+- HUD, banner y resultado muestran numero de falta y multiplicador del cazador.
+- El tutorial explica que las faltas se acumulan.
+- La version avanza a `0.2.7` (`versionCode 10`).
+
+Verificacion:
+
+- Pasan 113 verificaciones headless sin fugas de recursos.
+- Las pruebas cubren recuperacion sin perdon, primer cazador evitable, segundo mas
+  rapido que el jugador, tercer incremento, velocidad minima y reinicio completo.
+- La APK debug se instalo en Android 15 a 1080 x 2400. HUD, aviso y resultado fueron
+  legibles; el primer cazador alcanzo al jugador inmovil a los 6.6 segundos.
+- El release tiene firmas v2 y v3 validas, `targetSdk 36`, no solicita permisos y
+  excluye recursos de desarrollo.
+- SHA-256: `1f7d5b6cf2dd3ce8fadd3c645a838c4a49a06e1daf68d8f2b672471dc3b433fe`.
+
+Siguiente accion:
+
+- Validar `0.2.7` en Galaxy A25 y S25 provocando tres faltas lentas separadas por
+  recuperaciones y ajustar solo la proporcion base si el segundo castigo es injusto.
+
 ## 2026-07-18 - Grietas de Eco y cazadores
 
 Fase: Fase 2 - Vertical slice

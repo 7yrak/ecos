@@ -191,6 +191,18 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 - Consecuencia: ninguna ruta se reinicia o teletransporta; las amenazas expiran,
   quedarse quieto genera persecucion y la presion mantiene su crecimiento ilimitado.
 
+## D-019 - Faltas lentas acumulativas
+
+- Fecha: 2026-07-18
+- Estado: aceptada para balance
+- Decision: conservar durante toda la partida cada infraccion de movimiento lento y
+  usarla como velocidad minima de los cazadores futuros.
+- Motivo: los cazadores iniciales eran faciles de esquivar y recuperar un segmento
+  activo borraba la escalada antes de llegar al segundo o tercer castigo.
+- Consecuencia: la presion temporal aun baja al moverse activamente, pero las faltas
+  no; el segundo cazador supera la velocidad normal del jugador y la progresion no
+  tiene limite superior ni puede neutralizarse aumentando la sensibilidad.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

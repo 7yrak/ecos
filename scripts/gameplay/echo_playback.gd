@@ -7,7 +7,7 @@ signal expired(echo: EchoPlayback)
 enum Mode { TRACE, HUNTER, RESONANCE }
 
 @export var collision_grace := 0.7
-@export var hunter_base_speed := 260.0
+@export var hunter_base_speed := 400.0
 @export var hunter_duration := 6.0
 @export var resonance_duration := 4.0
 
@@ -19,6 +19,7 @@ var _hit_reported := false
 var _state_time := 0.0
 var _expired := false
 var playback_speed := 1.0
+var minimum_playback_speed := 1.0
 var mode := Mode.TRACE
 
 
@@ -54,6 +55,7 @@ func configure_trace(timeline: EchoTimeline) -> void:
 	_timeline = timeline
 	_target = null
 	mode = Mode.TRACE
+	minimum_playback_speed = 1.0
 	_playback_time = 0.0
 	_age = 0.0
 	_hit_reported = false
@@ -62,10 +64,11 @@ func configure_trace(timeline: EchoTimeline) -> void:
 		global_position = _timeline.sample_at(0.0)
 
 
-func configure_hunter(spawn_position: Vector2, target: Node2D) -> void:
+func configure_hunter(spawn_position: Vector2, target: Node2D, minimum_speed := 1.0) -> void:
 	_timeline = null
 	_target = target
 	mode = Mode.HUNTER
+	minimum_playback_speed = maxf(1.0, minimum_speed)
 	global_position = spawn_position
 	_state_time = hunter_duration
 	_age = 0.0
@@ -74,8 +77,12 @@ func configure_hunter(spawn_position: Vector2, target: Node2D) -> void:
 
 
 func set_playback_speed(multiplier: float) -> void:
-	playback_speed = maxf(multiplier, 1.0)
+	playback_speed = maxf(multiplier, minimum_playback_speed)
 	queue_redraw()
+
+
+func hunter_speed() -> float:
+	return hunter_base_speed * playback_speed
 
 
 func stop() -> void:
@@ -99,7 +106,7 @@ func _update_hunter(delta: float) -> void:
 	if is_instance_valid(_target):
 		global_position = global_position.move_toward(
 			_target.global_position,
-			hunter_base_speed * playback_speed * delta
+			hunter_speed() * delta
 		)
 	if _state_time <= 0.0:
 		_enter_resonance()
