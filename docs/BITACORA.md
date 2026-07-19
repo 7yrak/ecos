@@ -4,6 +4,51 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-18 - Cierre de sesion y punto de reanudacion
+
+Fase: Fase 2 - Vertical slice
+
+Linea base para continuar:
+
+- Version publicada: `0.2.7` (`versionCode 10`).
+- Commit funcional publicado: `ec6ec4b`.
+- APK: `releases/ECOS-0.2.7-android.apk`.
+- SHA-256: `1f7d5b6cf2dd3ce8fadd3c645a838c4a49a06e1daf68d8f2b672471dc3b433fe`.
+- Pasan 113 verificaciones headless y el arbol Git quedo limpio.
+- La Fase 2 no esta cerrada: falta validar el balance de reincidencia en telefonos
+  fisicos, no agregar sistemas nuevos.
+
+Parametros vigentes:
+
+- Segmento de grabacion: 5 segundos.
+- Umbral de movimiento lento: menos de 280 px por segmento.
+- Advertencia de grieta: 0.7 segundos.
+- Duracion del cazador: 6 segundos.
+- Duracion de resonancia: 4 segundos.
+- Velocidad base del cazador: 0.8x de la velocidad real del jugador.
+- Cada falta lenta agrega 0.2x y se conserva durante toda la ronda.
+- La presion temporal baja con movimiento activo, pero no borra faltas ni reduce un
+  cazador ya invocado.
+
+Primera tarea de la proxima sesion:
+
+1. Instalar `0.2.7` en Galaxy A25 y S25.
+2. Jugar diez partidas normales para comprobar rendimiento y comprension.
+3. En una partida, provocar tres episodios lentos separados por segmentos activos.
+4. Confirmar en HUD y banner `F1 / x1.2`, `F2 / x1.4` y `F3 / x1.6`.
+5. Registrar si el primer cazador es evitable, el segundo exige reaccion y el tercero
+   sigue siendo dificil pero justo.
+6. Si el segundo castigo resulta inevitable, ajustar primero
+   `HUNTER_PLAYER_SPEED_RATIO`; no reemplazar nuevamente la arquitectura de grietas.
+
+Resultado esperado para cerrar Fase 2:
+
+- Avisos comprensibles sin explicacion externa.
+- Rendimiento estable en Galaxy A25.
+- Ningun reinicio o teletransporte de rutas.
+- Quedarse lento deja de ser una estrategia viable.
+- Segundo y tercer cazador aumentan dificultad sin sentirse arbitrarios.
+
 ## 2026-07-18 - Faltas lentas y cazadores progresivos
 
 Fase: Fase 2 - Vertical slice

@@ -16,6 +16,7 @@
 - Git esta inicializado en la rama `main`.
 - Todo el codigo, la documentacion y la configuracion viven en este repositorio.
 - El remoto oficial es `https://github.com/7yrak/ecos.git`.
+- El commit funcional base para reanudar es `ec6ec4b`.
 - Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
 - El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
   renderizador Compatibility.
