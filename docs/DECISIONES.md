@@ -253,6 +253,17 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   solo cuando el siguiente nivel exista en el catalogo. Los niveles futuros se agregan
   de forma deliberada, con contenido y pruebas propias, no mediante generacion vacia.
 
+## D-024 - Publicacion directa en main
+
+- Fecha: 2026-07-20
+- Estado: aceptada
+- Decision: cuando el usuario solicite publicar una entrega, hacer commit y push
+  directamente a `main`; no crear ramas ni pull requests salvo solicitud explicita.
+- Motivo: el repositorio usa un flujo individual y el usuario quiere que la version
+  disponible en `main` quede actualizada inmediatamente.
+- Consecuencia: cada publicacion debe validar antes el alcance, las pruebas y el
+  artefacto. `releases/` conserva solo la APK vigente en el mismo commit publicado.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

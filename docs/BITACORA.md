@@ -4,6 +4,27 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-20 - Publicacion directa permanente en main
+
+Fase: Fase 2 - Vertical slice
+
+Cambios:
+
+- La entrega `0.2.9` se publico directamente en `main` mediante el commit `0bbe585`.
+- Se establecio como regla del repositorio publicar directamente en `main` cuando el
+  usuario solicite subir cambios; solo se usaran ramas o pull requests si los pide.
+- La regla se registro en `AGENTS.md` y como decision D-024.
+- La rama temporal de publicacion deja de formar parte del flujo habitual.
+
+Verificacion:
+
+- `origin/main` contiene el codigo de cadena recursiva y la APK `0.2.9`.
+- La carpeta remota `releases/` contiene unicamente `ECOS-0.2.9-android.apk`.
+
+Siguiente accion:
+
+- Instalar `0.2.9` en Galaxy A25 y S25 y ejecutar el protocolo fisico documentado.
+
 ## 2026-07-20 - Cadena recursiva y victoria por nivel
 
 Fase: Fase 2 - Vertical slice
