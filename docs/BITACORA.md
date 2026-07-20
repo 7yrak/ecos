@@ -4,6 +4,53 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-20 - Cadena recursiva y victoria por nivel
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- Se solicito que cada eco nuevo saliera desde el ultimo eco de forma recursiva, sin
+  un limite de ecos activos.
+- La supervivencia sin cierre se reemplaza por una victoria temporal cuya duracion
+  depende de la dificultad del nivel.
+- Solo se aprobo contenido para un nivel; los siguientes deben agregarse de forma
+  deliberada a medida que avance el desarrollo.
+
+Cambios:
+
+- La primera grieta sigue al jugador durante el aviso y las siguientes siguen al
+  ultimo eco creado; cada descendiente nace donde se encuentra su predecesor.
+- El desplazamiento grabado se aplica desde el nuevo origen y se limita al interior
+  visible de la arena para que la cadena no desaparezca fuera de pantalla.
+- Se elimino el maximo de cuatro ecos. Recorridos y cazadores quedan como resonancias
+  peligrosas hasta terminar el intento.
+- Se creo un catalogo de niveles con nombre, dificultad, duracion, intervalo de ecos
+  y tiempos de etapa. El nivel 1, `PRIMERA RESONANCIA / INICIAL`, dura 45 segundos.
+- Alcanzar el tiempo objetivo muestra `NIVEL SUPERADO`; una colision conserva el
+  resultado de derrota. El boton avanzara cuando exista otro nivel en el catalogo.
+- HUD, menu y tutorial explican tiempo objetivo, cadena recursiva y ausencia de tope.
+- La version avanza a `0.2.9` (`versionCode 12`).
+
+Verificacion:
+
+- Pasan 159 verificaciones headless sin fugas de recursos.
+- La suite cubre seis generaciones simultaneas, seguimiento de un predecesor en
+  movimiento, reubicacion dentro de la arena, persistencia, victoria, derrota,
+  reinicio, navegacion, colisiones y diez ciclos tecnicos consecutivos.
+- El entorno, la importacion completa de Godot y la exportacion release finalizaron
+  correctamente.
+- La APK tiene firmas v2 y v3 validas, `targetSdk 36`, ARM64 y x86_64, no solicita
+  permisos y excluye recursos de pruebas y desarrollo.
+- APK: `releases/ECOS-0.2.9-android.apk`.
+- SHA-256: `306f623cb13ba0d9cec0ed2364cc056968d3b2f3502df395a02e44042c111a84`.
+
+Siguiente accion:
+
+- Instalar `0.2.9` en Galaxy A25 y S25 y completar diez intentos del nivel 1.
+- Confirmar que mas de cuatro generaciones se entienden y mantienen FPS estables, y
+  registrar si 45 segundos es una meta alcanzable antes de disenar el nivel 2.
+
 ## 2026-07-19 - Un solo artefacto Android vigente
 
 Fase: Fase 2 - Vertical slice

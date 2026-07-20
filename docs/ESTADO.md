@@ -5,136 +5,84 @@
 
 ## Resumen
 
-- Fecha de actualizacion: 2026-07-19
+- Fecha de actualizacion: 2026-07-20
 - Fase activa: Fase 2 - Vertical slice
-- Hito activo: validar la restauracion del recorrido exacto en dispositivos fisicos
-- Estado general: mecanica central restaurada; validacion fisica pendiente
-- Ultima sesion: ecos exactos sin rotacion, escala ni traslado
+- Hito activo: validar el nivel 1 con cadena recursiva y victoria temporal
+- Estado general: implementacion terminada; validacion fisica pendiente
+- Ultima sesion: ecos sin limite fijo, descendencia recursiva y catalogo de niveles
 
 ## Ultimo resultado verificable
 
-- Git esta inicializado en la rama `main`.
-- Todo el codigo, la documentacion y la configuracion viven en este repositorio.
-- El remoto oficial es `https://github.com/7yrak/ecos.git`.
-- El ultimo commit publicado antes de los cambios locales es `88e634d`.
-- Godot 4.7.1, Java 21 y Android SDK 36 estan configurados.
-- El proyecto base usa orientacion vertical, resolucion logica 720 x 1280 y el
-  renderizador Compatibility.
-- La APK release `0.2.8` (`versionCode 11`) se exporto y firmo para ARM64 y x86_64.
-- La APK instalable esta versionada en `releases/ECOS-0.2.8-android.apk` para descarga
-  directa desde GitHub.
-- `releases/` conserva solo la APK vigente; los binarios anteriores se eliminan al
-  publicar cada version nueva.
-- La APK publica no es depurable, no es `testOnly` y no solicita permisos de Android.
-- La APK se instalo y ejecuto en un emulador Android 15 x86_64.
-- Se verifico visualmente la pantalla inicial y no hubo errores de aplicacion con
-  el renderizado por GPU host.
-- El jugador responde a toque, arrastre y mouse, con limites fisicos de arena.
-- Cada cinco segundos aparece un aviso durante 0.7 segundos en el punto exacto donde
-  comenzo el ultimo segmento del jugador.
-- Un eco conserva origen, muestras y destino reales, reproduce el recorrido una vez,
-  deja una resonancia peligrosa durante cuatro segundos y desaparece.
-- Un recorrido menor de 280 px crea un cazador que persigue al jugador.
-- Chocar con un eco o un obstaculo finaliza la partida; tocar un limite solo detiene.
-- El HUD muestra tiempo, puntos y ecos, y el boton de resultado reinicia la partida.
-- Pasan 117 verificaciones headless, incluidos diez ciclos tecnicos consecutivos y
-  el flujo completo de navegacion.
-- El 2026-07-19 se repitieron las 113 verificaciones y la comprobacion del entorno;
-  ambas finalizaron correctamente y el arbol Git de partida estaba limpio.
-- T01 jugo unas quince partidas en un Galaxy S25 Ultra, entendio el eco sin ayuda,
-  quiso superar su puntuacion y no informo fallos tecnicos.
-- T01 detecto repeticion despues de dominar el ritmo: la partida cambia poco y la
-  acumulacion de ecos dificulta continuar superandose.
-- T02-T08 jugaron unas diez partidas en promedio en Galaxy A25 y S25; los siete
-  entendieron el eco, quisieron repetir y no informaron fallos tecnicos.
-- Los ocho testers confirmaron que la mecanica motiva inicialmente, pero termina
-  repetitiva y necesita variedad, menu y mejor presentacion.
-- El menu principal permite jugar y abrir un tutorial; el resultado permite repetir
-  la ronda o volver al menu sin recargar toda la aplicacion.
-- El menu y la arena ocupan pantallas desde 9:16 hasta 20:9 sin barras negras; el
-  mundo de juego conserva sus coordenadas internas y se centra verticalmente.
-- Volumen, vibracion y sensibilidad se guardan en `user://settings.cfg` y se
-  restauran al relanzar la aplicacion.
-- La sensibilidad modifica velocidad y aceleracion; la vibracion se aplica al final
-  de una ronda cuando esta habilitada.
-- La arena usa barreras fijas, una patrulla movil y un pulso con aviso seguro.
-- La patrulla aparece a los 12 segundos y el pulso a los 24; el HUD informa la etapa.
-- Solo cuatro ecos permanecen activos y el resultado conserva el total creado.
-- La presentacion inicial se comprobo en Android 15 a 1080 x 2400 sin errores de
-  aplicacion; patrulla, pulso y reinicio se validaron de forma automatizada.
-- Grieta, eco, etapa, pulso, presion e impacto tienen sonidos PCM sintetizados.
-- Los eventos generan ondas o flashes visuales no bloqueantes.
-- Se corrigio la posicion global de ecos en relaciones 20:9.
-- La compilacion debug mostro la onda del eco en Android 15 sin errores de audio ni
-  GDScript. El release final se verifico por firma y metadatos; falta probarlo en un
-  telefono fisico.
-- Cada segmento mide la distancia recorrida. Recorrer menos de 280 px aumenta la
-  presion 0.2x sin limite superior configurado.
-- Recuperar un ritmo activo reduce la presion de a un nivel por segmento; HUD,
-  banner, sonido y efecto dorado comunican el cambio sin detener la partida.
-- Cada episodio lento suma una falta permanente durante la ronda. El primer cazador
-  se mueve a 0.96x de la velocidad del jugador, el segundo a 1.12x y el tercero a
-  1.28x; los siguientes siguen aumentando sin depender de la sensibilidad.
-- Recuperar la presion no borra faltas ni reduce la velocidad minima de un cazador
-  ya invocado.
-- Grieta normal, trayectoria, resonancia, grieta cazadora y tutorial se comprobaron
-  en Android 15 a 1080 x 2400 sin errores.
-- El indicador `F1 CAZA x1.2`, el aviso y el resultado de faltas son legibles en
-  Android; presion y faltas se reinician entre partidas.
-- La Fase 3 define Fragmentos ganables jugando, precios iniciales para cosmeticos y
-  proteccion contra rondas demasiado cortas usadas para cultivar moneda.
-- El primer concepto online es Duelo de Ecos 1v1: arenas separadas con igual semilla
-  e intercambio de segmentos, respaldado por un servidor autoritativo.
+- El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
+  y resolucion logica 720 x 1280 con renderizador Compatibility.
+- La version de aplicacion avanza a `0.2.9` (`versionCode 12`).
+- La APK release firmada esta en `releases/ECOS-0.2.9-android.apk`; es el unico
+  artefacto vigente y su SHA-256 es
+  `306f623cb13ba0d9cec0ed2364cc056968d3b2f3502df395a02e44042c111a84`.
+- La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
+  contiene recursos de pruebas o desarrollo.
+- El nivel 1 se llama `PRIMERA RESONANCIA`, tiene dificultad `INICIAL` y se gana al
+  sobrevivir 45 segundos.
+- Cada nivel define en el catalogo su duracion, intervalo de ecos y tiempos de etapa.
+  Solo existe el nivel 1; el flujo avanza automaticamente cuando se agregue el nivel 2.
+- La primera grieta sigue al jugador durante 0.7 segundos. Cada grieta posterior sigue
+  al ultimo eco y el descendiente nace donde se encuentre su predecesor al abrirse.
+- El eco conserva el desplazamiento grabado desde su nuevo origen. Sus muestras se
+  limitan al interior visible para que la cadena trasladada no abandone la arena.
+- No hay un maximo de ecos activos. Los recorridos y cazadores terminan como
+  resonancias peligrosas que permanecen hasta la victoria o derrota.
+- Los segmentos menores de 280 px crean cazadores. Las faltas lentas siguen
+  acumulandose y cada nuevo cazador aumenta 0.2x sin limite superior configurado.
+- La patrulla se activa a los 12 segundos y el pulso a los 24 segundos en el nivel 1.
+- El HUD muestra tiempo transcurrido/objetivo, nivel, etapa, ecos activos y faltas.
+- El resultado diferencia `NIVEL SUPERADO` de una colision y permite repetir el nivel.
+- Pasan 159 verificaciones headless sin fugas de recursos, incluidas seis generaciones
+  simultaneas, seguimiento de un predecesor en movimiento, victoria temporal,
+  colisiones, reinicio, interfaz adaptable y diez ciclos tecnicos consecutivos.
+- Menu, tutorial y textos explican la cadena, la ausencia de limite y la meta temporal.
+- Volumen, vibracion y sensibilidad siguen persistiendo en `user://settings.cfg`.
+- La identidad `com.tyrak.ecos` y el nombre del estudio siguen siendo provisionales.
 
 ## Siguiente accion exacta
 
-Instalar `0.2.8` en Galaxy A25 y S25. Recorrer zonas reconocibles de extremos opuestos
-y confirmar que cada eco repite exactamente el origen, trayecto y destino reales.
-Luego provocar tres episodios lentos separados por recuperaciones activas y validar
-los cazadores x1.2, x1.4 y x1.6 durante diez partidas.
+Instalar `0.2.9` en Galaxy A25 y S25 y completar diez intentos del nivel 1. Confirmar
+que las grietas siguen visualmente al ultimo eco, que se pueden observar mas de cuatro
+generaciones sin caidas de rendimiento y que 45 segundos es una meta dificil pero
+alcanzable. Registrar muertes, cantidad maxima de ecos y tiempo medio antes de disenar
+el nivel 2.
 
 ## Tareas pendientes inmediatas
 
-- [x] Cerrar Fase 1 con al menos cinco testers.
-- [x] Crear menu principal con identidad visual.
-- [x] Agregar tutorial accesible desde el menu.
-- [x] Implementar navegacion entre menu, partida y resultado.
-- [x] Validar el flujo nuevo en Android.
-- [x] Adaptar la interfaz y arena a relaciones de aspecto altas.
-- [x] Agregar ajustes de sonido, vibracion y sensibilidad.
-- [x] Disenar progresion de arena y control de saturacion de ecos.
-- [x] Implementar tres tipos de obstaculo.
-- [x] Agregar sonido y efectos visuales de impacto y cambio de etapa.
-- [x] Detectar movimiento lento y aumentar progresivamente la velocidad de los ecos.
-- [x] Reproducir cada segmento una sola vez y terminarlo como resonancia.
-- [x] Restaurar el origen, trayectoria y destino exactos de cada eco.
-- [x] Eliminar el limite superior de presion solicitado en la prueba fisica.
-- [x] Acumular faltas lentas y escalar cazadores aunque la presion se recupere.
-- [x] Definir las reglas iniciales de Fragmentos y el concepto online 1v1.
-- [ ] Validar tiempos de etapa y limite de ecos con jugadores externos.
-- [ ] Validar el umbral y los multiplicadores de presion en telefonos fisicos.
+- [x] Implementar cadena recursiva desde el ultimo eco.
+- [x] Eliminar el limite de cuatro ecos activos.
+- [x] Mantener resonancias durante todo el nivel.
+- [x] Agregar victoria temporal al nivel 1.
+- [x] Crear catalogo extensible y flujo preparado para el siguiente nivel.
+- [x] Actualizar HUD, resultado, tutorial y pruebas automatizadas.
+- [ ] Validar legibilidad, balance y rendimiento en Galaxy A25 y S25.
+- [ ] Ajustar los 45 segundos segun diez partidas fisicas.
+- [ ] Disenar el nivel 2 con una diferencia jugable clara antes de agregarlo al catalogo.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
 
 ## Bloqueos
 
-- No hay un telefono Android conectado por ADB en el entorno de desarrollo; la
-  validacion fisica necesaria para cerrar la Fase 2 no puede ejecutarse hasta
-  conectar el Galaxy A25 o S25 con depuracion USB autorizada.
-- La identidad `com.tyrak.ecos` sigue siendo provisional y no bloquea el prototipo.
+- No hay un telefono Android conectado por ADB; la validacion fisica requiere conectar
+  el Galaxy A25 o S25 con depuracion USB autorizada.
+- El nivel 2 no esta bloqueado tecnicamente, pero no debe definirse antes de obtener
+  datos de dificultad y saturacion del nivel 1.
 
 ## Riesgos actuales
 
-- Aumentar dificultad solo mediante ecos produce saturacion y repeticion.
-- Un umbral de movimiento demasiado agresivo puede castigar a jugadores nuevos o
-  con necesidades de accesibilidad; debe ajustarse con pruebas fisicas.
-- Una presion muy alta puede volver ilegible el movimiento; se mantiene sin limite
-  por diseno, pero debe observarse su comportamiento real en sesiones largas.
-- Cualquier transformacion espacial futura de un recorrido romperia otra vez la
-  relacion entre la accion del jugador y su eco; no debe usarse para agregar variedad.
-- Las faltas no se perdonan durante una ronda; si el segundo cazador resulta
-  inevitable, debe ajustarse la proporcion base sin eliminar la reincidencia.
-- Agregar contenido sin una curva clara puede ocultar el problema en vez de resolverlo.
-- La monetizacion no garantiza ingresos; depende de adquisicion y retencion.
+- Los ecos no tienen limite fijo: el tiempo del nivel acota el crecimiento, pero deben
+  medirse FPS, memoria y legibilidad en un dispositivo de gama media.
+- Limitar muestras al interior mantiene cada eco visible, pero puede aplanar recorridos
+  contra los bordes y generar resonancias concentradas.
+- Una cadena de resonancias persistentes puede hacer inevitable el final antes de los
+  45 segundos; primero se ajustara duracion o persistencia, no se reintroducira un tope
+  silencioso de ecos.
+- El castigo por movimiento lento y la acumulacion recursiva pueden escalar al mismo
+  tiempo; deben observarse juntos y no balancearse de forma aislada.
+- Agregar niveles sin una diferencia jugable clara ocultaria problemas del bucle base.
 
 ## Regla de cierre de sesion
 

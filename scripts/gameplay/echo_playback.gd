@@ -21,6 +21,8 @@ var _expired := false
 var playback_speed := 1.0
 var minimum_playback_speed := 1.0
 var mode := Mode.TRACE
+var generation := 0
+var persistent_resonance := false
 
 
 func _ready() -> void:
@@ -51,10 +53,11 @@ func configure(timeline: EchoTimeline, follow_updates := false) -> void:
 	configure_trace(timeline if follow_updates else timeline.duplicate_timeline())
 
 
-func configure_trace(timeline: EchoTimeline) -> void:
+func configure_trace(timeline: EchoTimeline, persist_at_destination := false) -> void:
 	_timeline = timeline
 	_target = null
 	mode = Mode.TRACE
+	persistent_resonance = persist_at_destination
 	minimum_playback_speed = 1.0
 	_playback_time = 0.0
 	_age = 0.0
@@ -64,10 +67,16 @@ func configure_trace(timeline: EchoTimeline) -> void:
 		global_position = _timeline.sample_at(0.0)
 
 
-func configure_hunter(spawn_position: Vector2, target: Node2D, minimum_speed := 1.0) -> void:
+func configure_hunter(
+	spawn_position: Vector2,
+	target: Node2D,
+	minimum_speed := 1.0,
+	persist_at_destination := false
+) -> void:
 	_timeline = null
 	_target = target
 	mode = Mode.HUNTER
+	persistent_resonance = persist_at_destination
 	minimum_playback_speed = maxf(1.0, minimum_speed)
 	global_position = spawn_position
 	_state_time = hunter_duration
@@ -113,6 +122,8 @@ func _update_hunter(delta: float) -> void:
 
 
 func _update_resonance(delta: float) -> void:
+	if persistent_resonance:
+		return
 	_state_time = maxf(0.0, _state_time - delta)
 	if _state_time <= 0.0:
 		_expire()
@@ -145,7 +156,7 @@ func _on_body_entered(body: Node2D) -> void:
 func _draw() -> void:
 	var wave := 4.0 + sin(_age * 6.0 * playback_speed) * 3.0
 	if mode == Mode.RESONANCE:
-		var resonance_progress := _state_time / resonance_duration
+		var resonance_progress := 1.0 if persistent_resonance else _state_time / resonance_duration
 		draw_circle(Vector2.ZERO, 38.0 + wave, Color(1.0, 0.2, 0.16, 0.1 + resonance_progress * 0.08))
 		draw_arc(Vector2.ZERO, 34.0 + wave, 0.0, TAU, 36, Color(1.0, 0.32, 0.24, 0.8), 4.0, true)
 		draw_circle(Vector2.ZERO, 10.0, Color(1.0, 0.32, 0.24, 0.55))

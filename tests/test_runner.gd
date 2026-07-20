@@ -1,6 +1,7 @@
 extends SceneTree
 
 const TimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
+const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
 const RunScene = preload("res://scenes/gameplay/run.tscn")
 const AppScene = preload("res://scenes/app/main.tscn")
 
@@ -17,11 +18,14 @@ func _run() -> void:
 	_test_timeline_validation()
 	_test_timeline_interpolation()
 	_test_timeline_copy()
+	_test_timeline_rebase()
+	_test_level_catalog()
 	await _test_app_navigation()
 	await _test_responsive_layout()
 	await _test_run_scene()
 	await _test_arena_progression()
-	await _test_echo_cap()
+	await _test_recursive_echo_chain()
+	await _test_level_completion()
 	await _test_rift_lifecycle()
 	await _test_hunter_escalation()
 	await _test_echo_pressure()
@@ -81,6 +85,26 @@ func _test_timeline_copy() -> void:
 	_expect(copy.sample_count() == 2, "la copia conserva sus muestras")
 	_expect(is_equal_approx(copy.duration(), 1.0), "la copia conserva su duracion")
 	_expect(original.sample_count() == 3, "el original puede seguir grabando")
+
+
+func _test_timeline_rebase() -> void:
+	var timeline = TimelineScript.new()
+	timeline.add_sample(0.0, Vector2(10.0, 20.0))
+	timeline.add_sample(1.0, Vector2(30.0, 50.0))
+	var rebased = timeline.rebased(Vector2(200.0, 300.0))
+	_expect(rebased.sample_at(0.0).is_equal_approx(Vector2(200.0, 300.0)), "reubica el origen de una trayectoria")
+	_expect(rebased.sample_at(1.0).is_equal_approx(Vector2(220.0, 330.0)), "conserva el desplazamiento al reubicar")
+	var bounded = timeline.rebased(Vector2(95.0, 95.0), Rect2(0.0, 0.0, 100.0, 100.0))
+	_expect(bounded.sample_at(1.0).is_equal_approx(Vector2(100.0, 100.0)), "mantiene la cadena dentro de la arena")
+
+
+func _test_level_catalog() -> void:
+	var level = LevelCatalogScript.get_level(1)
+	_expect(level != null, "el catalogo contiene el nivel inicial")
+	_expect(level.number == 1 and level.difficulty == "INICIAL", "el nivel declara identidad y dificultad")
+	_expect(is_equal_approx(level.duration, 45.0), "el nivel inicial define su tiempo de victoria")
+	_expect(is_equal_approx(level.echo_interval, 5.0), "el nivel controla la frecuencia de ecos")
+	_expect(not LevelCatalogScript.has_level(2), "no inventa un segundo nivel sin contenido")
 
 
 func _test_app_navigation() -> void:
@@ -222,7 +246,7 @@ func _test_arena_progression() -> void:
 	_expect(not patrol.progression_active and not patrol.visible, "la patrulla comienza inactiva")
 	_expect(not pulse.progression_active and not pulse.visible, "el pulso comienza inactivo")
 
-	run._run_time = RunController.PATROL_PHASE_TIME
+	run._run_time = run._level.patrol_phase_time
 	run._update_progression()
 	_expect(patrol.progression_active and patrol.visible, "la segunda etapa activa la patrulla")
 	_expect(not pulse.progression_active, "la segunda etapa mantiene el pulso inactivo")
@@ -231,13 +255,13 @@ func _test_arena_progression() -> void:
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 2/3\nF0 CAZA x1.0", "el HUD informa etapa, faltas y ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E2/3\nF0 CAZA x1.0", "el HUD informa nivel, etapa, faltas y ritmo")
 	var patrol_start := patrol.position
 	patrol.set_physics_process(false)
 	patrol._physics_process(1.0)
 	_expect(not patrol.position.is_equal_approx(patrol_start), "la patrulla recorre la arena")
 
-	run._run_time = RunController.PULSE_PHASE_TIME
+	run._run_time = run._level.pulse_phase_time
 	run._update_progression()
 	_expect(pulse.progression_active and pulse.visible, "la tercera etapa activa el pulso")
 	pulse.set_physics_process(false)
@@ -254,25 +278,51 @@ func _test_arena_progression() -> void:
 	run._restart()
 	await process_frame
 	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "ETAPA 1/3\nF0 CAZA x1.0", "repetir limpia las faltas de ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E1/3\nF0 CAZA x1.0", "repetir limpia las faltas de ritmo")
 	run.queue_free()
 	await process_frame
 
 
-func _test_echo_cap() -> void:
+func _test_recursive_echo_chain() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
 	await process_frame
 	run.set_physics_process(false)
-	for _cycle in 6:
+	var predecessor: Node2D = run.player
+	for cycle in 6:
 		run._physics_process(5.1)
-		await _open_latest_rift(run)
+		var rift = run.rifts.get_child(run.rifts.get_child_count() - 1)
+		_expect(rift.predecessor == predecessor, "la grieta %d nace del ultimo miembro de la cadena" % (cycle + 1))
+		var spawn_position: Vector2 = predecessor.global_position
+		var echo := await _open_latest_rift(run, true)
+		_expect(echo.global_position.is_equal_approx(spawn_position), "el eco %d aparece donde estaba su predecesor" % (cycle + 1))
+		_expect(echo.generation == cycle + 1, "la cadena conserva el orden generacional")
+		_expect(echo.persistent_resonance, "el eco permanece durante todo el nivel")
+		predecessor = echo
 	var echoes := run.get_node("Echoes") as Node2D
-	_expect(echoes.get_child_count() == RunController.MAX_ACTIVE_ECHOES, "limita los ecos activos a cuatro")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Echoes") as Label).text == "ECOS\n04/04", "el HUD muestra el limite de ecos")
-	run._end_run("PRUEBA DE LIMITE")
+	_expect(echoes.get_child_count() == 6, "la cantidad de ecos activos supera el antiguo limite")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Echoes") as Label).text == "ECOS\n06", "el HUD muestra la cadena sin un maximo")
+	run._end_run("PRUEBA DE CADENA")
 	var result := (run.get_node("UI/GameOver/Center/Panel/Content/Result") as Label).text
 	_expect(result.contains("ECOS CREADOS  06"), "el resultado conserva los ecos creados")
+	run.queue_free()
+	await process_frame
+
+
+func _test_level_completion() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	run._run_time = run._level.duration - 0.1
+	run._physics_process(0.2)
+	_expect(run._state == RunController.RunState.GAME_OVER and run._level_won, "alcanzar el tiempo objetivo completa el nivel")
+	_expect((run.result_title as Label).text == "NIVEL SUPERADO", "la victoria tiene un resultado diferente a la colision")
+	_expect((run.result_label as Label).text.contains("OBJETIVO DE TIEMPO CUMPLIDO"), "el resultado explica la condicion de victoria")
+	_expect((run.restart_button as Button).text == "REPETIR NIVEL", "el ultimo nivel disponible se puede repetir")
+	run._restart()
+	await process_frame
+	_expect(run._state == RunController.RunState.PLAYING and is_zero_approx(run._run_time), "repetir reinicia el mismo nivel")
 	run.queue_free()
 	await process_frame
 
@@ -283,8 +333,8 @@ func _test_rift_lifecycle() -> void:
 	await process_frame
 	run.set_physics_process(false)
 	var origin := run.player.global_position
-	var endpoint := origin + Vector2(320.0, 0.0)
-	var midpoint := origin + Vector2(140.0, -120.0)
+	var endpoint := origin + Vector2(120.0, 0.0)
+	var midpoint := origin + Vector2(60.0, -180.0)
 	run._timeline.add_sample(2.5, midpoint)
 	run._timeline.add_sample(5.0, endpoint)
 	run.player.global_position = endpoint
@@ -293,28 +343,38 @@ func _test_rift_lifecycle() -> void:
 	var first_rift = run.rifts.get_child(0)
 	var first_anchor: Vector2 = first_rift.global_position
 	_expect(not first_rift.hunter, "un recorrido activo crea una grieta de trayectoria")
-	_expect(first_anchor.is_equal_approx(origin), "la grieta aparece donde comenzo el recorrido real")
-	_expect(first_rift.timeline.sample_at(0.0).is_equal_approx(origin), "la trayectoria conserva su origen sin trasladarlo")
-	_expect(first_rift.timeline.sample_at(2.5).is_equal_approx(midpoint), "la trayectoria conserva cada movimiento intermedio")
-	_expect(first_rift.timeline.sample_at(first_rift.timeline.duration()).is_equal_approx(endpoint), "la trayectoria conserva su destino sin trasladarlo")
+	_expect(first_rift.predecessor == run.player, "el jugador inicia la primera generacion")
+	_expect(first_anchor.is_equal_approx(endpoint), "la primera grieta sigue la posicion actual del jugador")
+	_expect(first_rift.timeline.sample_at(0.0).is_equal_approx(origin), "la plantilla conserva el origen grabado")
+	_expect(first_rift.timeline.sample_at(2.5).is_equal_approx(midpoint), "la plantilla conserva cada desplazamiento intermedio")
+	_expect(first_rift.timeline.sample_at(first_rift.timeline.duration()).is_equal_approx(endpoint), "la plantilla conserva el destino grabado")
 	var trace := await _open_latest_rift(run, true)
 	_expect(trace.mode == EchoPlayback.Mode.TRACE, "la grieta activa reproduce el recorrido")
-	_expect(trace.global_position.is_equal_approx(origin), "el eco nace en la posicion pasada del jugador")
+	_expect(trace.global_position.is_equal_approx(endpoint), "el primer eco nace donde se encuentra el jugador")
+	run.player.global_position = endpoint - Vector2(300.0, 0.0)
+	run._timeline.add_sample(2.5, endpoint - Vector2(150.0, 80.0))
+	run._timeline.add_sample(5.0, run.player.global_position)
+	run._segment_time = 5.0
+	run._spawn_echo()
+	var second_rift = run.rifts.get_child(0)
+	_expect(second_rift.predecessor == trace, "la segunda grieta desciende del ultimo eco")
+	var predecessor_start: Vector2 = trace.global_position
+	trace._physics_process(2.5)
+	second_rift._physics_process(0.2)
+	_expect(not trace.global_position.is_equal_approx(predecessor_start), "el eco predecesor continua su recorrido")
+	_expect(second_rift.global_position.is_equal_approx(trace.global_position), "la grieta sigue al ultimo eco mientras se mueve")
+	var second_origin: Vector2 = trace.global_position
+	var second := await _open_latest_rift(run, true)
+	_expect(second.global_position.is_equal_approx(second_origin), "la segunda generacion nace desde la primera")
+	_expect(second.generation == 2, "la segunda generacion queda identificada")
+
 	trace._physics_process(20.0)
 	var trace_endpoint := trace.global_position
-	_expect(trace_endpoint.is_equal_approx(endpoint), "el eco termina donde termino el jugador")
+	_expect(trace_endpoint.is_equal_approx(endpoint + (endpoint - origin)), "el eco conserva el desplazamiento desde su nuevo origen")
 	_expect(trace.mode == EchoPlayback.Mode.RESONANCE, "la trayectoria termina como resonancia")
-	trace._physics_process(0.5)
-	_expect(trace.global_position.is_equal_approx(trace_endpoint), "la resonancia no vuelve al inicio")
-	trace._physics_process(trace.resonance_duration)
-	await process_frame
-	await process_frame
-	_expect(run.echoes.get_child_count() == 0, "la resonancia desaparece al terminar")
-
-	run.player.global_position = origin
-	run._physics_process(5.1)
-	var second_rift = run.rifts.get_child(0)
-	_expect(second_rift.global_position.is_equal_approx(endpoint), "cada eco comienza donde inicio su propio segmento")
+	trace._physics_process(trace.resonance_duration * 2.0)
+	_expect(trace.global_position.is_equal_approx(trace_endpoint), "la resonancia permanece en el destino")
+	_expect(run.echoes.get_child_count() == 2, "las generaciones no expiran durante el nivel")
 	run.queue_free()
 	await process_frame
 
@@ -400,7 +460,7 @@ func _test_physical_collisions() -> void:
 		if danger_run.get_node("UI/GameOver").visible:
 			break
 	_expect(danger_run.get_node("UI/GameOver").visible, "chocar con un obstaculo termina la partida")
-	_expect(danger_run.get_node("UI/GameOver/Center/Panel/Content/Result").text.begins_with("OBSTACULO"), "informa la causa obstaculo")
+	_expect(danger_run.get_node("UI/GameOver/Center/Panel/Content/Result").text.contains("OBSTACULO"), "informa la causa obstaculo")
 	danger_run.queue_free()
 	await process_frame
 

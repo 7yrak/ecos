@@ -2,23 +2,22 @@ class_name RunController
 extends Node2D
 
 signal menu_requested
+signal level_requested(level_number: int)
 
 enum RunState { PLAYING, GAME_OVER }
 
 const EchoTimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
+const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
 const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const RIFT_SCRIPT := preload("res://scripts/gameplay/echo_rift_warning.gd")
-const ECHO_INTERVAL := 5.0
 const SAMPLE_INTERVAL := 0.05
-const MAX_ACTIVE_ECHOES := 4
 const MIN_SEGMENT_DISTANCE := 280.0
 const ECHO_SPEED_STEP := 0.2
 const HUNTER_PLAYER_SPEED_RATIO := 0.8
 const RIFT_WARNING_TIME := 0.7
-const PATROL_PHASE_TIME := 12.0
-const PULSE_PHASE_TIME := 24.0
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
+const ECHO_PLAY_AREA := Rect2(72.0, 204.0, 576.0, 892.0)
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
@@ -36,12 +35,16 @@ const DESIGN_HEIGHT := 1280.0
 @onready var impact_flash: ColorRect = $UI/ImpactFlash
 @onready var instruction_label: Label = $UI/Instruction
 @onready var game_over_overlay: ColorRect = $UI/GameOver
+@onready var result_title: Label = $UI/GameOver/Center/Panel/Content/Title
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
 @onready var restart_button: Button = $UI/GameOver/Center/Panel/Content/Restart
 @onready var menu_button: Button = $UI/GameOver/Center/Panel/Content/Menu
 @onready var settings_store := get_node("/root/Settings") as SettingsStore
 
 var _state := RunState.PLAYING
+var _level
+var _level_number := 1
+var _level_won := false
 var _timeline: EchoTimeline
 var _run_time := 0.0
 var _segment_time := 0.0
@@ -59,41 +62,56 @@ var _run_id := 0
 
 
 func _ready() -> void:
+	if _level == null:
+		_level = LevelCatalogScript.first_level()
+		_level_number = _level.number
 	_center_world_for_viewport()
 	player.danger_hit.connect(_on_player_danger_hit)
 	pulse_obstacle.danger_state_changed.connect(_on_pulse_state_changed)
-	restart_button.pressed.connect(_restart)
+	restart_button.pressed.connect(_on_primary_action)
 	menu_button.pressed.connect(menu_requested.emit)
 	player.set_sensitivity(settings_store.sensitivity)
 	_start_run()
+
+
+func configure_level(level_number: int) -> void:
+	var configured_level = LevelCatalogScript.get_level(level_number)
+	if configured_level == null:
+		push_warning("El nivel %d no existe; se usara el primer nivel." % level_number)
+		configured_level = LevelCatalogScript.first_level()
+	_level = configured_level
+	_level_number = _level.number
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _state != RunState.GAME_OVER:
 		return
 	if event is InputEventScreenTouch and event.pressed:
-		_restart()
+		_on_primary_action()
 	elif event is InputEventMouseButton and event.pressed:
-		_restart()
+		_on_primary_action()
 	elif event is InputEventKey and event.pressed and not event.echo:
-		_restart()
+		_on_primary_action()
 
 
 func _physics_process(delta: float) -> void:
 	if _state != RunState.PLAYING:
 		return
 
-	_run_time += delta
+	_run_time = minf(_run_time + delta, _level.duration)
 	_segment_time += delta
 	_sample_accumulator += delta
 	_record_samples()
 	_update_progression()
 
-	if _segment_time >= ECHO_INTERVAL:
+	if _segment_time >= _level.echo_interval:
 		_spawn_echo()
 
 	_score = int(_run_time * 10.0) + _total_echo_count * 100
 	_update_hud()
+	if _run_time >= _level.duration:
+		_complete_level()
+		return
 	_update_phase_banner(delta)
 	if _run_time > 3.5:
 		instruction_label.modulate.a = move_toward(instruction_label.modulate.a, 0.0, delta * 0.7)
@@ -106,6 +124,7 @@ func _start_run() -> void:
 	if is_instance_valid(_flash_tween):
 		_flash_tween.kill()
 	_state = RunState.PLAYING
+	_level_won = false
 	_run_time = 0.0
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -127,9 +146,14 @@ func _start_run() -> void:
 	_timeline.add_sample(0.0, start_position)
 	player.reset_for_run(start_position)
 	game_over_overlay.visible = false
+	result_title.text = "FIN DEL ECO"
+	result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
+	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
 	impact_flash.visible = false
+	instruction_label.text = "%d S // CADA ECO NACE DEL ANTERIOR" % roundi(_level.duration)
 	instruction_label.modulate.a = 1.0
+	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], Color(0.584, 1.0, 0.796), 2.4)
 	_update_hud()
 
 
@@ -147,12 +171,19 @@ func _spawn_echo() -> void:
 		var hunter := distance < MIN_SEGMENT_DISTANCE
 		_update_echo_pressure(distance)
 		var segment := _timeline.duplicate_timeline()
-		var spawn_position := segment.sample_at(0.0)
+		var predecessor := _recursive_predecessor()
 		var rift = RIFT_SCRIPT.new()
 		rifts.add_child(rift)
-		rift.configure(segment, spawn_position, hunter, RIFT_WARNING_TIME, _run_id)
+		rift.configure(
+			segment,
+			predecessor,
+			hunter,
+			RIFT_WARNING_TIME,
+			_run_id,
+			_total_echo_count + rifts.get_child_count()
+		)
 		rift.opened.connect(_on_rift_opened)
-		feedback.play_rift(spawn_position, hunter)
+		feedback.play_rift(rift.global_position, hunter)
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -163,15 +194,20 @@ func _spawn_echo() -> void:
 func _on_rift_opened(rift) -> void:
 	if _state != RunState.PLAYING or rift.run_id != _run_id:
 		return
-	if echoes.get_child_count() >= MAX_ACTIVE_ECHOES:
-		_retire_oldest_echo()
 	var echo := ECHO_SCENE.instantiate() as EchoPlayback
 	echoes.add_child(echo)
+	echo.generation = rift.generation
 	if rift.hunter:
 		echo.hunter_base_speed = player.move_speed * HUNTER_PLAYER_SPEED_RATIO
-		echo.configure_hunter(rift.global_position, player, _hunter_speed_multiplier())
+		echo.configure_hunter(
+			rift.global_position,
+			player,
+			_hunter_speed_multiplier(),
+			true
+		)
 	else:
-		echo.configure_trace(rift.timeline)
+		var recursive_timeline = rift.timeline.rebased(rift.global_position, ECHO_PLAY_AREA)
+		echo.configure_trace(recursive_timeline, true)
 	echo.set_playback_speed(_echo_speed_multiplier)
 	echo.hit_player.connect(_on_echo_hit_player)
 	echo.expired.connect(_on_echo_expired)
@@ -201,6 +237,19 @@ func _on_echo_hit_player(_echo: EchoPlayback) -> void:
 func _end_run(reason: String) -> void:
 	if _state == RunState.GAME_OVER:
 		return
+	_level_won = false
+	_show_result(reason)
+
+
+func _complete_level() -> void:
+	if _state == RunState.GAME_OVER:
+		return
+	_run_time = _level.duration
+	_level_won = true
+	_show_result("OBJETIVO DE TIEMPO CUMPLIDO")
+
+
+func _show_result(reason: String) -> void:
 	_state = RunState.GAME_OVER
 	player.set_movement_enabled(false)
 	_clear_rifts()
@@ -208,9 +257,19 @@ func _end_run(reason: String) -> void:
 	pulse_obstacle.set_physics_process(false)
 	for child in echoes.get_children():
 		(child as EchoPlayback).stop()
-	feedback.play_hit(player.global_position)
-	_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
-	result_label.text = "%s\n\nTIEMPO  %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CAZA x%.1f" % [reason, _run_time, _score, _total_echo_count, _slow_offenses, _hunter_speed_multiplier()]
+	if _level_won:
+		result_title.text = "NIVEL SUPERADO"
+		result_title.add_theme_color_override("font_color", Color(0.584, 1.0, 0.796))
+		feedback.play_phase(player.global_position)
+		_flash_screen(Color(0.18, 0.82, 0.655), 0.2, 0.45)
+		restart_button.text = "SIGUIENTE NIVEL" if LevelCatalogScript.has_level(_level_number + 1) else "REPETIR NIVEL"
+	else:
+		result_title.text = "FIN DEL ECO"
+		result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
+		feedback.play_hit(player.global_position)
+		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
+		restart_button.text = "REINTENTAR NIVEL"
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CAZA x%.1f" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _hunter_speed_multiplier()]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -218,6 +277,13 @@ func _end_run(reason: String) -> void:
 
 func _restart() -> void:
 	_start_run()
+
+
+func _on_primary_action() -> void:
+	if _level_won and LevelCatalogScript.has_level(_level_number + 1):
+		level_requested.emit(_level_number + 1)
+		return
+	_restart()
 
 
 func _clear_echoes() -> void:
@@ -231,11 +297,10 @@ func _clear_rifts() -> void:
 		child.queue_free()
 
 
-func _retire_oldest_echo() -> void:
-	var oldest := echoes.get_child(0) as EchoPlayback
-	oldest.stop()
-	echoes.remove_child(oldest)
-	oldest.queue_free()
+func _recursive_predecessor() -> Node2D:
+	if echoes.get_child_count() > 0:
+		return echoes.get_child(echoes.get_child_count() - 1) as Node2D
+	return player
 
 
 func _update_echo_pressure(segment_distance: float) -> void:
@@ -270,9 +335,9 @@ func _hunter_speed_multiplier() -> float:
 
 func _update_progression() -> void:
 	var next_phase := 1
-	if _run_time >= PULSE_PHASE_TIME:
+	if _run_time >= _level.pulse_phase_time:
 		next_phase = 3
-	elif _run_time >= PATROL_PHASE_TIME:
+	elif _run_time >= _level.patrol_phase_time:
 		next_phase = 2
 	if next_phase == _current_phase:
 		return
@@ -329,7 +394,7 @@ func _center_world_for_viewport() -> void:
 
 
 func _update_hud() -> void:
-	time_label.text = "TIEMPO\n%05.1f" % _run_time
+	time_label.text = "TIEMPO\n%04.1f/%02d" % [_run_time, roundi(_level.duration)]
 	score_label.text = "PUNTOS\n%04d" % _score
-	echo_label.text = "ECOS\n%02d/%02d" % [_echo_count, MAX_ACTIVE_ECHOES]
-	phase_label.text = "ETAPA %d/3\nF%d CAZA x%.1f" % [_current_phase, _slow_offenses, _hunter_speed_multiplier()]
+	echo_label.text = "ECOS\n%02d" % _echo_count
+	phase_label.text = "N%d E%d/3\nF%d CAZA x%.1f" % [_level.number, _current_phase, _slow_offenses, _hunter_speed_multiplier()]

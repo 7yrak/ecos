@@ -177,7 +177,7 @@ custom_minimum_size = Vector2(118, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.84, 1)
 theme_override_font_sizes/font_size = 24
-text = "TIEMPO\n000.0"
+text = "TIEMPO\n00.0/45"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -195,7 +195,7 @@ custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.55, 0.45, 1)
 theme_override_font_sizes/font_size = 24
-text = "ECOS\n00/04"
+text = "ECOS\n00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -204,7 +204,7 @@ custom_minimum_size = Vector2(124, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.68, 0.25, 1)
 theme_override_font_sizes/font_size = 20
-text = "ETAPA 1/3\nECO x1.0"
+text = "N1 E1/3\nF0 CAZA x1.0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -251,7 +251,7 @@ grow_vertical = 0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.84, 0.9)
 theme_override_font_sizes/font_size = 24
-text = "TOCA Y ARRASTRA PARA MOVERTE"
+text = "45 S // CADA ECO NACE DEL ANTERIOR"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -306,7 +306,7 @@ theme_override_styles/normal = SubResource("StyleBox_restart")
 theme_override_styles/hover = SubResource("StyleBox_restart_hover")
 theme_override_styles/pressed = SubResource("StyleBox_restart_hover")
 theme_override_styles/focus = SubResource("StyleBox_restart")
-text = "REPETIR"
+text = "REINTENTAR NIVEL"
 
 [node name="Menu" type="Button" parent="UI/GameOver/Center/Panel/Content"]
 custom_minimum_size = Vector2(0, 76)

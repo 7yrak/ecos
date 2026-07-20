@@ -116,7 +116,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-012 - Dificultad por etapas y limite de ecos
 
 - Fecha: 2026-07-18
-- Estado: aceptada
+- Estado: reemplazada parcialmente por D-022 y D-023
 - Decision: introducir barreras fijas al inicio, patrulla a los 12 segundos y pulso
   a los 24; mantener como maximo cuatro ecos activos.
 - Motivo: la validacion mostro que acumular ecos sin limite vuelve la dificultad
@@ -206,7 +206,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-020 - Los ecos conservan el recorrido real
 
 - Fecha: 2026-07-19
-- Estado: aceptada
+- Estado: reemplazada por D-022
 - Decision: cada eco de trayectoria nace donde comenzo su segmento y reproduce una
   sola vez las coordenadas exactas que recorrio el jugador, sin rotar, escalar ni
   trasladar las muestras a anclas externas.
@@ -226,6 +226,32 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   el tamano actual del repositorio.
 - Consecuencia: README y estado apuntan siempre al unico artefacto instalable actual;
   las versiones anteriores se recuperan desde el historial de Git si fueran necesarias.
+
+## D-022 - Cadena recursiva sin limite fijo
+
+- Fecha: 2026-07-20
+- Estado: aceptada
+- Decision: la primera grieta sigue al jugador y cada grieta posterior sigue al ultimo
+  eco creado; al abrirse, el nuevo eco aplica el desplazamiento grabado desde la
+  posicion actual de su predecesor y queda como resonancia hasta finalizar el nivel.
+- Motivo: los ecos deben formar una descendencia visible y recursiva, no amenazas
+  independientes que desaparecen o se retiran al alcanzar una cantidad arbitraria.
+- Consecuencia: se elimina el maximo de cuatro ecos, las muestras trasladadas se
+  limitan al interior de la arena y el costo de mantener la cadena queda acotado por
+  la duracion temporal de cada nivel. Debe validarse legibilidad y rendimiento fisico.
+
+## D-023 - Victoria temporal y catalogo explicito de niveles
+
+- Fecha: 2026-07-20
+- Estado: aceptada
+- Decision: cada nivel declara nombre, dificultad, duracion, intervalo de ecos y
+  activacion de etapas. El unico nivel actual es `PRIMERA RESONANCIA / INICIAL`, con
+  victoria al sobrevivir 45 segundos.
+- Motivo: una meta de tiempo ofrece cierre, permite balancear cada arena y evita que
+  una partida con ecos ilimitados crezca indefinidamente.
+- Consecuencia: el resultado diferencia victoria y derrota; avanza automaticamente
+  solo cuando el siguiente nivel exista en el catalogo. Los niveles futuros se agregan
+  de forma deliberada, con contenido y pruebas propias, no mediante generacion vacia.
 
 ## Decisiones pendientes del usuario
 

@@ -48,10 +48,11 @@ Criterio de salida:
 Estado: activa desde el 2026-07-18.
 
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
-progresion de arena, tres obstaculos, limite de ecos y feedback audiovisual
-completados. Los recorridos exactos de una sola reproduccion, resonancias, cazadores
-y faltas lentas acumulativas tambien estan implementados. Pendiente: validacion final
-en dispositivos fisicos.
+progresion de arena, tres obstaculos y feedback audiovisual completados. El nivel 1
+tiene victoria a los 45 segundos, cadena recursiva sin limite fijo, resonancias
+persistentes, cazadores y faltas lentas acumulativas. El catalogo permite incorporar
+niveles nuevos sin duplicar el controlador. Pendiente: validacion final en dispositivos
+fisicos y diseno del nivel 2.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
@@ -64,6 +65,7 @@ Entregables:
 - Tres obstaculos.
 - Progresion dentro de la partida que introduzca variedad sin depender solamente
   de acumular ecos.
+- Condicion de victoria temporal y estructura extensible de niveles.
 - Efectos visuales, sonido y vibracion.
 - Tutorial de menos de un minuto.
 - Ajustes de sonido, vibracion y sensibilidad.

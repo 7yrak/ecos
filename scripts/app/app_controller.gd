@@ -18,8 +18,14 @@ func show_menu() -> void:
 
 
 func start_game() -> void:
+	_start_level(1)
+
+
+func _start_level(level_number: int) -> void:
 	var run := RUN_SCENE.instantiate() as RunController
+	run.configure_level(level_number)
 	run.menu_requested.connect(show_menu)
+	run.level_requested.connect(_start_level)
 	_replace_screen(run)
 
 

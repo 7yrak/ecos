@@ -6,6 +6,8 @@ signal opened(rift: EchoRiftWarning)
 var timeline: EchoTimeline
 var hunter := false
 var run_id := 0
+var generation := 0
+var predecessor: Node2D
 var warning_duration := 0.7
 var _time_remaining := 0.7
 var _opened := false
@@ -13,17 +15,20 @@ var _opened := false
 
 func configure(
 	segment: EchoTimeline,
-	spawn_position: Vector2,
+	source: Node2D,
 	is_hunter: bool,
 	duration: float,
-	current_run_id: int
+	current_run_id: int,
+	echo_generation: int
 ) -> void:
 	timeline = segment
-	global_position = spawn_position
+	predecessor = source
+	global_position = predecessor.global_position
 	hunter = is_hunter
 	warning_duration = maxf(0.05, duration)
 	_time_remaining = warning_duration
 	run_id = current_run_id
+	generation = echo_generation
 	z_index = 3
 	queue_redraw()
 
@@ -31,6 +36,8 @@ func configure(
 func _physics_process(delta: float) -> void:
 	if _opened:
 		return
+	if is_instance_valid(predecessor):
+		global_position = predecessor.global_position
 	_time_remaining = maxf(0.0, _time_remaining - delta)
 	queue_redraw()
 	if _time_remaining > 0.0:

@@ -138,7 +138,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.2.7"
+text = "ECOS // 0.2.9"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]
@@ -181,7 +181,7 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.82, 0.84, 1)
 theme_override_font_sizes/font_size = 27
-text = "Cada movimiento deja una amenaza.\nSobrevive a tu propio recorrido."
+text = "Cada eco nace del anterior.\nSobrevive hasta completar el nivel."
 vertical_alignment = 1
 
 [node name="Badge" type="PanelContainer" parent="Content/Layout/Hero"]
@@ -193,7 +193,7 @@ theme_override_styles/panel = SubResource("StyleBox_badge")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.73, 0.94, 0.84, 1)
 theme_override_font_sizes/font_size = 23
-text = "01  MUEVETE   02  RECUERDA   03  SOBREVIVE"
+text = "01  MUEVETE   02  ENCADENA   03  COMPLETA"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -300,7 +300,7 @@ custom_minimum_size = Vector2(0, 118)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
-text = "02  ENFRENTA TU PASADO\nCada cinco segundos, un eco repite exactamente\nel recorrido que acabas de hacer."
+text = "02  CREA LA CADENA\nCada cinco segundos nace un eco donde se encuentra\nel anterior. No hay un limite de ecos."
 vertical_alignment = 1
 
 [node name="StepThree" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
@@ -308,7 +308,7 @@ custom_minimum_size = Vector2(0, 142)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
-text = "03  MANTEN EL RITMO\nCada eco deja una resonancia antes de desaparecer.\nLas faltas lentas se acumulan: cada cazador sera mas rapido."
+text = "03  COMPLETA EL NIVEL\nSobrevive hasta agotar su tiempo. Las resonancias permanecen\ny cada falta lenta crea un cazador mas rapido."
 vertical_alignment = 1
 
 [node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]

@@ -45,6 +45,23 @@ func duplicate_timeline() -> EchoTimeline:
 	return result
 
 
+func rebased(origin: Vector2, bounds := Rect2()) -> EchoTimeline:
+	var result := EchoTimeline.new()
+	if _positions.is_empty():
+		return result
+
+	var source_origin := _positions[0]
+	for index in _positions.size():
+		var position := origin + (_positions[index] - source_origin)
+		if bounds.has_area():
+			position = Vector2(
+				clampf(position.x, bounds.position.x, bounds.end.x),
+				clampf(position.y, bounds.position.y, bounds.end.y)
+			)
+		result.add_sample(_times[index], position)
+	return result
+
+
 func sample_count() -> int:
 	return _positions.size()
 
