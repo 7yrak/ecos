@@ -12,12 +12,11 @@ const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const RIFT_SCRIPT := preload("res://scripts/gameplay/echo_rift_warning.gd")
 const SAMPLE_INTERVAL := 0.05
 const MIN_SEGMENT_DISTANCE := 280.0
-const ECHO_SPEED_STEP := 0.2
-const HUNTER_PLAYER_SPEED_RATIO := 0.8
+const CHAIN_PRESSURE_STEP := 0.2
+const ECHO_FOLLOW_DELAY := 1.2
 const RIFT_WARNING_TIME := 0.7
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
-const ECHO_PLAY_AREA := Rect2(72.0, 204.0, 576.0, 892.0)
 
 @onready var player: PlayerController = $Player
 @onready var echoes: Node2D = $Echoes
@@ -53,7 +52,7 @@ var _echo_count := 0
 var _total_echo_count := 0
 var _echo_pressure := 0
 var _slow_offenses := 0
-var _echo_speed_multiplier := 1.0
+var _chain_pressure_multiplier := 1.0
 var _score := 0
 var _current_phase := 1
 var _phase_banner_time := 0.0
@@ -132,7 +131,7 @@ func _start_run() -> void:
 	_total_echo_count = 0
 	_echo_pressure = 0
 	_slow_offenses = 0
-	_echo_speed_multiplier = 1.0
+	_chain_pressure_multiplier = 1.0
 	_score = 0
 	_current_phase = 1
 	_phase_banner_time = 0.0
@@ -151,7 +150,7 @@ func _start_run() -> void:
 	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
 	impact_flash.visible = false
-	instruction_label.text = "%d S // CADA ECO NACE DEL ANTERIOR" % roundi(_level.duration)
+	instruction_label.text = "%d S // LOS ECOS SIGUEN TU ESTELA" % roundi(_level.duration)
 	instruction_label.modulate.a = 1.0
 	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], Color(0.584, 1.0, 0.796), 2.4)
 	_update_hud()
@@ -168,22 +167,20 @@ func _spawn_echo() -> void:
 	_timeline.add_sample(_segment_time, player.global_position)
 	if _timeline.is_playable():
 		var distance := _timeline.travel_distance()
-		var hunter := distance < MIN_SEGMENT_DISTANCE
+		var pressured := distance < MIN_SEGMENT_DISTANCE
 		_update_echo_pressure(distance)
-		var segment := _timeline.duplicate_timeline()
 		var predecessor := _recursive_predecessor()
 		var rift = RIFT_SCRIPT.new()
 		rifts.add_child(rift)
 		rift.configure(
-			segment,
 			predecessor,
-			hunter,
+			pressured,
 			RIFT_WARNING_TIME,
 			_run_id,
 			_total_echo_count + rifts.get_child_count()
 		)
 		rift.opened.connect(_on_rift_opened)
-		feedback.play_rift(rift.global_position, hunter)
+		feedback.play_rift(rift.global_position, pressured)
 
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -197,32 +194,17 @@ func _on_rift_opened(rift) -> void:
 	var echo := ECHO_SCENE.instantiate() as EchoPlayback
 	echoes.add_child(echo)
 	echo.generation = rift.generation
-	if rift.hunter:
-		echo.hunter_base_speed = player.move_speed * HUNTER_PLAYER_SPEED_RATIO
-		echo.configure_hunter(
-			rift.global_position,
-			player,
-			_hunter_speed_multiplier(),
-			true
-		)
-	else:
-		var recursive_timeline = rift.timeline.rebased(rift.global_position, ECHO_PLAY_AREA)
-		echo.configure_trace(recursive_timeline, true)
-	echo.set_playback_speed(_echo_speed_multiplier)
+	echo.configure_follower(
+		rift.global_position,
+		rift.predecessor,
+		ECHO_FOLLOW_DELAY,
+		rift.pressured
+	)
+	echo.set_pressure_multiplier(_chain_pressure_multiplier)
 	echo.hit_player.connect(_on_echo_hit_player)
-	echo.expired.connect(_on_echo_expired)
 	_total_echo_count += 1
 	_echo_count = echoes.get_child_count()
 	feedback.play_echo(echo.global_position)
-	_update_hud()
-
-
-func _on_echo_expired(_echo: EchoPlayback) -> void:
-	_refresh_echo_count.call_deferred()
-
-
-func _refresh_echo_count() -> void:
-	_echo_count = echoes.get_child_count()
 	_update_hud()
 
 
@@ -269,7 +251,7 @@ func _show_result(reason: String) -> void:
 		feedback.play_hit(player.global_position)
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
-	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CAZA x%.1f" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _hunter_speed_multiplier()]
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CADENA x%.1f" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _chain_pressure_multiplier]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -310,27 +292,23 @@ func _update_echo_pressure(segment_distance: float) -> void:
 		_slow_offenses += 1
 	else:
 		_echo_pressure = maxi(0, _echo_pressure - 1)
-	_echo_speed_multiplier = 1.0 + float(_echo_pressure) * ECHO_SPEED_STEP
-	_apply_echo_speed()
+	_chain_pressure_multiplier = 1.0 + float(_echo_pressure) * CHAIN_PRESSURE_STEP
+	_apply_chain_pressure()
 	if _echo_pressure == previous_pressure:
 		return
 
 	if _echo_pressure > previous_pressure:
 		feedback.play_pressure(player.global_position)
-		_show_banner("FALTA LENTA %d // CAZADOR x%.1f" % [_slow_offenses, _hunter_speed_multiplier()], Color(1.0, 0.48, 0.24), 2.0)
+		_show_banner("FALTA LENTA %d // CADENA x%.1f" % [_slow_offenses, _chain_pressure_multiplier], Color(1.0, 0.48, 0.24), 2.0)
 		_flash_screen(Color(1.0, 0.34, 0.18), 0.1, 0.24)
 	else:
-		_show_banner("RITMO RECUPERADO // ECOS x%.1f" % _echo_speed_multiplier, Color(0.45, 1.0, 0.72), 1.5)
+		_show_banner("DISTANCIA RECUPERADA // CADENA x%.1f" % _chain_pressure_multiplier, Color(0.45, 1.0, 0.72), 1.5)
 		_flash_screen(Color(0.18, 0.82, 0.655), 0.07, 0.2)
 
 
-func _apply_echo_speed() -> void:
+func _apply_chain_pressure() -> void:
 	for child in echoes.get_children():
-		(child as EchoPlayback).set_playback_speed(_echo_speed_multiplier)
-
-
-func _hunter_speed_multiplier() -> float:
-	return 1.0 + float(_slow_offenses) * ECHO_SPEED_STEP
+		(child as EchoPlayback).set_pressure_multiplier(_chain_pressure_multiplier)
 
 
 func _update_progression() -> void:
@@ -397,4 +375,4 @@ func _update_hud() -> void:
 	time_label.text = "TIEMPO\n%04.1f/%02d" % [_run_time, roundi(_level.duration)]
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d" % _echo_count
-	phase_label.text = "N%d E%d/3\nF%d CAZA x%.1f" % [_level.number, _current_phase, _slow_offenses, _hunter_speed_multiplier()]
+	phase_label.text = "N%d E%d/3\nF%d CAD x%.1f" % [_level.number, _current_phase, _slow_offenses, _chain_pressure_multiplier]

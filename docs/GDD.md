@@ -24,24 +24,23 @@ creado por uno mismo en una cadena perfecta.
 ## Reglas provisionales
 
 - Cada nivel declara dificultad, duracion, frecuencia de ecos y tiempos de etapa.
-- El nivel 1, `PRIMERA RESONANCIA / INICIAL`, se completa sobreviviendo 45 segundos.
+- El nivel 1, `PRIMERA ESTELA / INICIAL`, se completa sobreviviendo 45 segundos.
 - Se crea un eco cada 5 segundos en el nivel 1.
 - La primera grieta sigue al jugador durante su aviso de 0.7 segundos; las siguientes
   siguen al ultimo eco creado y abren donde este se encuentre.
-- El nuevo eco conserva el desplazamiento grabado, lo aplica desde la posicion de su
-  predecesor y limita sus muestras al interior visible de la arena.
-- No existe un maximo de ecos activos. Al terminar su recorrido o persecucion quedan
-  como resonancias peligrosas hasta que finaliza el nivel.
-- Recorrer menos de 280 px en una ventana aumenta la velocidad de todos los ecos;
-  el aviso crea un cazador y no hay limite superior de presion.
-- Moverse activamente reduce la presion de forma gradual.
-- Las faltas lentas se acumulan durante toda la partida aunque la presion temporal
-  se recupere: el primer cazador alcanza 0.96x de la velocidad del jugador, el
-  segundo 1.12x, el tercero 1.28x y los siguientes continuan aumentando.
+- Cada eco registra en vivo las posiciones de su predecesor y las sigue con 1.2
+  segundos de retraso. El primero sigue al jugador; cada generacion posterior sigue
+  a la anterior.
+- No existe un maximo de ecos activos. Todos permanecen en movimiento hasta que
+  finaliza el nivel.
+- Recorrer menos de 280 px en una ventana comprime el retraso de toda la cadena en
+  pasos de 0.2x y no hay limite superior de presion.
+- Moverse activamente vuelve a ampliar el retraso de forma gradual. Las faltas lentas
+  permanecen como estadistica del intento, pero no crean una amenaza distinta.
 - Chocar con un eco o peligro pierde el intento; agotar el tiempo gana el nivel.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
-- La dificultad aumenta mediante tiempo objetivo, frecuencia, etapas, velocidad,
-  cantidad de ecos y modificadores definidos por nivel.
+- La dificultad aumenta mediante tiempo objetivo, frecuencia, etapas, compresion de
+  la cadena, cantidad de ecos y modificadores definidos por nivel.
 
 Todos los valores son parametros de balance, no constantes definitivas.
 
@@ -51,9 +50,9 @@ Todos los valores son parametros de balance, no constantes definitivas.
 - La arena tiene limites que contienen y obstaculos que finalizan la partida.
 - El recorrido se muestrea cada 0,05 segundos.
 - La Fase 1 creaba un eco de cada segmento independiente de cinco segundos.
-- La Fase 2 conserva los segmentos independientes como plantillas de desplazamiento.
-  Cada generacion nace del ultimo eco, permanece como resonancia y la cadena crece sin
-  limite fijo hasta ganar por tiempo o colisionar.
+- La Fase 2 usa los segmentos de cinco segundos solo para medir actividad. Cada eco
+  sigue en vivo la memoria retardada de su predecesor y la cadena crece sin limite fijo
+  hasta ganar por tiempo o colisionar.
 - La puntuacion suma supervivencia y ecos creados.
 - La pantalla de resultado diferencia derrota y nivel superado; permite reintentar o
   avanzar cuando exista otro nivel en el catalogo.
@@ -93,21 +92,18 @@ Implementado:
 - Nivel 1 con objetivo de 45 segundos y tres etapas: fija desde el inicio, patrulla a
   los 12 segundos y pulso a los 24.
 - Catalogo explicito para agregar niveles sin duplicar el controlador de partida.
-- Cadena recursiva de ecos sin limite fijo y resonancias persistentes durante el nivel.
+- Cadena recursiva de perseguidores con memoria, sin limite fijo durante el nivel.
 - Sonidos procedurales diferentes para eco, etapa, pulso e impacto.
 - Ondas expansivas y flashes comunican eventos sin ocultar el HUD.
 - Aviso visual y sonoro que sigue al ultimo miembro de la cadena antes de crear otro.
-- Ecos que conservan el desplazamiento grabado desde su predecesor y terminan como
-  resonancias persistentes.
-- Ecos cazadores para recorridos inferiores al umbral de movimiento.
-- Presion de ritmo reversible desde x1.0, sin limite superior, para impedir la
-  estrategia de movimiento extremadamente lento.
-- Reincidencia acumulativa que vuelve cada nuevo cazador mas rapido sin depender
-  del ajuste de sensibilidad.
+- Ecos que siguen posiciones pasadas exactas del predecesor con retraso acumulativo.
+- Presion reversible desde x1.0 que comprime el retraso de todas las generaciones para
+  impedir la estrategia de movimiento extremadamente lento.
 
 Siguiente iteracion:
 
-- Pruebas externas para ajustar los 45 segundos, velocidad y ventanas seguras.
+- Pruebas externas para ajustar los 45 segundos, el retraso de 1.2 segundos y las
+  ventanas seguras.
 - Disenar e incorporar el nivel 2 como una nueva entrada explicita del catalogo.
 - Ajuste de volumen y mezcla segun la respuesta en dispositivos fisicos.
 

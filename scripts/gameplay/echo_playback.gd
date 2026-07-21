@@ -2,27 +2,22 @@ class_name EchoPlayback
 extends Area2D
 
 signal hit_player(echo: EchoPlayback)
-signal expired(echo: EchoPlayback)
 
-enum Mode { TRACE, HUNTER, RESONANCE }
+enum Mode { FOLLOWER }
 
 @export var collision_grace := 0.7
-@export var hunter_base_speed := 400.0
-@export var hunter_duration := 6.0
-@export var resonance_duration := 4.0
+@export var follow_delay := 1.2
 
-var _timeline: EchoTimeline
+var _follow_timeline: EchoTimeline
 var _target: Node2D
-var _playback_time := 0.0
+var _follow_time := 0.0
 var _age := 0.0
 var _hit_reported := false
-var _state_time := 0.0
-var _expired := false
-var playback_speed := 1.0
-var minimum_playback_speed := 1.0
-var mode := Mode.TRACE
+var _collision_activation_age := 0.7
+var pressure_multiplier := 1.0
+var mode := Mode.FOLLOWER
 var generation := 0
-var persistent_resonance := false
+var pressured := false
 
 
 func _ready() -> void:
@@ -32,66 +27,44 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _expired:
-		return
-
 	_age += delta
-	match mode:
-		Mode.TRACE:
-			_update_trace(delta)
-		Mode.HUNTER:
-			_update_hunter(delta)
-		Mode.RESONANCE:
-			_update_resonance(delta)
-	if _expired:
-		return
-	monitoring = _age >= collision_grace and not _hit_reported
+	_update_follower(delta)
+	monitoring = _age >= _collision_activation_age and not _hit_reported
 	queue_redraw()
 
 
-func configure(timeline: EchoTimeline, follow_updates := false) -> void:
-	configure_trace(timeline if follow_updates else timeline.duplicate_timeline())
-
-
-func configure_trace(timeline: EchoTimeline, persist_at_destination := false) -> void:
-	_timeline = timeline
-	_target = null
-	mode = Mode.TRACE
-	persistent_resonance = persist_at_destination
-	minimum_playback_speed = 1.0
-	_playback_time = 0.0
-	_age = 0.0
-	_hit_reported = false
-	_expired = false
-	if _timeline.is_playable():
-		global_position = _timeline.sample_at(0.0)
-
-
-func configure_hunter(
+func configure_follower(
 	spawn_position: Vector2,
 	target: Node2D,
-	minimum_speed := 1.0,
-	persist_at_destination := false
+	delay: float,
+	is_pressured := false
 ) -> void:
-	_timeline = null
 	_target = target
-	mode = Mode.HUNTER
-	persistent_resonance = persist_at_destination
-	minimum_playback_speed = maxf(1.0, minimum_speed)
+	follow_delay = maxf(0.2, delay)
+	pressured = is_pressured
+	mode = Mode.FOLLOWER
 	global_position = spawn_position
-	_state_time = hunter_duration
+	_follow_time = 0.0
 	_age = 0.0
 	_hit_reported = false
-	_expired = false
+	_collision_activation_age = maxf(collision_grace, follow_delay + 0.1)
+	_follow_timeline = EchoTimeline.new()
+	if is_instance_valid(_target):
+		_follow_timeline.add_sample(0.0, _target.global_position)
+	process_physics_priority = generation + 1
 
 
-func set_playback_speed(multiplier: float) -> void:
-	playback_speed = maxf(multiplier, minimum_playback_speed)
+func set_pressure_multiplier(multiplier: float) -> void:
+	pressure_multiplier = maxf(1.0, multiplier)
 	queue_redraw()
 
 
-func hunter_speed() -> float:
-	return hunter_base_speed * playback_speed
+func effective_follow_delay() -> float:
+	return follow_delay / pressure_multiplier
+
+
+func follow_target() -> Node2D:
+	return _target
 
 
 func stop() -> void:
@@ -100,49 +73,13 @@ func stop() -> void:
 	_target = null
 
 
-func _update_trace(delta: float) -> void:
-	if _timeline == null or not _timeline.is_playable():
-		_expire()
+func _update_follower(delta: float) -> void:
+	if not is_instance_valid(_target) or _follow_timeline == null:
 		return
-	_playback_time = minf(_playback_time + delta * playback_speed, _timeline.duration())
-	global_position = _timeline.sample_at(_playback_time)
-	if _playback_time >= _timeline.duration():
-		_enter_resonance()
-
-
-func _update_hunter(delta: float) -> void:
-	_state_time = maxf(0.0, _state_time - delta)
-	if is_instance_valid(_target):
-		global_position = global_position.move_toward(
-			_target.global_position,
-			hunter_speed() * delta
-		)
-	if _state_time <= 0.0:
-		_enter_resonance()
-
-
-func _update_resonance(delta: float) -> void:
-	if persistent_resonance:
-		return
-	_state_time = maxf(0.0, _state_time - delta)
-	if _state_time <= 0.0:
-		_expire()
-
-
-func _enter_resonance() -> void:
-	mode = Mode.RESONANCE
-	_state_time = resonance_duration
-	_target = null
-
-
-func _expire() -> void:
-	if _expired:
-		return
-	_expired = true
-	set_deferred("monitoring", false)
-	set_physics_process(false)
-	expired.emit(self)
-	queue_free()
+	_follow_time += delta
+	_follow_timeline.add_sample(_follow_time, _target.global_position)
+	var delayed_time := maxf(0.0, _follow_time - effective_follow_delay())
+	global_position = _follow_timeline.sample_at(delayed_time)
 
 
 func _on_body_entered(body: Node2D) -> void:
@@ -154,20 +91,14 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 func _draw() -> void:
-	var wave := 4.0 + sin(_age * 6.0 * playback_speed) * 3.0
-	if mode == Mode.RESONANCE:
-		var resonance_progress := 1.0 if persistent_resonance else _state_time / resonance_duration
-		draw_circle(Vector2.ZERO, 38.0 + wave, Color(1.0, 0.2, 0.16, 0.1 + resonance_progress * 0.08))
-		draw_arc(Vector2.ZERO, 34.0 + wave, 0.0, TAU, 36, Color(1.0, 0.32, 0.24, 0.8), 4.0, true)
-		draw_circle(Vector2.ZERO, 10.0, Color(1.0, 0.32, 0.24, 0.55))
-		return
-	var color := Color(1.0, 0.68, 0.25) if mode == Mode.HUNTER else Color(1.0, 0.45, 0.36)
+	var wave := 4.0 + sin(_age * 6.0 * pressure_multiplier) * 3.0
+	var color := Color(1.0, 0.68, 0.25) if pressured else Color(1.0, 0.45, 0.36)
 	draw_circle(Vector2.ZERO, 28.0 + wave, Color(color, 0.1))
-	draw_arc(Vector2.ZERO, 24.0 + wave, 0.0, TAU, 36, Color(color, 0.7), 3.0, true)
-	if playback_speed > 1.05:
-		draw_arc(Vector2.ZERO, 31.0 + wave, -PI * 0.75, PI * 0.35, 18, Color(1.0, 0.72, 0.28, 0.75), 3.0, true)
-	if mode == Mode.HUNTER:
-		draw_line(Vector2(-12.0, 0.0), Vector2(12.0, 0.0), Color(color, 0.9), 3.0)
-		draw_line(Vector2(0.0, -12.0), Vector2(0.0, 12.0), Color(color, 0.9), 3.0)
-	else:
-		draw_circle(Vector2.ZERO, 17.0, Color(1.0, 0.38, 0.31, 0.38))
+	draw_arc(Vector2.ZERO, 24.0 + wave, 0.0, TAU, 36, Color(color, 0.75), 3.0, true)
+	draw_circle(Vector2.ZERO, 17.0, Color(color, 0.4))
+	if pressure_multiplier > 1.05:
+		draw_arc(Vector2.ZERO, 31.0 + wave, -PI * 0.75, PI * 0.35, 18, Color(1.0, 0.82, 0.32, 0.85), 3.0, true)
+	if is_instance_valid(_target):
+		var target_direction := to_local(_target.global_position).normalized()
+		draw_line(Vector2.ZERO, target_direction * 20.0, Color(color, 0.9), 4.0, true)
+		draw_circle(target_direction * 22.0, 4.5, Color(color, 0.95))

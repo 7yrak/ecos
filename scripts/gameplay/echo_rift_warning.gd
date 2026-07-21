@@ -3,8 +3,7 @@ extends Node2D
 
 signal opened(rift: EchoRiftWarning)
 
-var timeline: EchoTimeline
-var hunter := false
+var pressured := false
 var run_id := 0
 var generation := 0
 var predecessor: Node2D
@@ -14,17 +13,15 @@ var _opened := false
 
 
 func configure(
-	segment: EchoTimeline,
 	source: Node2D,
-	is_hunter: bool,
+	is_pressured: bool,
 	duration: float,
 	current_run_id: int,
 	echo_generation: int
 ) -> void:
-	timeline = segment
 	predecessor = source
 	global_position = predecessor.global_position
-	hunter = is_hunter
+	pressured = is_pressured
 	warning_duration = maxf(0.05, duration)
 	_time_remaining = warning_duration
 	run_id = current_run_id
@@ -49,11 +46,11 @@ func _physics_process(delta: float) -> void:
 
 func _draw() -> void:
 	var progress := 1.0 - _time_remaining / warning_duration
-	var color := Color(1.0, 0.68, 0.25) if hunter else Color(1.0, 0.34, 0.28)
+	var color := Color(1.0, 0.68, 0.25) if pressured else Color(1.0, 0.34, 0.28)
 	var pulse := 0.65 + sin(progress * TAU * 3.0) * 0.2
 	draw_circle(Vector2.ZERO, 34.0 + progress * 12.0, Color(color, 0.08 + progress * 0.12))
 	draw_arc(Vector2.ZERO, 28.0 + progress * 10.0, -PI * 0.8, PI * 0.35, 24, Color(color, pulse), 4.0, true)
 	draw_arc(Vector2.ZERO, 43.0 - progress * 8.0, PI * 0.15, PI * 1.25, 24, Color(color, pulse * 0.75), 3.0, true)
 	draw_line(Vector2(-12.0, 0.0), Vector2(12.0, 0.0), Color(color, 0.9), 3.0)
-	if hunter:
+	if pressured:
 		draw_line(Vector2(0.0, -12.0), Vector2(0.0, 12.0), Color(color, 0.9), 3.0)

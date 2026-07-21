@@ -17,8 +17,6 @@ func _run() -> void:
 	_ensure_settings_store()
 	_test_timeline_validation()
 	_test_timeline_interpolation()
-	_test_timeline_copy()
-	_test_timeline_rebase()
 	_test_level_catalog()
 	await _test_app_navigation()
 	await _test_responsive_layout()
@@ -27,7 +25,7 @@ func _run() -> void:
 	await _test_recursive_echo_chain()
 	await _test_level_completion()
 	await _test_rift_lifecycle()
-	await _test_hunter_escalation()
+	await _test_chain_compression()
 	await _test_echo_pressure()
 	await _test_physical_collisions()
 	await _test_ten_run_cycles()
@@ -75,33 +73,10 @@ func _test_timeline_interpolation() -> void:
 	_expect(is_equal_approx(timeline.travel_distance(), sqrt(200.0) + 20.0), "calcula la distancia total recorrida")
 
 
-func _test_timeline_copy() -> void:
-	var original = TimelineScript.new()
-	original.add_sample(0.0, Vector2.ZERO)
-	original.add_sample(1.0, Vector2.ONE)
-	var copy = original.duplicate_timeline()
-	original.add_sample(2.0, Vector2(2.0, 2.0))
-
-	_expect(copy.sample_count() == 2, "la copia conserva sus muestras")
-	_expect(is_equal_approx(copy.duration(), 1.0), "la copia conserva su duracion")
-	_expect(original.sample_count() == 3, "el original puede seguir grabando")
-
-
-func _test_timeline_rebase() -> void:
-	var timeline = TimelineScript.new()
-	timeline.add_sample(0.0, Vector2(10.0, 20.0))
-	timeline.add_sample(1.0, Vector2(30.0, 50.0))
-	var rebased = timeline.rebased(Vector2(200.0, 300.0))
-	_expect(rebased.sample_at(0.0).is_equal_approx(Vector2(200.0, 300.0)), "reubica el origen de una trayectoria")
-	_expect(rebased.sample_at(1.0).is_equal_approx(Vector2(220.0, 330.0)), "conserva el desplazamiento al reubicar")
-	var bounded = timeline.rebased(Vector2(95.0, 95.0), Rect2(0.0, 0.0, 100.0, 100.0))
-	_expect(bounded.sample_at(1.0).is_equal_approx(Vector2(100.0, 100.0)), "mantiene la cadena dentro de la arena")
-
-
 func _test_level_catalog() -> void:
 	var level = LevelCatalogScript.get_level(1)
 	_expect(level != null, "el catalogo contiene el nivel inicial")
-	_expect(level.number == 1 and level.difficulty == "INICIAL", "el nivel declara identidad y dificultad")
+	_expect(level.number == 1 and level.title == "PRIMERA ESTELA" and level.difficulty == "INICIAL", "el nivel declara identidad y dificultad")
 	_expect(is_equal_approx(level.duration, 45.0), "el nivel inicial define su tiempo de victoria")
 	_expect(is_equal_approx(level.echo_interval, 5.0), "el nivel controla la frecuencia de ecos")
 	_expect(not LevelCatalogScript.has_level(2), "no inventa un segundo nivel sin contenido")
@@ -204,8 +179,10 @@ func _test_run_scene() -> void:
 	var echo := await _open_latest_rift(run)
 	_expect(echoes.get_child_count() == 1, "crea un eco al abrir la grieta")
 	_expect(echo.collision_layer == 2 and echo.collision_mask == 1, "capas fisicas del eco")
-	_expect(is_equal_approx(echo.playback_speed, 1.2), "un segmento inmovil acelera el primer eco")
-	_expect(echo.mode == EchoPlayback.Mode.HUNTER, "un segmento inmovil crea un cazador")
+	_expect(is_equal_approx(echo.pressure_multiplier, 1.2), "un segmento inmovil comprime el retraso del primer eco")
+	_expect(echo.mode == EchoPlayback.Mode.FOLLOWER, "todos los ecos usan seguimiento retardado")
+	_expect(echo.follow_target() == player, "el primer eco sigue al jugador")
+	_expect(echo.pressured, "un segmento inmovil marca el eco como presionado")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.ECHO, "crear un eco reproduce su sonido")
 	_expect(feedback.active_ring_count() > 0, "crear un eco genera una onda visual")
 
@@ -255,7 +232,7 @@ func _test_arena_progression() -> void:
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E2/3\nF0 CAZA x1.0", "el HUD informa nivel, etapa, faltas y ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E2/3\nF0 CAD x1.0", "el HUD informa nivel, etapa, faltas y ritmo")
 	var patrol_start := patrol.position
 	patrol.set_physics_process(false)
 	patrol._physics_process(1.0)
@@ -278,7 +255,7 @@ func _test_arena_progression() -> void:
 	run._restart()
 	await process_frame
 	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E1/3\nF0 CAZA x1.0", "repetir limpia las faltas de ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E1/3\nF0 CAD x1.0", "repetir limpia las faltas de ritmo")
 	run.queue_free()
 	await process_frame
 
@@ -297,7 +274,8 @@ func _test_recursive_echo_chain() -> void:
 		var echo := await _open_latest_rift(run, true)
 		_expect(echo.global_position.is_equal_approx(spawn_position), "el eco %d aparece donde estaba su predecesor" % (cycle + 1))
 		_expect(echo.generation == cycle + 1, "la cadena conserva el orden generacional")
-		_expect(echo.persistent_resonance, "el eco permanece durante todo el nivel")
+		_expect(echo.mode == EchoPlayback.Mode.FOLLOWER, "cada generacion permanece en seguimiento")
+		_expect(echo.follow_target() == predecessor, "cada eco sigue directamente a su predecesor")
 		predecessor = echo
 	var echoes := run.get_node("Echoes") as Node2D
 	_expect(echoes.get_child_count() == 6, "la cantidad de ecos activos supera el antiguo limite")
@@ -341,68 +319,79 @@ func _test_rift_lifecycle() -> void:
 	run._segment_time = 5.0
 	run._spawn_echo()
 	var first_rift = run.rifts.get_child(0)
-	var first_anchor: Vector2 = first_rift.global_position
-	_expect(not first_rift.hunter, "un recorrido activo crea una grieta de trayectoria")
+	_expect(not first_rift.pressured, "un recorrido activo conserva la distancia normal")
 	_expect(first_rift.predecessor == run.player, "el jugador inicia la primera generacion")
-	_expect(first_anchor.is_equal_approx(endpoint), "la primera grieta sigue la posicion actual del jugador")
-	_expect(first_rift.timeline.sample_at(0.0).is_equal_approx(origin), "la plantilla conserva el origen grabado")
-	_expect(first_rift.timeline.sample_at(2.5).is_equal_approx(midpoint), "la plantilla conserva cada desplazamiento intermedio")
-	_expect(first_rift.timeline.sample_at(first_rift.timeline.duration()).is_equal_approx(endpoint), "la plantilla conserva el destino grabado")
-	var trace := await _open_latest_rift(run, true)
-	_expect(trace.mode == EchoPlayback.Mode.TRACE, "la grieta activa reproduce el recorrido")
-	_expect(trace.global_position.is_equal_approx(endpoint), "el primer eco nace donde se encuentra el jugador")
-	run.player.global_position = endpoint - Vector2(300.0, 0.0)
+	_expect(first_rift.global_position.is_equal_approx(endpoint), "la primera grieta sigue la posicion actual del jugador")
+	var first := await _open_latest_rift(run, true)
+	_expect(first.mode == EchoPlayback.Mode.FOLLOWER, "la grieta crea un perseguidor con memoria")
+	_expect(first.follow_target() == run.player, "la primera generacion sigue al jugador")
+	_expect(first.global_position.is_equal_approx(endpoint), "el primer eco nace donde se encuentra el jugador")
+
+	var player_step_one := endpoint + Vector2(140.0, -80.0)
+	run.player.global_position = player_step_one
+	first._physics_process(0.6)
+	_expect(first.global_position.is_equal_approx(endpoint), "el eco espera su retraso antes de perseguir")
+	var player_step_two := endpoint + Vector2(-120.0, -40.0)
+	run.player.global_position = player_step_two
+	first._physics_process(0.7)
+	_expect(not first.global_position.is_equal_approx(endpoint), "el eco comienza a recorrer la memoria del jugador")
+	_expect(not first.global_position.is_equal_approx(player_step_two), "el seguimiento mantiene distancia temporal")
+	var player_step_three := endpoint + Vector2(80.0, 160.0)
+	run.player.global_position = player_step_three
+	first._physics_process(1.2)
+	_expect(first.global_position.is_equal_approx(player_step_two), "el eco alcanza una posicion pasada exacta del jugador")
+
 	run._timeline.add_sample(2.5, endpoint - Vector2(150.0, 80.0))
-	run._timeline.add_sample(5.0, run.player.global_position)
+	run._timeline.add_sample(5.0, endpoint - Vector2(300.0, 0.0))
 	run._segment_time = 5.0
 	run._spawn_echo()
 	var second_rift = run.rifts.get_child(0)
-	_expect(second_rift.predecessor == trace, "la segunda grieta desciende del ultimo eco")
-	var predecessor_start: Vector2 = trace.global_position
-	trace._physics_process(2.5)
+	_expect(second_rift.predecessor == first, "la segunda grieta desciende del ultimo eco")
+	var predecessor_start: Vector2 = first.global_position
+	run.player.global_position = endpoint + Vector2(-100.0, 220.0)
+	first._physics_process(0.6)
 	second_rift._physics_process(0.2)
-	_expect(not trace.global_position.is_equal_approx(predecessor_start), "el eco predecesor continua su recorrido")
-	_expect(second_rift.global_position.is_equal_approx(trace.global_position), "la grieta sigue al ultimo eco mientras se mueve")
-	var second_origin: Vector2 = trace.global_position
+	_expect(not first.global_position.is_equal_approx(predecessor_start), "el eco predecesor continua siguiendo al jugador")
+	_expect(second_rift.global_position.is_equal_approx(first.global_position), "la grieta sigue al ultimo eco mientras se mueve")
+	var second_origin: Vector2 = first.global_position
 	var second := await _open_latest_rift(run, true)
 	_expect(second.global_position.is_equal_approx(second_origin), "la segunda generacion nace desde la primera")
 	_expect(second.generation == 2, "la segunda generacion queda identificada")
-
-	trace._physics_process(20.0)
-	var trace_endpoint := trace.global_position
-	_expect(trace_endpoint.is_equal_approx(endpoint + (endpoint - origin)), "el eco conserva el desplazamiento desde su nuevo origen")
-	_expect(trace.mode == EchoPlayback.Mode.RESONANCE, "la trayectoria termina como resonancia")
-	trace._physics_process(trace.resonance_duration * 2.0)
-	_expect(trace.global_position.is_equal_approx(trace_endpoint), "la resonancia permanece en el destino")
-	_expect(run.echoes.get_child_count() == 2, "las generaciones no expiran durante el nivel")
+	_expect(second.follow_target() == first, "la segunda generacion sigue a la primera")
+	run.player.global_position = endpoint + Vector2(180.0, 180.0)
+	first._physics_process(1.2)
+	var first_past_position := first.global_position
+	second._physics_process(1.2)
+	run.player.global_position = endpoint + Vector2(220.0, -120.0)
+	first._physics_process(1.2)
+	second._physics_process(1.2)
+	_expect(second.global_position.is_equal_approx(first_past_position), "la segunda generacion recorre la memoria de la primera")
+	_expect(run.echoes.get_child_count() == 2, "las generaciones permanecen activas durante el nivel")
 	run.queue_free()
 	await process_frame
 
 
-func _test_hunter_escalation() -> void:
+func _test_chain_compression() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
 	await process_frame
 	run.set_physics_process(false)
 	run._physics_process(5.1)
 	var first := await _open_latest_rift(run)
-	_expect(first.hunter_speed() < run.player.move_speed, "el primer cazador todavia se puede superar")
+	var first_delay := first.effective_follow_delay()
+	_expect(first_delay < RunController.ECHO_FOLLOW_DELAY, "la primera falta acerca el eco a su predecesor")
 	_expect((run.phase_banner as Label).text.contains("FALTA LENTA 1"), "el primer castigo muestra su nivel")
-	run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 0 and run._slow_offenses == 1, "recuperarse conserva la primera falta")
-	_expect(is_equal_approx(first.playback_speed, 1.2), "el primer cazador conserva su velocidad minima")
-
 	run._physics_process(5.1)
 	var second := await _open_latest_rift(run)
-	_expect(second.hunter_speed() > run.player.move_speed, "el segundo cazador supera la velocidad del jugador")
+	_expect(second.effective_follow_delay() < first_delay, "una segunda falta comprime aun mas la cadena")
+	_expect(is_equal_approx(first.effective_follow_delay(), second.effective_follow_delay()), "la presion afecta todas las generaciones")
 	_expect((run.phase_banner as Label).text.contains("FALTA LENTA 2"), "el segundo castigo muestra reincidencia")
-	var second_speed := second.hunter_speed()
+	var compressed_delay := first.effective_follow_delay()
 	run._update_echo_pressure(500.0)
-
-	run._physics_process(5.1)
-	var third := await _open_latest_rift(run)
-	_expect(third.hunter_speed() > second_speed, "el tercer cazador vuelve a aumentar la velocidad")
-	_expect(run._echo_pressure == 1 and run._slow_offenses == 3, "tres episodios lentos acumulan tres faltas")
+	_expect(run._echo_pressure == 1 and run._slow_offenses == 2, "recuperarse conserva las faltas registradas")
+	_expect(first.effective_follow_delay() > compressed_delay, "recuperarse vuelve a abrir la cadena")
+	run._update_echo_pressure(500.0)
+	_expect(run._echo_pressure == 0 and is_equal_approx(first.effective_follow_delay(), RunController.ECHO_FOLLOW_DELAY), "la distancia activa restaura el retraso normal")
 	run.queue_free()
 	await process_frame
 
@@ -416,34 +405,38 @@ func _test_echo_pressure() -> void:
 	run._update_echo_pressure(0.0)
 	_expect(run._echo_pressure == 1, "un recorrido corto aumenta la presion")
 	_expect(feedback.last_cue == GameplayFeedback.Cue.PRESSURE, "la presion reproduce una alerta")
-	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("CAZADOR x1.2"), "la alerta explica la aceleracion")
+	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("CADENA x1.2"), "la alerta explica la compresion")
 	for _level in 5:
 		run._update_echo_pressure(0.0)
 	_expect(run._echo_pressure == 6, "la presion supera el antiguo limite")
-	_expect(is_equal_approx(run._echo_speed_multiplier, 2.2), "la velocidad aumenta sin tope configurado")
+	_expect(is_equal_approx(run._chain_pressure_multiplier, 2.2), "la compresion aumenta sin tope configurado")
 
 	run._physics_process(5.1)
 	var pending_rift = run.rifts.get_child(0)
-	_expect(pending_rift.hunter, "el recorrido lento prepara un cazador")
+	_expect(pending_rift.pressured, "el recorrido lento prepara un eco comprimido")
 	var echo := await _open_latest_rift(run)
-	_expect(is_equal_approx(echo.playback_speed, 2.4), "el eco nuevo recibe toda la presion acumulada")
+	_expect(is_equal_approx(echo.pressure_multiplier, 2.4), "el eco nuevo recibe toda la presion acumulada")
+	_expect(echo.effective_follow_delay() < RunController.ECHO_FOLLOW_DELAY, "la presion reduce el retraso de seguimiento")
+	var echo_origin := echo.global_position
 	run.player.global_position += Vector2(120.0, 0.0)
-	var hunter_distance := echo.global_position.distance_to(run.player.global_position)
 	echo.set_physics_process(false)
 	echo._physics_process(0.25)
-	_expect(echo.global_position.distance_to(run.player.global_position) < hunter_distance, "el cazador persigue al jugador")
+	_expect(echo.global_position.is_equal_approx(echo_origin), "el eco conserva memoria incluso bajo presion")
+	run.player.global_position += Vector2(120.0, 0.0)
+	echo._physics_process(0.3)
+	_expect(not echo.global_position.is_equal_approx(echo_origin), "el eco sigue una posicion pasada del jugador")
 	run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 6 and is_equal_approx(run._echo_speed_multiplier, 2.2), "moverse reduce la presion temporal")
-	_expect(is_equal_approx(echo.playback_speed, 2.4), "recuperarse no reduce un cazador ya invocado")
-	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("RITMO RECUPERADO"), "la recuperacion se comunica al jugador")
+	_expect(run._echo_pressure == 6 and is_equal_approx(run._chain_pressure_multiplier, 2.2), "moverse reduce la presion temporal")
+	_expect(is_equal_approx(echo.pressure_multiplier, 2.2), "recuperarse abre tambien los ecos existentes")
+	_expect((run.get_node("UI/PhaseBanner") as Label).text.contains("DISTANCIA RECUPERADA"), "la recuperacion se comunica al jugador")
 	for _level in 6:
 		run._update_echo_pressure(500.0)
-	_expect(run._echo_pressure == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "la actividad recupera el ritmo normal")
+	_expect(run._echo_pressure == 0 and is_equal_approx(run._chain_pressure_multiplier, 1.0), "la actividad recupera el ritmo normal")
 
 	run._update_echo_pressure(0.0)
 	run._restart()
 	await process_frame
-	_expect(run._echo_pressure == 0 and run._slow_offenses == 0 and is_equal_approx(run._echo_speed_multiplier, 1.0), "repetir reinicia presion y faltas")
+	_expect(run._echo_pressure == 0 and run._slow_offenses == 0 and is_equal_approx(run._chain_pressure_multiplier, 1.0), "repetir reinicia presion y faltas")
 	run.queue_free()
 	await process_frame
 

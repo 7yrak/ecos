@@ -194,7 +194,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-019 - Faltas lentas acumulativas
 
 - Fecha: 2026-07-18
-- Estado: aceptada para balance
+- Estado: reemplazada por D-025
 - Decision: conservar durante toda la partida cada infraccion de movimiento lento y
   usarla como velocidad minima de los cazadores futuros.
 - Motivo: los cazadores iniciales eran faciles de esquivar y recuperar un segmento
@@ -230,7 +230,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-022 - Cadena recursiva sin limite fijo
 
 - Fecha: 2026-07-20
-- Estado: aceptada
+- Estado: reemplazada parcialmente por D-025
 - Decision: la primera grieta sigue al jugador y cada grieta posterior sigue al ultimo
   eco creado; al abrirse, el nuevo eco aplica el desplazamiento grabado desde la
   posicion actual de su predecesor y queda como resonancia hasta finalizar el nivel.
@@ -263,6 +263,22 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   disponible en `main` quede actualizada inmediatamente.
 - Consecuencia: cada publicacion debe validar antes el alcance, las pruebas y el
   artefacto. `releases/` conserva solo la APK vigente en el mismo commit publicado.
+
+## D-025 - Perseguidores recursivos con memoria
+
+- Fecha: 2026-07-20
+- Estado: aceptada
+- Decision: cada eco registra las posiciones en vivo de su predecesor y las sigue con
+  1.2 segundos de retraso. El primero sigue al jugador y los siguientes forman una
+  cadena recursiva; no existen reproducciones finitas, cazadores separados ni
+  resonancias estaticas.
+- Motivo: trasladar un segmento hacia el ultimo eco hacia que la amenaza recorriera
+  una ruta independiente y luego se detuviera, por lo que no se percibia que los ecos
+  persiguieran al jugador.
+- Consecuencia: todas las generaciones permanecen en movimiento. Un segmento lento
+  comprime el retraso de la cadena completa en pasos de 0.2x; recuperar distancia lo
+  amplia nuevamente. La dificultad se concentra en una sola regla legible y el nivel
+  inicial pasa a llamarse `PRIMERA ESTELA`.
 
 ## Decisiones pendientes del usuario
 

@@ -138,7 +138,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.2.9"
+text = "ECOS // 0.3.0"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]
@@ -181,7 +181,7 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.82, 0.84, 1)
 theme_override_font_sizes/font_size = 27
-text = "Cada eco nace del anterior.\nSobrevive hasta completar el nivel."
+text = "Tu estela despierta y te persigue.\nSobrevive hasta completar el nivel."
 vertical_alignment = 1
 
 [node name="Badge" type="PanelContainer" parent="Content/Layout/Hero"]
@@ -300,7 +300,7 @@ custom_minimum_size = Vector2(0, 118)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
-text = "02  CREA LA CADENA\nCada cinco segundos nace un eco donde se encuentra\nel anterior. No hay un limite de ecos."
+text = "02  CREA LA CADENA\nCada cinco segundos nace un eco que sigue con retraso\nal anterior. No hay un limite de ecos."
 vertical_alignment = 1
 
 [node name="StepThree" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
@@ -308,7 +308,7 @@ custom_minimum_size = Vector2(0, 142)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
-text = "03  COMPLETA EL NIVEL\nSobrevive hasta agotar su tiempo. Las resonancias permanecen\ny cada falta lenta crea un cazador mas rapido."
+text = "03  MANTEN DISTANCIA\nSobrevive hasta agotar el tiempo. Moverte poco comprime\ntoda la cadena y acerca los ecos a tu estela."
 vertical_alignment = 1
 
 [node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]

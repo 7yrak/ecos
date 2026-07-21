@@ -49,10 +49,10 @@ Estado: activa desde el 2026-07-18.
 
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos y feedback audiovisual completados. El nivel 1
-tiene victoria a los 45 segundos, cadena recursiva sin limite fijo, resonancias
-persistentes, cazadores y faltas lentas acumulativas. El catalogo permite incorporar
-niveles nuevos sin duplicar el controlador. Pendiente: validacion final en dispositivos
-fisicos y diseno del nivel 2.
+tiene victoria a los 45 segundos y una cadena recursiva sin limite fijo: cada eco sigue
+con memoria retardada a su predecesor. Las faltas lentas comprimen toda la cadena. El
+catalogo permite incorporar niveles nuevos sin duplicar el controlador. Pendiente:
+validacion final en dispositivos fisicos y diseno del nivel 2.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 

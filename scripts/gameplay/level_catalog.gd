@@ -5,7 +5,7 @@ const LevelDefinitionScript = preload("res://scripts/gameplay/level_definition.g
 const LEVELS := [
 	{
 		"number": 1,
-		"title": "PRIMERA RESONANCIA",
+		"title": "PRIMERA ESTELA",
 		"difficulty": "INICIAL",
 		"duration": 45.0,
 		"echo_interval": 5.0,

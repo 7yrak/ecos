@@ -4,6 +4,51 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-20 - Los ecos vuelven a perseguir al jugador
+
+Fase: Fase 2 - Vertical slice
+
+Origen del cambio:
+
+- La prueba de `0.2.9` detecto que los ecos nacian desde el ultimo miembro de la
+  cadena, pero seguian una ruta trasladada independiente y luego quedaban estaticos.
+- Este comportamiento cumplia el origen recursivo, pero no la esencia de una estela
+  que persigue continuamente al jugador.
+
+Cambios:
+
+- El primer eco registra en vivo las posiciones del jugador y las sigue con 1.2
+  segundos de retraso.
+- Cada eco posterior registra y sigue a su predecesor, por lo que el retraso se
+  acumula y forma una cadena recursiva en movimiento.
+- Las prioridades de fisica garantizan el orden jugador, eco 1, eco 2 y siguientes.
+- Se eliminaron reproducciones finitas, traslacion y recorte de segmentos, cazadores
+  separados y resonancias estaticas.
+- Los segmentos de cinco segundos solo miden actividad. Una falta lenta comprime el
+  retraso de todas las generaciones en pasos de 0.2x; moverse vuelve a ampliarlo.
+- HUD, resultado, tutorial y efectos distinguen ecos normales y ecos bajo presion sin
+  introducir otra regla de movimiento.
+- La version avanza a `0.3.0` (`versionCode 13`).
+
+Verificacion:
+
+- Pasan 164 verificaciones headless sin fugas de recursos.
+- La suite comprueba espera inicial, seguimiento de posiciones pasadas exactas,
+  segunda generacion siguiendo a la primera, seis generaciones simultaneas y
+  compresion/reapertura reversible de toda la cadena.
+- La importacion completa de Godot y el entorno Android finalizaron correctamente.
+- La APK tiene firmas v2 y v3 validas, `targetSdk 36`, ARM64 y x86_64, no solicita
+  permisos y excluye recursos de pruebas y desarrollo.
+- APK: `releases/ECOS-0.3.0-android.apk`.
+- SHA-256: `5acf9c84c54b7cd9be7c25d5be7d191f74bce68729945ac4cf742d7bcf7ed7fb`.
+
+Siguiente accion:
+
+- Instalar `0.3.0` en Galaxy A25 y S25 y confirmar visualmente que cada generacion
+  persigue la estela anterior sin saltos.
+- Ajustar primero el retraso base de 1.2 segundos si la cadena resulta demasiado
+  distante o inevitable; no reintroducir amenazas de movimiento separado.
+
 ## 2026-07-20 - Publicacion directa permanente en main
 
 Fase: Fase 2 - Vertical slice

@@ -42,9 +42,9 @@ func play_echo(world_position: Vector2) -> void:
 	_spawn_ring(world_position, Color(1.0, 0.45, 0.36, 0.85), 2.0)
 
 
-func play_rift(world_position: Vector2, hunter: bool) -> void:
+func play_rift(world_position: Vector2, pressured: bool) -> void:
 	_play(Cue.RIFT)
-	var color := Color(1.0, 0.68, 0.25, 0.95) if hunter else Color(1.0, 0.34, 0.28, 0.9)
+	var color := Color(1.0, 0.68, 0.25, 0.95) if pressured else Color(1.0, 0.34, 0.28, 0.9)
 	_spawn_ring(world_position, color, 2.6)
 
 

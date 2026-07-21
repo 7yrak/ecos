@@ -7,82 +7,78 @@
 
 - Fecha de actualizacion: 2026-07-20
 - Fase activa: Fase 2 - Vertical slice
-- Hito activo: validar el nivel 1 con cadena recursiva y victoria temporal
-- Estado general: implementacion terminada; validacion fisica pendiente
-- Ultima sesion: ecos sin limite fijo, descendencia recursiva y catalogo de niveles
+- Hito activo: validar perseguidores recursivos con memoria en dispositivos fisicos
+- Estado general: implementacion y release terminados; validacion fisica pendiente
+- Ultima sesion: se recupero la esencia de ecos que siguen continuamente al jugador
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version de aplicacion avanza a `0.2.9` (`versionCode 12`).
-- La APK release firmada esta en `releases/ECOS-0.2.9-android.apk`; es el unico
+- La version vigente es `0.3.0` (`versionCode 13`).
+- La APK release firmada esta en `releases/ECOS-0.3.0-android.apk`; es el unico
   artefacto vigente y su SHA-256 es
-  `306f623cb13ba0d9cec0ed2364cc056968d3b2f3502df395a02e44042c111a84`.
+  `5acf9c84c54b7cd9be7c25d5be7d191f74bce68729945ac4cf742d7bcf7ed7fb`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
-- El nivel 1 se llama `PRIMERA RESONANCIA`, tiene dificultad `INICIAL` y se gana al
-  sobrevivir 45 segundos.
-- Cada nivel define en el catalogo su duracion, intervalo de ecos y tiempos de etapa.
-  Solo existe el nivel 1; el flujo avanza automaticamente cuando se agregue el nivel 2.
-- La primera grieta sigue al jugador durante 0.7 segundos. Cada grieta posterior sigue
-  al ultimo eco y el descendiente nace donde se encuentre su predecesor al abrirse.
-- El eco conserva el desplazamiento grabado desde su nuevo origen. Sus muestras se
-  limitan al interior visible para que la cadena trasladada no abandone la arena.
-- No hay un maximo de ecos activos. Los recorridos y cazadores terminan como
-  resonancias peligrosas que permanecen hasta la victoria o derrota.
-- Los segmentos menores de 280 px crean cazadores. Las faltas lentas siguen
-  acumulandose y cada nuevo cazador aumenta 0.2x sin limite superior configurado.
-- La patrulla se activa a los 12 segundos y el pulso a los 24 segundos en el nivel 1.
-- El HUD muestra tiempo transcurrido/objetivo, nivel, etapa, ecos activos y faltas.
-- El resultado diferencia `NIVEL SUPERADO` de una colision y permite repetir el nivel.
-- Pasan 159 verificaciones headless sin fugas de recursos, incluidas seis generaciones
-  simultaneas, seguimiento de un predecesor en movimiento, victoria temporal,
+- El nivel 1, `PRIMERA ESTELA / INICIAL`, se gana al sobrevivir 45 segundos.
+- Cada cinco segundos aparece una grieta sobre el ultimo miembro de la cadena.
+- El primer eco registra las posiciones del jugador y las sigue con 1.2 segundos de
+  retraso. Cada generacion posterior hace lo mismo con el eco anterior.
+- La prioridad de fisica sigue el orden jugador, eco 1, eco 2 y siguientes, evitando
+  que una generacion lea una posicion atrasada de su predecesor.
+- No hay un maximo de ecos activos y todos permanecen en movimiento durante el nivel.
+- Los segmentos de cinco segundos solo miden distancia. Recorrer menos de 280 px
+  agrega 0.2x de presion y reduce el retraso efectivo de toda la cadena.
+- Un segmento activo resta un nivel de presion y vuelve a ampliar la distancia. Las
+  faltas lentas se conservan como estadistica del intento.
+- Se eliminaron cazadores separados, recorridos trasladados, recorte contra bordes y
+  resonancias estaticas.
+- El HUD muestra nivel, etapa, faltas y presion de cadena; el tutorial explica el
+  seguimiento retardado y la compresion por movimiento lento.
+- Pasan 164 verificaciones headless sin fugas de recursos, incluidas posiciones
+  pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
   colisiones, reinicio, interfaz adaptable y diez ciclos tecnicos consecutivos.
-- Menu, tutorial y textos explican la cadena, la ausencia de limite y la meta temporal.
-- Volumen, vibracion y sensibilidad siguen persistiendo en `user://settings.cfg`.
 - La identidad `com.tyrak.ecos` y el nombre del estudio siguen siendo provisionales.
 
 ## Siguiente accion exacta
 
-Instalar `0.2.9` en Galaxy A25 y S25 y completar diez intentos del nivel 1. Confirmar
-que las grietas siguen visualmente al ultimo eco, que se pueden observar mas de cuatro
-generaciones sin caidas de rendimiento y que 45 segundos es una meta dificil pero
-alcanzable. Registrar muertes, cantidad maxima de ecos y tiempo medio antes de disenar
-el nivel 2.
+Instalar `0.3.0` en Galaxy A25 y S25 y completar diez intentos del nivel 1. Confirmar
+que el primer eco sigue la estela del jugador, que las generaciones posteriores siguen
+a la anterior sin saltos y que la compresion por faltas se entiende visualmente.
+Registrar tiempo medio, muertes por eco y si el retraso base de 1.2 segundos permite
+reaccionar antes de disenar el nivel 2.
 
 ## Tareas pendientes inmediatas
 
-- [x] Implementar cadena recursiva desde el ultimo eco.
-- [x] Eliminar el limite de cuatro ecos activos.
-- [x] Mantener resonancias durante todo el nivel.
-- [x] Agregar victoria temporal al nivel 1.
-- [x] Crear catalogo extensible y flujo preparado para el siguiente nivel.
-- [x] Actualizar HUD, resultado, tutorial y pruebas automatizadas.
-- [ ] Validar legibilidad, balance y rendimiento en Galaxy A25 y S25.
-- [ ] Ajustar los 45 segundos segun diez partidas fisicas.
-- [ ] Disenar el nivel 2 con una diferencia jugable clara antes de agregarlo al catalogo.
+- [x] Sustituir recorridos finitos por seguimiento vivo retardado.
+- [x] Encadenar cada generacion al eco anterior.
+- [x] Eliminar cazadores y resonancias como comportamientos separados.
+- [x] Convertir la presion lenta en compresion reversible de toda la cadena.
+- [x] Actualizar HUD, tutorial, pruebas y documentacion.
+- [x] Exportar y auditar la APK `0.3.0`.
+- [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
+- [ ] Ajustar el retraso de 1.2 segundos segun diez partidas fisicas.
+- [ ] Disenar el nivel 2 con una diferencia jugable clara.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
 
 ## Bloqueos
 
 - No hay un telefono Android conectado por ADB; la validacion fisica requiere conectar
   el Galaxy A25 o S25 con depuracion USB autorizada.
-- El nivel 2 no esta bloqueado tecnicamente, pero no debe definirse antes de obtener
-  datos de dificultad y saturacion del nivel 1.
+- El nivel 2 debe esperar datos de dificultad y legibilidad del seguimiento nuevo.
 
 ## Riesgos actuales
 
-- Los ecos no tienen limite fijo: el tiempo del nivel acota el crecimiento, pero deben
-  medirse FPS, memoria y legibilidad en un dispositivo de gama media.
-- Limitar muestras al interior mantiene cada eco visible, pero puede aplanar recorridos
-  contra los bordes y generar resonancias concentradas.
-- Una cadena de resonancias persistentes puede hacer inevitable el final antes de los
-  45 segundos; primero se ajustara duracion o persistencia, no se reintroducira un tope
-  silencioso de ecos.
-- El castigo por movimiento lento y la acumulacion recursiva pueden escalar al mismo
-  tiempo; deben observarse juntos y no balancearse de forma aislada.
-- Agregar niveles sin una diferencia jugable clara ocultaria problemas del bucle base.
+- La cadena no tiene limite fijo; los 45 segundos acotan memoria y nodos, pero deben
+  medirse FPS y legibilidad en un dispositivo de gama media.
+- Cada generacion agrega 1.2 segundos de retraso. Las generaciones lejanas pueden
+  quedar demasiado separadas para sentirse relacionadas con el jugador.
+- Una presion alta reduce el retraso de todas las generaciones y puede comprimir la
+  cadena de forma brusca; debe observarse antes de limitarla artificialmente.
+- Si el seguimiento resulta inevitable, debe ajustarse primero retraso, gracia de
+  colision o paso de presion, manteniendo una sola regla de movimiento.
+- Agregar niveles antes de validar esta esencia ocultaria problemas del bucle base.
 
 ## Regla de cierre de sesion
 
