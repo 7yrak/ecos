@@ -63,6 +63,21 @@ func set_progression_active(active: bool) -> void:
 	reset_for_run(active)
 
 
+func configure_geometry(
+	new_position: Vector2,
+	new_size: Vector2,
+	new_rotation: float = 0.0
+) -> void:
+	position = new_position
+	_origin_position = new_position
+	obstacle_size = new_size
+	rotation = new_rotation
+	var shape := RectangleShape2D.new()
+	shape.size = obstacle_size
+	collision_shape.shape = shape
+	queue_redraw()
+
+
 func _refresh_state() -> void:
 	var should_collide := progression_active
 	if kind == Kind.PULSE:

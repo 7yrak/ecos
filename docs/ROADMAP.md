@@ -45,14 +45,14 @@ Criterio de salida:
 
 ## Fase 2 - Vertical slice
 
-Estado: activa desde el 2026-07-18.
+Estado: implementacion terminada; validacion fisica pendiente.
 
 Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos y feedback audiovisual completados. El nivel 1
 tiene victoria a los 45 segundos y una cadena recursiva sin limite fijo: cada eco sigue
 con memoria retardada a su predecesor. Las faltas lentas comprimen toda la cadena. El
-catalogo permite incorporar niveles nuevos sin duplicar el controlador. Pendiente:
-validacion final en dispositivos fisicos y diseno del nivel 2.
+catalogo incorpora tres niveles con arena y ritmo propios sin duplicar el controlador.
+Pendiente: validacion final en dispositivos fisicos.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
 
@@ -76,6 +76,12 @@ Criterio de salida:
 - Rendimiento estable en al menos un dispositivo Android de gama media o baja.
 
 ## Fase 3 - MVP de contenido
+
+Estado: activa desde el 2026-07-23.
+
+Avance: moneda local, guardado versionado, tienda, cuatro skins, tres niveles
+desbloqueables y tres poderes permanentes implementados. Pendientes: modo infinito,
+generacion por semillas, cosmeticos restantes, misiones y desafio diario.
 
 Objetivo: conseguir suficiente variedad para medir retencion.
 

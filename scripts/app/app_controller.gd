@@ -17,8 +17,15 @@ func show_menu() -> void:
 	_replace_screen(menu)
 
 
-func start_game() -> void:
-	_start_level(1)
+func show_store() -> void:
+	var menu := MENU_SCENE.instantiate() as MainMenu
+	menu.play_requested.connect(start_game)
+	_replace_screen(menu)
+	menu.call_deferred("open_store", "stages")
+
+
+func start_game(level_number: int = 1) -> void:
+	_start_level(level_number)
 
 
 func _start_level(level_number: int) -> void:
@@ -26,6 +33,7 @@ func _start_level(level_number: int) -> void:
 	run.configure_level(level_number)
 	run.menu_requested.connect(show_menu)
 	run.level_requested.connect(_start_level)
+	run.store_requested.connect(show_store)
 	_replace_screen(run)
 
 

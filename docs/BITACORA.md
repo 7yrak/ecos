@@ -4,6 +4,65 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-23 - Tres niveles y Archivo de progresion
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se solicito ampliar las etapas del juego e incorporar una tienda para comprar
+  skins, etapas y poderes.
+- La economia de Fragmentos ya estaba disenada, pero no existian billetera, guardado,
+  catalogo ni contenido desbloqueable.
+
+Cambios:
+
+- El catalogo pasa de uno a tres niveles deliberados: `PRIMERA ESTELA` conserva la
+  arena base; `CONTRACORRIENTE` usa corredores verticales, patrulla horizontal y ecos
+  cada 4.5 segundos; `NUCLEO ROJO` incorpora barreras inclinadas, patrulla vertical y
+  ecos cada 4 segundos.
+- Se creo `ARCHIVO // TIENDA` con categorias para cuatro skins, tres niveles y tres
+  poderes permanentes, ademas de la opcion de jugar sin poder.
+- `PULSO` disipa el eco mas reciente, `ESTABILIZADOR` reduce tres niveles de presion
+  y `DESFASE` absorbe automaticamente el primer impacto. Cada poder se usa una sola
+  vez por intento y no es consumible.
+- Las skins cambian los colores del jugador y pueden equiparse libremente despues de
+  comprarlas.
+- Fragmentos, compras, nivel seleccionado, skin, poder y niveles completados se
+  guardan localmente en un archivo versionado.
+- Una partida valida paga por supervivencia, puntuacion y llegada a etapa 3. La
+  primera victoria agrega bonos de 20, 30 y 45 Fragmentos segun el nivel.
+- Los niveles 2 y 3 cuestan 20 y 55 Fragmentos. Si el siguiente nivel esta bloqueado,
+  el resultado abre directamente su categoria en la tienda.
+- La suite aisla el progreso de pruebas para no modificar la partida real.
+- La version avanza a `0.4.0` (`versionCode 14`) y la APK anterior se reemplaza en
+  `releases/`.
+- La clave privada de `0.3.0` no estaba disponible en este equipo ni en Git. Con
+  autorizacion del usuario se creo una nueva identidad RSA 4096 protegida fuera del
+  repositorio. Por el cambio de certificado, `0.3.0` debe desinstalarse antes de
+  instalar esta entrega.
+
+Verificacion:
+
+- Pasan 206 verificaciones headless en Godot 4.7.1.
+- La suite cubre catalogos, compras, falta de saldo, persistencia, seleccion de nivel,
+  recompensas, arenas propias y los tres poderes.
+- Se renderizaron menu y tienda a 720 x 1280; el catalogo, precios, saldo, estados de
+  equipamiento y navegacion quedaron legibles sin recortes.
+- La APK tiene firmas v2 y v3 validas, `targetSdk 36`, ARM64 y x86_64; no solicita
+  permisos y excluye pruebas, scripts de desarrollo, builds y releases.
+- APK: `releases/ECOS-0.4.0-android.apk`.
+- SHA-256: `cd92843cca343122d904d86d96a2e1077c08a4bff9851e3d40b4e62b1048345c`.
+- Certificado SHA-256:
+  `30138bb0de7250cbbe749724966e8feb46d58a6916de929cd6192584575bcfb2`.
+
+Siguiente accion:
+
+- Jugar los tres niveles en un dispositivo fisico y ajustar precios, bonos, tiempos y
+  geometria segun dificultad real.
+- Respaldar la nueva carpeta de firma en un medio seguro antes de producir otra
+  version.
+
 ## 2026-07-20 - Los ecos vuelven a perseguir al jugador
 
 Fase: Fase 2 - Vertical slice

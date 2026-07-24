@@ -15,6 +15,7 @@ config/icon="res://assets/branding/icon.png"
 [autoload]
 
 Settings="*res://scripts/app/settings_store.gd"
+Progress="*res://scripts/app/progress_store.gd"
 
 [display]
 

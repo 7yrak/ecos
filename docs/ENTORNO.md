@@ -45,6 +45,11 @@ La exportacion release lee la firma desde
 locales: no se versionan y deben respaldarse en un lugar seguro antes de publicar
 en Google Play.
 
+En el equipo Windows usado para `0.4.0`, la configuracion nueva esta fuera del
+repositorio en `D:\workspace\herramientas\ecos-signing`. Esta carpeta contiene el
+keystore y `release.env`; debe copiarse completa a un respaldo cifrado. No debe
+agregarse al repositorio ni compartirse por mensajeria.
+
 El dispositivo virtual local se llama `ecos_api35`. En este equipo debe iniciarse
 con `-gpu host`; SwiftShader presenta el issue conocido de Godot `#109550` y no
 renderiza correctamente los shaders GLES3.

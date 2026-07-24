@@ -149,7 +149,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-015 - Fragmentos obtenibles mediante juego
 
 - Fecha: 2026-07-18
-- Estado: aceptada para Fase 3
+- Estado: reemplazada parcialmente por D-026
 - Decision: toda apariencia inicial puede obtenerse jugando; no habra limite diario
   duro ni mejoras de poder comprables.
 - Motivo: el progreso debe ser exigente pero alcanzable y no convertir la tienda en
@@ -243,7 +243,7 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
 ## D-023 - Victoria temporal y catalogo explicito de niveles
 
 - Fecha: 2026-07-20
-- Estado: aceptada
+- Estado: ampliada por D-026
 - Decision: cada nivel declara nombre, dificultad, duracion, intervalo de ecos y
   activacion de etapas. El unico nivel actual es `PRIMERA RESONANCIA / INICIAL`, con
   victoria al sobrevivir 45 segundos.
@@ -279,6 +279,45 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   comprime el retraso de la cadena completa en pasos de 0.2x; recuperar distancia lo
   amplia nuevamente. La dificultad se concentra en una sola regla legible y el nivel
   inicial pasa a llamarse `PRIMERA ESTELA`.
+
+## D-026 - Archivo local, niveles comprables y poderes permanentes
+
+- Fecha: 2026-07-23
+- Estado: aceptada
+- Decision: usar Fragmentos obtenidos solo al jugar para desbloquear skins, niveles y
+  poderes permanentes. Los poderes se equipan, se usan como maximo una vez por intento
+  y nunca se consumen ni exigen dinero real.
+- Motivo: la nueva direccion solicita que la tienda incluya opciones jugables, no solo
+  cosmeticos. Una compra permanente evita crear gasto repetitivo y permite probar
+  variedad sin convertir cada derrota en una penalizacion economica.
+- Consecuencia: D-015 sigue vigente para acceso mediante juego y ausencia de limites
+  diarios, pero deja de prohibir mejoras jugables. La primera victoria de cada nivel
+  entrega un bono que abre la ruta de progresion; precios, bonos y poderes requieren
+  balance fisico antes de publicar.
+
+## D-027 - Guardado local versionado de progreso
+
+- Fecha: 2026-07-23
+- Estado: aceptada
+- Decision: guardar billetera, inventario, equipamiento, nivel seleccionado y primeras
+  victorias en `user://progress.cfg`, con version explicita y reparacion de valores
+  faltantes.
+- Motivo: una tienda sin persistencia perderia compras al cerrar o actualizar el juego.
+- Consecuencia: las pruebas usan una ruta aislada y restauran el estado original; una
+  evolucion incompatible del esquema debe incluir migracion antes de aumentar la
+  version de guardado.
+
+## D-028 - Nueva identidad de firma Android
+
+- Fecha: 2026-07-23
+- Estado: aceptada por el usuario
+- Decision: firmar `0.4.0` y versiones posteriores con una nueva clave RSA 4096
+  protegida fuera del repositorio.
+- Motivo: la clave privada que firmo `0.3.0` no existe en el equipo actual, no esta en
+  Git y no puede reconstruirse desde la APK. El usuario autorizo crear una clave nueva.
+- Consecuencia: Android no permite instalar `0.4.0` como actualizacion directa de
+  `0.3.0`; las instalaciones anteriores deben desinstalarse primero. La nueva carpeta
+  de firma debe respaldarse y conservarse para no repetir la rotacion.
 
 ## Decisiones pendientes del usuario
 

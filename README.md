@@ -7,8 +7,12 @@ Repositorio oficial: <https://github.com/7yrak/ecos>
 
 ## Descargar APK
 
-- [Descargar ECOS 0.3.0 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.3.0-android.apk)
-- SHA-256: `5acf9c84c54b7cd9be7c25d5be7d191f74bce68729945ac4cf742d7bcf7ed7fb`
+- [Descargar ECOS 0.4.0 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.4.0-android.apk)
+- SHA-256: `cd92843cca343122d904d86d96a2e1077c08a4bff9851e3d40b4e62b1048345c`
+
+La firma de `0.4.0` reemplaza la identidad de desarrollo anterior porque la clave
+privada de `0.3.0` no estaba disponible. Para pasar desde `0.3.0` se debe desinstalar
+la aplicacion anterior antes de instalar `0.4.0`.
 
 Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
 o gestor de archivos. Play Protect tambien puede pedir analizar la aplicacion porque
@@ -35,9 +39,8 @@ se distribuye fuera de Google Play. La APK no solicita permisos de Android.
 
 ## Estado
 
-La Fase 1 se completo con ocho jugadores validados. La Fase 2 esta activa e incluye
-menu, ajustes, tres etapas, audio procedural, feedback visual y presion contra el
-movimiento lento. El nivel 1 se gana al sobrevivir 45 segundos: el primer eco sigue
-la memoria del jugador y cada generacion posterior sigue a la anterior con 1.2
-segundos de retraso. La cadena no tiene un limite fijo; moverse poco comprime su
-distancia. El catalogo permite agregar niveles sin duplicar el controlador de partida.
+La Fase 3 esta activa. El juego incluye tres niveles con arenas y ritmos propios,
+cuatro skins, tres poderes permanentes y una tienda con Fragmentos obtenidos al jugar.
+Billetera, compras, equipamiento, nivel seleccionado y primeras victorias se guardan
+localmente. El primer eco sigue la memoria del jugador y cada generacion posterior
+sigue a la anterior; moverse poco comprime toda la cadena.

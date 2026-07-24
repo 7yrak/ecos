@@ -3,6 +3,8 @@ extends CharacterBody2D
 
 signal danger_hit(collider: Node)
 
+const StoreCatalogScript = preload("res://scripts/app/store_catalog.gd")
+
 @export var move_speed := 520.0
 @export var acceleration := 2400.0
 @export var arrival_distance := 10.0
@@ -11,6 +13,8 @@ var target_position := Vector2.ZERO
 var movement_enabled := true
 var _active_touch := -1
 var _danger_reported := false
+var _primary_color := Color(0.584, 1.0, 0.796)
+var _glow_color := Color(0.18, 0.82, 0.655)
 
 
 func _ready() -> void:
@@ -65,6 +69,17 @@ func set_sensitivity(multiplier: float) -> void:
 	acceleration = 2400.0 * clamped_multiplier
 
 
+func set_skin(skin_id: String) -> void:
+	var colors := StoreCatalogScript.skin_colors(skin_id)
+	_primary_color = colors.primary
+	_glow_color = colors.glow
+	queue_redraw()
+
+
+func clear_danger_report() -> void:
+	_danger_reported = false
+
+
 func reset_for_run(start_position: Vector2) -> void:
 	global_position = start_position
 	target_position = start_position
@@ -95,6 +110,6 @@ func _check_danger_collisions() -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 30.0, Color(0.18, 0.82, 0.655, 0.16))
-	draw_circle(Vector2.ZERO, 22.0, Color(0.584, 1.0, 0.796, 1.0))
+	draw_circle(Vector2.ZERO, 30.0, Color(_glow_color, 0.16))
+	draw_circle(Vector2.ZERO, 22.0, _primary_color)
 	draw_circle(Vector2(-6.0, -7.0), 6.0, Color(0.94, 1.0, 0.97, 0.9))

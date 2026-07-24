@@ -255,6 +255,30 @@ text = "45 S // LOS ECOS SIGUEN TU ESTELA"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="PowerButton" type="Button" parent="UI"]
+visible = false
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -224.0
+offset_top = -226.0
+offset_right = -34.0
+offset_bottom = -132.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.72, 0.88, 0.98, 1)
+theme_override_colors/font_disabled_color = Color(0.58, 0.72, 1, 0.9)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_menu")
+theme_override_styles/hover = SubResource("StyleBox_menu_hover")
+theme_override_styles/pressed = SubResource("StyleBox_menu_hover")
+theme_override_styles/disabled = SubResource("StyleBox_menu")
+theme_override_styles/focus = SubResource("StyleBox_menu_hover")
+text = "PULSO\nLISTO"
+
 [node name="GameOver" type="ColorRect" parent="UI"]
 visible = false
 anchors_preset = 15
@@ -273,13 +297,13 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="UI/GameOver/Center"]
-custom_minimum_size = Vector2(560, 640)
+custom_minimum_size = Vector2(580, 700)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_game_over")
 
 [node name="Content" type="VBoxContainer" parent="UI/GameOver/Center/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 22
 alignment = 1
 
 [node name="Title" type="Label" parent="UI/GameOver/Center/Panel/Content"]
@@ -292,7 +316,7 @@ horizontal_alignment = 1
 [node name="Result" type="Label" parent="UI/GameOver/Center/Panel/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.9, 0.9, 1)
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 23
 text = "RESULTADO"
 horizontal_alignment = 1
 

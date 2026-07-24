@@ -26,6 +26,10 @@ creado por uno mismo en una cadena perfecta.
 - Cada nivel declara dificultad, duracion, frecuencia de ecos y tiempos de etapa.
 - El nivel 1, `PRIMERA ESTELA / INICIAL`, se completa sobreviviendo 45 segundos.
 - Se crea un eco cada 5 segundos en el nivel 1.
+- El nivel 2, `CONTRACORRIENTE / INTERMEDIA`, dura 55 segundos, crea ecos cada 4.5
+  segundos y cambia la arena a corredores verticales.
+- El nivel 3, `NUCLEO ROJO / AVANZADA`, dura 65 segundos, crea ecos cada 4 segundos
+  y combina barreras inclinadas con patrulla vertical.
 - La primera grieta sigue al jugador durante su aviso de 0.7 segundos; las siguientes
   siguen al ultimo eco creado y abren donde este se encuentre.
 - Cada eco registra en vivo las posiciones de su predecesor y las sigue con 1.2
@@ -99,12 +103,15 @@ Implementado:
 - Ecos que siguen posiciones pasadas exactas del predecesor con retraso acumulativo.
 - Presion reversible desde x1.0 que comprime el retraso de todas las generaciones para
   impedir la estrategia de movimiento extremadamente lento.
+- Tres niveles con geometria, duracion, frecuencia, distancia minima y retraso propios.
+- Archivo local con Fragmentos, tienda, equipamiento y primeras victorias persistentes.
+- Cuatro skins, dos niveles desbloqueables y tres poderes permanentes.
 
 Siguiente iteracion:
 
 - Pruebas externas para ajustar los 45 segundos, el retraso de 1.2 segundos y las
   ventanas seguras.
-- Disenar e incorporar el nivel 2 como una nueva entrada explicita del catalogo.
+- Validar y balancear los niveles 2 y 3 en dispositivos fisicos.
 - Ajuste de volumen y mezcla segun la respuesta en dispositivos fisicos.
 
 ## Alcance del MVP
@@ -140,6 +147,15 @@ Formula candidata para Fase 3:
 - Cada 1.000 puntos: +1 Fragmento.
 - Alcanzar etapa 3: +1 Fragmento.
 - Balance inicial de tienda: 30 comun, 75 rara y 150 especial.
+- Primera victoria: +20 Fragmentos en nivel 1, +30 en nivel 2 y +45 en nivel 3.
+- Niveles desbloqueables: 20 Fragmentos para nivel 2 y 55 para nivel 3.
+
+Implementacion inicial de poderes:
+
+- `PULSO` (35): disipa el eco mas reciente una vez por intento.
+- `ESTABILIZADOR` (75): reduce tres niveles de presion una vez por intento.
+- `DESFASE` (150): absorbe automaticamente el primer impacto.
+- Son desbloqueos permanentes, equipables de a uno y no se consumen al jugar.
 
 ## Horizonte online - Duelo de Ecos
 

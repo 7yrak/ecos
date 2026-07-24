@@ -3,6 +3,7 @@ extends Node2D
 
 signal menu_requested
 signal level_requested(level_number: int)
+signal store_requested
 
 enum RunState { PLAYING, GAME_OVER }
 
@@ -11,7 +12,6 @@ const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
 const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const RIFT_SCRIPT := preload("res://scripts/gameplay/echo_rift_warning.gd")
 const SAMPLE_INTERVAL := 0.05
-const MIN_SEGMENT_DISTANCE := 280.0
 const CHAIN_PRESSURE_STEP := 0.2
 const ECHO_FOLLOW_DELAY := 1.2
 const RIFT_WARNING_TIME := 0.7
@@ -33,12 +33,14 @@ const DESIGN_HEIGHT := 1280.0
 @onready var phase_banner: Label = $UI/PhaseBanner
 @onready var impact_flash: ColorRect = $UI/ImpactFlash
 @onready var instruction_label: Label = $UI/Instruction
+@onready var power_button: Button = $UI/PowerButton
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_title: Label = $UI/GameOver/Center/Panel/Content/Title
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
 @onready var restart_button: Button = $UI/GameOver/Center/Panel/Content/Restart
 @onready var menu_button: Button = $UI/GameOver/Center/Panel/Content/Menu
 @onready var settings_store := get_node("/root/Settings") as SettingsStore
+@onready var progress_store := get_node("/root/Progress") as ProgressStore
 
 var _state := RunState.PLAYING
 var _level
@@ -58,6 +60,9 @@ var _current_phase := 1
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
 var _run_id := 0
+var _reward_granted := false
+var _power_used := false
+var _power_invulnerability_time := 0.0
 
 
 func _ready() -> void:
@@ -67,9 +72,11 @@ func _ready() -> void:
 	_center_world_for_viewport()
 	player.danger_hit.connect(_on_player_danger_hit)
 	pulse_obstacle.danger_state_changed.connect(_on_pulse_state_changed)
+	power_button.pressed.connect(_on_power_pressed)
 	restart_button.pressed.connect(_on_primary_action)
 	menu_button.pressed.connect(menu_requested.emit)
 	player.set_sensitivity(settings_store.sensitivity)
+	player.set_skin(progress_store.equipped_skin)
 	_start_run()
 
 
@@ -97,6 +104,9 @@ func _physics_process(delta: float) -> void:
 	if _state != RunState.PLAYING:
 		return
 
+	if _power_invulnerability_time > 0.0:
+		_power_invulnerability_time = maxf(0.0, _power_invulnerability_time - delta)
+		player.clear_danger_report()
 	_run_time = minf(_run_time + delta, _level.duration)
 	_segment_time += delta
 	_sample_accumulator += delta
@@ -124,6 +134,9 @@ func _start_run() -> void:
 		_flash_tween.kill()
 	_state = RunState.PLAYING
 	_level_won = false
+	_reward_granted = false
+	_power_used = false
+	_power_invulnerability_time = 0.0
 	_run_time = 0.0
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -137,6 +150,7 @@ func _start_run() -> void:
 	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
+	_configure_arena_for_level()
 	upper_obstacle.reset_for_run(true)
 	lower_obstacle.reset_for_run(true)
 	patrol_obstacle.reset_for_run(false)
@@ -144,14 +158,16 @@ func _start_run() -> void:
 	var start_position := to_global(START_POSITION)
 	_timeline.add_sample(0.0, start_position)
 	player.reset_for_run(start_position)
+	player.set_skin(progress_store.equipped_skin)
 	game_over_overlay.visible = false
 	result_title.text = "FIN DEL ECO"
 	result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
 	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
 	impact_flash.visible = false
-	instruction_label.text = "%d S // LOS ECOS SIGUEN TU ESTELA" % roundi(_level.duration)
+	instruction_label.text = "%s // %d S" % [_level.title, roundi(_level.duration)]
 	instruction_label.modulate.a = 1.0
+	_configure_power_button()
 	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], Color(0.584, 1.0, 0.796), 2.4)
 	_update_hud()
 
@@ -167,7 +183,7 @@ func _spawn_echo() -> void:
 	_timeline.add_sample(_segment_time, player.global_position)
 	if _timeline.is_playable():
 		var distance := _timeline.travel_distance()
-		var pressured := distance < MIN_SEGMENT_DISTANCE
+		var pressured: bool = distance < float(_level.minimum_segment_distance)
 		_update_echo_pressure(distance)
 		var predecessor := _recursive_predecessor()
 		var rift = RIFT_SCRIPT.new()
@@ -197,7 +213,7 @@ func _on_rift_opened(rift) -> void:
 	echo.configure_follower(
 		rift.global_position,
 		rift.predecessor,
-		ECHO_FOLLOW_DELAY,
+		_level.follow_delay,
 		rift.pressured
 	)
 	echo.set_pressure_multiplier(_chain_pressure_multiplier)
@@ -208,11 +224,15 @@ func _on_rift_opened(rift) -> void:
 	_update_hud()
 
 
-func _on_player_danger_hit(_collider: Node) -> void:
+func _on_player_danger_hit(collider: Node) -> void:
+	if _ignore_or_absorb_hit(collider):
+		return
 	_end_run("OBSTACULO")
 
 
-func _on_echo_hit_player(_echo: EchoPlayback) -> void:
+func _on_echo_hit_player(echo: EchoPlayback) -> void:
+	if _ignore_or_absorb_hit(echo):
+		return
 	_end_run("TU ECO TE ALCANZO")
 
 
@@ -244,14 +264,21 @@ func _show_result(reason: String) -> void:
 		result_title.add_theme_color_override("font_color", Color(0.584, 1.0, 0.796))
 		feedback.play_phase(player.global_position)
 		_flash_screen(Color(0.18, 0.82, 0.655), 0.2, 0.45)
-		restart_button.text = "SIGUIENTE NIVEL" if LevelCatalogScript.has_level(_level_number + 1) else "REPETIR NIVEL"
+		var next_level := _level_number + 1
+		if LevelCatalogScript.has_level(next_level) and progress_store.is_level_owned(next_level):
+			restart_button.text = "SIGUIENTE NIVEL"
+		elif LevelCatalogScript.has_level(next_level):
+			restart_button.text = "DESBLOQUEAR EN TIENDA"
+		else:
+			restart_button.text = "REPETIR NIVEL"
 	else:
 		result_title.text = "FIN DEL ECO"
 		result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
 		feedback.play_hit(player.global_position)
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
-	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CADENA x%.1f" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _chain_pressure_multiplier]
+	var reward := _grant_run_reward()
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -262,9 +289,14 @@ func _restart() -> void:
 
 
 func _on_primary_action() -> void:
-	if _level_won and LevelCatalogScript.has_level(_level_number + 1):
-		level_requested.emit(_level_number + 1)
-		return
+	if _level_won:
+		var next_level := _level_number + 1
+		if LevelCatalogScript.has_level(next_level) and progress_store.is_level_owned(next_level):
+			level_requested.emit(next_level)
+			return
+		if LevelCatalogScript.has_level(next_level):
+			store_requested.emit()
+			return
 	_restart()
 
 
@@ -287,7 +319,7 @@ func _recursive_predecessor() -> Node2D:
 
 func _update_echo_pressure(segment_distance: float) -> void:
 	var previous_pressure := _echo_pressure
-	if segment_distance < MIN_SEGMENT_DISTANCE:
+	if segment_distance < _level.minimum_segment_distance:
 		_echo_pressure += 1
 		_slow_offenses += 1
 	else:
@@ -376,3 +408,94 @@ func _update_hud() -> void:
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d" % _echo_count
 	phase_label.text = "N%d E%d/3\nF%d CAD x%.1f" % [_level.number, _current_phase, _slow_offenses, _chain_pressure_multiplier]
+
+
+func _configure_arena_for_level() -> void:
+	var profile: Dictionary = _level.arena_profile
+	upper_obstacle.configure_geometry(profile.upper_position, profile.upper_size, profile.upper_rotation)
+	lower_obstacle.configure_geometry(profile.lower_position, profile.lower_size, profile.lower_rotation)
+	patrol_obstacle.configure_geometry(profile.patrol_position, profile.patrol_size)
+	patrol_obstacle.movement_offset = profile.patrol_offset
+	patrol_obstacle.movement_period = profile.patrol_period
+	pulse_obstacle.configure_geometry(profile.pulse_position, profile.pulse_size, profile.pulse_rotation)
+	pulse_obstacle.pulse_warning_duration = profile.pulse_warning
+	pulse_obstacle.pulse_active_duration = profile.pulse_active
+	pulse_obstacle.pulse_safe_duration = profile.pulse_safe
+
+
+func _grant_run_reward() -> int:
+	if _reward_granted:
+		return 0
+	_reward_granted = true
+	if _run_time < 10.0:
+		return 0
+	var reward := 1 + int(_score / 1000)
+	if _current_phase >= 3:
+		reward += 1
+	if _level_won and progress_store.complete_level(_level_number):
+		reward += _level.first_clear_bonus
+	progress_store.add_fragments(reward)
+	return reward
+
+
+func _configure_power_button() -> void:
+	var power_id := progress_store.equipped_power
+	power_button.visible = power_id != "none"
+	power_button.disabled = power_id == "shield"
+	match power_id:
+		"pulse":
+			power_button.text = "PULSO\nLISTO"
+		"stabilizer":
+			power_button.text = "ESTABILIZAR\nLISTO"
+		"shield":
+			power_button.text = "DESFASE\nAUTOMATICO"
+		_:
+			power_button.text = ""
+
+
+func _on_power_pressed() -> void:
+	if _state != RunState.PLAYING or _power_used:
+		return
+	match progress_store.equipped_power:
+		"pulse":
+			if echoes.get_child_count() == 0:
+				_show_banner("PULSO // AUN NO HAY ECOS", Color(0.45, 0.8, 1.0), 1.2)
+				return
+			var echo := echoes.get_child(echoes.get_child_count() - 1) as EchoPlayback
+			echo.stop()
+			echo.queue_free()
+			_echo_count = maxi(0, _echo_count - 1)
+			_power_used = true
+			_show_banner("PULSO // ECO DISIPADO", Color(0.45, 0.8, 1.0), 1.8)
+		"stabilizer":
+			if _echo_pressure == 0:
+				_show_banner("ESTABILIZADOR // CADENA ESTABLE", Color(0.45, 0.8, 1.0), 1.2)
+				return
+			_echo_pressure = maxi(0, _echo_pressure - 3)
+			_chain_pressure_multiplier = 1.0 + float(_echo_pressure) * CHAIN_PRESSURE_STEP
+			_apply_chain_pressure()
+			_power_used = true
+			_show_banner("ESTABILIZADOR // CADENA x%.1f" % _chain_pressure_multiplier, Color(0.45, 1.0, 0.72), 1.8)
+	if _power_used:
+		power_button.disabled = true
+		power_button.text = "PODER\nAGOTADO"
+		feedback.play_phase(player.global_position)
+		_flash_screen(Color(0.35, 0.72, 1.0), 0.1, 0.24)
+		_update_hud()
+
+
+func _ignore_or_absorb_hit(_source: Node) -> bool:
+	if _power_invulnerability_time > 0.0:
+		player.clear_danger_report()
+		return true
+	if progress_store.equipped_power != "shield" or _power_used:
+		return false
+	_power_used = true
+	_power_invulnerability_time = 1.5
+	player.clear_danger_report()
+	power_button.text = "DESFASE\nAGOTADO"
+	_show_banner("DESFASE // IMPACTO ABSORBIDO", Color(0.58, 0.72, 1.0), 2.0)
+	feedback.play_phase(player.global_position)
+	_flash_screen(Color(0.42, 0.58, 1.0), 0.14, 0.3)
+	_update_hud()
+	return true

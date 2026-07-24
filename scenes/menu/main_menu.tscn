@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/menu/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/menu/menu_visual.gd" id="2_visual"]
+[ext_resource type="PackedScene" path="res://scenes/menu/store_overlay.tscn" id="3_store"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_badge"]
 bg_color = Color(0.18, 0.82, 0.655, 0.1)
@@ -122,13 +123,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 54
-theme_override_constants/margin_top = 52
+theme_override_constants/margin_top = 38
 theme_override_constants/margin_right = 54
-theme_override_constants/margin_bottom = 44
+theme_override_constants/margin_bottom = 34
 
 [node name="Layout" type="VBoxContainer" parent="Content"]
 layout_mode = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 22
 
 [node name="Top" type="HBoxContainer" parent="Content/Layout"]
 custom_minimum_size = Vector2(0, 52)
@@ -138,7 +139,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.3.0"
+text = "ECOS // 0.4.0"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]
@@ -167,7 +168,7 @@ text = "HUYE DE LO QUE FUISTE"
 [node name="Title" type="Label" parent="Content/Layout/Hero"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.88, 1, 0.95, 1)
-theme_override_font_sizes/font_size = 108
+theme_override_font_sizes/font_size = 96
 text = "ECOS"
 
 [node name="Rule" type="ColorRect" parent="Content/Layout/Hero"]
@@ -177,15 +178,15 @@ size_flags_horizontal = 0
 color = Color(0.18, 0.82, 0.655, 1)
 
 [node name="Description" type="Label" parent="Content/Layout/Hero"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.82, 0.84, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 25
 text = "Tu estela despierta y te persigue.\nSobrevive hasta completar el nivel."
 vertical_alignment = 1
 
 [node name="Badge" type="PanelContainer" parent="Content/Layout/Hero"]
-custom_minimum_size = Vector2(0, 92)
+custom_minimum_size = Vector2(0, 76)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_badge")
 
@@ -199,15 +200,15 @@ vertical_alignment = 1
 
 [node name="Actions" type="VBoxContainer" parent="Content/Layout"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 12
 
 [node name="Play" type="Button" parent="Content/Layout/Actions"]
-custom_minimum_size = Vector2(0, 104)
+custom_minimum_size = Vector2(0, 90)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.027, 0.059, 0.09, 1)
 theme_override_colors/font_hover_color = Color(0.027, 0.059, 0.09, 1)
 theme_override_colors/font_pressed_color = Color(0.027, 0.059, 0.09, 1)
-theme_override_font_sizes/font_size = 34
+theme_override_font_sizes/font_size = 31
 theme_override_styles/normal = SubResource("StyleBox_primary")
 theme_override_styles/hover = SubResource("StyleBox_primary_hover")
 theme_override_styles/pressed = SubResource("StyleBox_primary_hover")
@@ -215,23 +216,35 @@ theme_override_styles/focus = SubResource("StyleBox_primary")
 text = "JUGAR"
 
 [node name="Tutorial" type="Button" parent="Content/Layout/Actions"]
-custom_minimum_size = Vector2(0, 84)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
 theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBox_secondary")
 theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
 theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
 text = "COMO JUGAR"
 
+[node name="Store" type="Button" parent="Content/Layout/Actions"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.38, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBox_secondary")
+theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
+theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
+theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
+text = "ARCHIVO // TIENDA"
+
 [node name="Settings" type="Button" parent="Content/Layout/Actions"]
-custom_minimum_size = Vector2(0, 84)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
 theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBox_secondary")
 theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
@@ -455,3 +468,6 @@ theme_override_styles/hover = SubResource("StyleBox_secondary_hover")
 theme_override_styles/pressed = SubResource("StyleBox_secondary_hover")
 theme_override_styles/focus = SubResource("StyleBox_secondary_hover")
 text = "GUARDAR Y VOLVER"
+
+[node name="StoreOverlay" parent="." instance=ExtResource("3_store")]
+layout_mode = 1

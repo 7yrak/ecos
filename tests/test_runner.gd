@@ -2,11 +2,13 @@ extends SceneTree
 
 const TimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
+const StoreCatalogScript = preload("res://scripts/app/store_catalog.gd")
 const RunScene = preload("res://scenes/gameplay/run.tscn")
 const AppScene = preload("res://scenes/app/main.tscn")
 
 var _failures := 0
 var _checks := 0
+var _progress_snapshot: Dictionary
 
 
 func _init() -> void:
@@ -15,15 +17,20 @@ func _init() -> void:
 
 func _run() -> void:
 	_ensure_settings_store()
+	_ensure_progress_store()
+	_prepare_progress_fixture()
 	_test_timeline_validation()
 	_test_timeline_interpolation()
 	_test_level_catalog()
+	_test_progress_store()
 	await _test_app_navigation()
 	await _test_responsive_layout()
 	await _test_run_scene()
 	await _test_arena_progression()
+	await _test_level_variants()
 	await _test_recursive_echo_chain()
 	await _test_level_completion()
+	await _test_powers()
 	await _test_rift_lifecycle()
 	await _test_chain_compression()
 	await _test_echo_pressure()
@@ -31,10 +38,12 @@ func _run() -> void:
 	await _test_ten_run_cycles()
 
 	if _failures > 0:
+		_restore_progress_fixture()
 		push_error("Pruebas fallidas: %d de %d" % [_failures, _checks])
 		quit(1)
 		return
 
+	_restore_progress_fixture()
 	print("Pruebas completadas: %d verificaciones" % _checks)
 	quit()
 
@@ -45,6 +54,62 @@ func _ensure_settings_store() -> void:
 	var settings := SettingsStore.new()
 	settings.name = "Settings"
 	root.add_child(settings)
+
+
+func _ensure_progress_store() -> void:
+	if root.get_node_or_null("Progress") != null:
+		return
+	var progress := ProgressStore.new()
+	progress.name = "Progress"
+	root.add_child(progress)
+
+
+func _prepare_progress_fixture() -> void:
+	var progress := root.get_node("Progress") as ProgressStore
+	_progress_snapshot = {
+		"storage_path": progress.storage_path,
+		"fragments": progress.fragments,
+		"equipped_skin": progress.equipped_skin,
+		"equipped_power": progress.equipped_power,
+		"selected_level": progress.selected_level,
+		"owned_skins": progress.owned_skins.duplicate(),
+		"owned_powers": progress.owned_powers.duplicate(),
+		"owned_levels": progress.owned_levels.duplicate(),
+		"completed_levels": progress.completed_levels.duplicate(),
+	}
+	progress.storage_path = "user://progress_test_suite.cfg"
+	_reset_progress_fixture()
+
+
+func _reset_progress_fixture() -> void:
+	var progress := root.get_node("Progress") as ProgressStore
+	progress.fragments = 0
+	progress.equipped_skin = "signal"
+	progress.equipped_power = "none"
+	progress.selected_level = 1
+	progress.owned_skins = ["signal"]
+	progress.owned_powers = ["none"]
+	progress.owned_levels = [1]
+	progress.completed_levels = []
+	var test_path := ProjectSettings.globalize_path(progress.storage_path)
+	if FileAccess.file_exists(test_path):
+		DirAccess.remove_absolute(test_path)
+
+
+func _restore_progress_fixture() -> void:
+	var progress := root.get_node("Progress") as ProgressStore
+	var test_path := ProjectSettings.globalize_path(progress.storage_path)
+	if FileAccess.file_exists(test_path):
+		DirAccess.remove_absolute(test_path)
+	progress.storage_path = _progress_snapshot.storage_path
+	progress.fragments = _progress_snapshot.fragments
+	progress.equipped_skin = _progress_snapshot.equipped_skin
+	progress.equipped_power = _progress_snapshot.equipped_power
+	progress.selected_level = _progress_snapshot.selected_level
+	progress.owned_skins = _progress_snapshot.owned_skins
+	progress.owned_powers = _progress_snapshot.owned_powers
+	progress.owned_levels = _progress_snapshot.owned_levels
+	progress.completed_levels = _progress_snapshot.completed_levels
 
 
 func _test_timeline_validation() -> void:
@@ -79,7 +144,36 @@ func _test_level_catalog() -> void:
 	_expect(level.number == 1 and level.title == "PRIMERA ESTELA" and level.difficulty == "INICIAL", "el nivel declara identidad y dificultad")
 	_expect(is_equal_approx(level.duration, 45.0), "el nivel inicial define su tiempo de victoria")
 	_expect(is_equal_approx(level.echo_interval, 5.0), "el nivel controla la frecuencia de ecos")
-	_expect(not LevelCatalogScript.has_level(2), "no inventa un segundo nivel sin contenido")
+	var level_two = LevelCatalogScript.get_level(2)
+	var level_three = LevelCatalogScript.get_level(3)
+	_expect(level_two != null and level_two.title == "CONTRACORRIENTE", "el catalogo incorpora una segunda etapa propia")
+	_expect(level_three != null and level_three.title == "NUCLEO ROJO", "el catalogo incorpora una tercera etapa avanzada")
+	_expect(level_two.duration == 55.0 and level_three.duration == 65.0, "cada etapa aumenta su objetivo temporal")
+	_expect(level_two.echo_interval < level.echo_interval and level_three.echo_interval < level_two.echo_interval, "las etapas avanzadas aceleran la aparicion de ecos")
+	_expect(level_two.arena_profile.upper_size != level.arena_profile.upper_size, "la segunda etapa cambia la geometria de la arena")
+	_expect(not LevelCatalogScript.has_level(4), "el catalogo termina en el contenido disenado")
+
+
+func _test_progress_store() -> void:
+	var progress := root.get_node("Progress") as ProgressStore
+	_expect(StoreCatalogScript.SKINS.size() == 4, "la tienda ofrece cuatro skins")
+	_expect(StoreCatalogScript.STAGES.size() == 3, "la tienda ofrece tres etapas")
+	_expect(StoreCatalogScript.POWERS.size() == 4, "la tienda ofrece tres poderes y la opcion sin poder")
+	_expect(progress.owns("skins", "signal") and progress.owns("stages", "level_1"), "el progreso comienza con skin y etapa iniciales")
+	progress.add_fragments(30)
+	_expect(progress.purchase("skins", "ember"), "permite comprar una skin con Fragmentos")
+	_expect(progress.equipped_skin == "ember" and progress.fragments == 0, "la compra equipa la skin y descuenta su costo")
+	_expect(not progress.purchase("stages", "level_2"), "impide comprar contenido sin saldo suficiente")
+	progress.add_fragments(20)
+	_expect(progress.purchase("stages", "level_2"), "permite desbloquear la segunda etapa")
+	_expect(progress.selected_level == 2 and progress.is_level_owned(2), "una etapa comprada queda seleccionada")
+	progress.add_fragments(35)
+	_expect(progress.purchase("powers", "pulse"), "permite comprar un poder permanente")
+	_expect(progress.equipped_power == "pulse" and progress.owns("powers", "pulse"), "el poder comprado queda equipado")
+	var saved := ConfigFile.new()
+	_expect(saved.load(progress.storage_path) == OK, "el progreso se guarda en disco")
+	_expect(saved.get_value("loadout", "skin") == "ember" and saved.get_value("loadout", "level") == 2, "el guardado conserva equipamiento y etapa")
+	_reset_progress_fixture()
 
 
 func _test_app_navigation() -> void:
@@ -94,6 +188,20 @@ func _test_app_navigation() -> void:
 	_expect(tutorial_overlay.visible, "el menu abre el tutorial")
 	(menu.get_node("TutorialOverlay/Center/Panel/Content/Back") as Button).pressed.emit()
 	_expect(not tutorial_overlay.visible, "el tutorial vuelve al menu")
+
+	var store_overlay := menu.get_node("StoreOverlay") as StoreOverlay
+	(menu.get_node("Content/Layout/Actions/Store") as Button).pressed.emit()
+	await process_frame
+	_expect(store_overlay.visible, "el menu abre la tienda")
+	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 4, "la tienda muestra el catalogo de skins")
+	(store_overlay.get_node("Center/Panel/Content/Tabs/Stages") as Button).pressed.emit()
+	await process_frame
+	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 3, "la tienda cambia al catalogo de etapas")
+	(store_overlay.get_node("Center/Panel/Content/Tabs/Powers") as Button).pressed.emit()
+	await process_frame
+	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 4, "la tienda cambia al catalogo de poderes")
+	(store_overlay.get_node("Center/Panel/Content/Back") as Button).pressed.emit()
+	_expect(not store_overlay.visible, "la tienda vuelve al menu")
 
 	var settings_overlay := menu.get_node("SettingsOverlay") as ColorRect
 	(menu.get_node("Content/Layout/Actions/Settings") as Button).pressed.emit()
@@ -123,6 +231,17 @@ func _test_app_navigation() -> void:
 	_expect(app.current_screen is RunController, "jugar abre una partida")
 
 	var run := app.current_screen as RunController
+	run.set_physics_process(false)
+	run._run_time = run._level.duration - 0.1
+	run._physics_process(0.2)
+	(run.restart_button as Button).pressed.emit()
+	await process_frame
+	_expect(app.current_screen is MainMenu and (app.current_screen as MainMenu).store_overlay.visible, "un nivel bloqueado abre la tienda desde el resultado")
+	_expect(((app.current_screen as MainMenu).store_overlay.stages_button as Button).disabled, "el acceso desde el resultado abre la categoria de etapas")
+	(app.current_screen as MainMenu).store_overlay.close()
+	((app.current_screen as MainMenu).play_button as Button).pressed.emit()
+	await process_frame
+	run = app.current_screen as RunController
 	run._end_run("PRUEBA DE NAVEGACION")
 	(run.get_node("UI/GameOver/Center/Panel/Content/Menu") as Button).pressed.emit()
 	await process_frame
@@ -260,6 +379,36 @@ func _test_arena_progression() -> void:
 	await process_frame
 
 
+func _test_level_variants() -> void:
+	var level_two_run := RunScene.instantiate() as RunController
+	level_two_run.configure_level(2)
+	root.add_child(level_two_run)
+	await process_frame
+	level_two_run.set_physics_process(false)
+	_expect(level_two_run._level_number == 2 and level_two_run._level.title == "CONTRACORRIENTE", "la partida carga la segunda etapa solicitada")
+	_expect(level_two_run.upper_obstacle.obstacle_size == Vector2(34.0, 230.0), "Contracorriente usa corredores verticales")
+	_expect(level_two_run.patrol_obstacle.movement_offset == Vector2(230.0, 0.0), "Contracorriente mueve la patrulla en horizontal")
+	_expect(level_two_run.pulse_obstacle.obstacle_size == Vector2(32.0, 330.0), "Contracorriente activa una compuerta de pulso vertical")
+	level_two_run._run_time = level_two_run._level.patrol_phase_time
+	level_two_run._update_progression()
+	level_two_run._update_hud()
+	_expect((level_two_run.phase_label as Label).text.begins_with("N2 E2/3"), "el HUD identifica la etapa dos y su progresion")
+	level_two_run.queue_free()
+	await process_frame
+
+	var level_three_run := RunScene.instantiate() as RunController
+	level_three_run.configure_level(3)
+	root.add_child(level_three_run)
+	await process_frame
+	level_three_run.set_physics_process(false)
+	_expect(level_three_run._level_number == 3 and level_three_run._level.difficulty == "AVANZADA", "la partida carga la tercera etapa avanzada")
+	_expect(not is_zero_approx(level_three_run.upper_obstacle.rotation), "Nucleo Rojo inclina sus barreras fijas")
+	_expect(level_three_run.patrol_obstacle.movement_offset == Vector2(0.0, 250.0), "Nucleo Rojo cambia la patrulla al eje vertical")
+	_expect(level_three_run._level.echo_interval == 4.0 and level_three_run._level.follow_delay == 1.05, "Nucleo Rojo comprime ritmo y retraso de ecos")
+	level_three_run.queue_free()
+	await process_frame
+
+
 func _test_recursive_echo_chain() -> void:
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
@@ -288,6 +437,7 @@ func _test_recursive_echo_chain() -> void:
 
 
 func _test_level_completion() -> void:
+	_reset_progress_fixture()
 	var run := RunScene.instantiate() as RunController
 	root.add_child(run)
 	await process_frame
@@ -297,12 +447,51 @@ func _test_level_completion() -> void:
 	_expect(run._state == RunController.RunState.GAME_OVER and run._level_won, "alcanzar el tiempo objetivo completa el nivel")
 	_expect((run.result_title as Label).text == "NIVEL SUPERADO", "la victoria tiene un resultado diferente a la colision")
 	_expect((run.result_label as Label).text.contains("OBJETIVO DE TIEMPO CUMPLIDO"), "el resultado explica la condicion de victoria")
-	_expect((run.restart_button as Button).text == "REPETIR NIVEL", "el ultimo nivel disponible se puede repetir")
+	_expect((run.restart_button as Button).text == "DESBLOQUEAR EN TIENDA", "una etapa siguiente bloqueada dirige a la tienda")
+	_expect((run.result_label as Label).text.contains("+22 FRAGMENTOS"), "la primera victoria suma recompensa base, etapa y bono")
+	_expect((root.get_node("Progress") as ProgressStore).fragments == 22, "la recompensa queda en la billetera local")
 	run._restart()
 	await process_frame
 	_expect(run._state == RunController.RunState.PLAYING and is_zero_approx(run._run_time), "repetir reinicia el mismo nivel")
 	run.queue_free()
 	await process_frame
+	_reset_progress_fixture()
+
+
+func _test_powers() -> void:
+	var progress := root.get_node("Progress") as ProgressStore
+	progress.equipped_power = "pulse"
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	run._physics_process(5.1)
+	await _open_latest_rift(run)
+	(run.power_button as Button).pressed.emit()
+	await process_frame
+	_expect(run._power_used and run.echoes.get_child_count() == 0, "Pulso disipa el eco mas reciente una vez por partida")
+	_expect((run.power_button as Button).disabled, "Pulso queda agotado despues de usarlo")
+
+	progress.equipped_power = "stabilizer"
+	run._restart()
+	await process_frame
+	run._update_echo_pressure(0.0)
+	run._update_echo_pressure(0.0)
+	(run.power_button as Button).pressed.emit()
+	_expect(run._power_used and run._echo_pressure == 0, "Estabilizador reduce hasta tres niveles de presion")
+	_expect(is_equal_approx(run._chain_pressure_multiplier, 1.0), "Estabilizador vuelve a abrir la cadena")
+
+	progress.equipped_power = "shield"
+	run._restart()
+	await process_frame
+	run._on_player_danger_hit(run.upper_obstacle)
+	_expect(run._state == RunController.RunState.PLAYING and run._power_used, "Desfase absorbe automaticamente el primer impacto")
+	run._power_invulnerability_time = 0.0
+	run._on_player_danger_hit(run.upper_obstacle)
+	_expect(run._state == RunController.RunState.GAME_OVER, "Desfase no absorbe un segundo impacto")
+	run.queue_free()
+	await process_frame
+	_reset_progress_fixture()
 
 
 func _test_rift_lifecycle() -> void:
