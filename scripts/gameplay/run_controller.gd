@@ -17,8 +17,14 @@ const ECHO_FOLLOW_DELAY := 1.2
 const RIFT_WARNING_TIME := 0.7
 const START_POSITION := Vector2(360.0, 650.0)
 const DESIGN_HEIGHT := 1280.0
+const EXPANSION_THRESHOLDS := [3, 6]
+const EXPANSION_DECISION_TIME := 4.0
+const MANUAL_EXPANSION_BONUS := 250
 
 @onready var player: PlayerController = $Player
+@onready var arena: ArenaVisual = $Arena
+@onready var world_camera: Camera2D = $WorldCamera
+@onready var boundaries: Node2D = $Boundaries
 @onready var echoes: Node2D = $Echoes
 @onready var rifts: Node2D = $Rifts
 @onready var feedback: GameplayFeedback = $Feedback
@@ -33,6 +39,9 @@ const DESIGN_HEIGHT := 1280.0
 @onready var phase_banner: Label = $UI/PhaseBanner
 @onready var impact_flash: ColorRect = $UI/ImpactFlash
 @onready var instruction_label: Label = $UI/Instruction
+@onready var expansion_label: Label = $UI/ExpansionStatus/Content/Label
+@onready var expansion_meter: ProgressBar = $UI/ExpansionStatus/Content/Meter
+@onready var break_limit_button: Button = $UI/BreakLimitButton
 @onready var power_button: Button = $UI/PowerButton
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_title: Label = $UI/GameOver/Center/Panel/Content/Title
@@ -57,6 +66,10 @@ var _slow_offenses := 0
 var _chain_pressure_multiplier := 1.0
 var _score := 0
 var _current_phase := 1
+var _world_stage := 1
+var _expansion_offer_time := 0.0
+var _expansion_offered := false
+var _expansion_bonus := 0
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
 var _run_id := 0
@@ -72,6 +85,7 @@ func _ready() -> void:
 	_center_world_for_viewport()
 	player.danger_hit.connect(_on_player_danger_hit)
 	pulse_obstacle.danger_state_changed.connect(_on_pulse_state_changed)
+	break_limit_button.pressed.connect(_on_break_limit_pressed)
 	power_button.pressed.connect(_on_power_pressed)
 	restart_button.pressed.connect(_on_primary_action)
 	menu_button.pressed.connect(menu_requested.emit)
@@ -112,11 +126,12 @@ func _physics_process(delta: float) -> void:
 	_sample_accumulator += delta
 	_record_samples()
 	_update_progression()
+	_update_expansion_offer(delta)
 
 	if _segment_time >= _level.echo_interval:
 		_spawn_echo()
 
-	_score = int(_run_time * 10.0) + _total_echo_count * 100
+	_score = int(_run_time * 10.0) + _total_echo_count * 100 + _expansion_bonus
 	_update_hud()
 	if _run_time >= _level.duration:
 		_complete_level()
@@ -147,9 +162,17 @@ func _start_run() -> void:
 	_chain_pressure_multiplier = 1.0
 	_score = 0
 	_current_phase = 1
+	_world_stage = 1
+	_expansion_offer_time = 0.0
+	_expansion_offered = false
+	_expansion_bonus = 0
 	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
+	arena.set_expansion_stage(1, false)
+	world_camera.enabled = false
+	world_camera.zoom = Vector2.ONE
+	_configure_boundaries(arena.play_rect_for_stage(1))
 	_configure_arena_for_level()
 	upper_obstacle.reset_for_run(true)
 	lower_obstacle.reset_for_run(true)
@@ -165,6 +188,7 @@ func _start_run() -> void:
 	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
 	impact_flash.visible = false
+	break_limit_button.visible = false
 	instruction_label.text = "%s // %d S" % [_level.title, roundi(_level.duration)]
 	instruction_label.modulate.a = 1.0
 	_configure_power_button()
@@ -221,6 +245,7 @@ func _on_rift_opened(rift) -> void:
 	_total_echo_count += 1
 	_echo_count = echoes.get_child_count()
 	feedback.play_echo(echo.global_position)
+	_offer_expansion_if_ready()
 	_update_hud()
 
 
@@ -278,7 +303,7 @@ func _show_result(reason: String) -> void:
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
 	var reward := _grant_run_reward()
-	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -344,11 +369,11 @@ func _apply_chain_pressure() -> void:
 
 
 func _update_progression() -> void:
-	var next_phase := 1
+	var next_phase := _world_stage
 	if _run_time >= _level.pulse_phase_time:
-		next_phase = 3
+		next_phase = maxi(next_phase, 3)
 	elif _run_time >= _level.patrol_phase_time:
-		next_phase = 2
+		next_phase = maxi(next_phase, 2)
 	if next_phase == _current_phase:
 		return
 
@@ -407,7 +432,8 @@ func _update_hud() -> void:
 	time_label.text = "TIEMPO\n%04.1f/%02d" % [_run_time, roundi(_level.duration)]
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d" % _echo_count
-	phase_label.text = "N%d E%d/3\nF%d CAD x%.1f" % [_level.number, _current_phase, _slow_offenses, _chain_pressure_multiplier]
+	phase_label.text = "N%d S%d/3\nF%d CAD x%.1f" % [_level.number, _world_stage, _slow_offenses, _chain_pressure_multiplier]
+	_update_expansion_hud()
 
 
 func _configure_arena_for_level() -> void:
@@ -432,6 +458,7 @@ func _grant_run_reward() -> int:
 	var reward := 1 + int(_score / 1000)
 	if _current_phase >= 3:
 		reward += 1
+	reward += _world_stage - 1
 	if _level_won and progress_store.complete_level(_level_number):
 		reward += _level.first_clear_bonus
 	progress_store.add_fragments(reward)
@@ -499,3 +526,94 @@ func _ignore_or_absorb_hit(_source: Node) -> bool:
 	_flash_screen(Color(0.42, 0.58, 1.0), 0.14, 0.3)
 	_update_hud()
 	return true
+
+
+func _offer_expansion_if_ready() -> void:
+	if _world_stage >= 3 or _expansion_offered:
+		return
+	var threshold: int = EXPANSION_THRESHOLDS[_world_stage - 1]
+	if _echo_count < threshold:
+		return
+	_expansion_offered = true
+	_expansion_offer_time = EXPANSION_DECISION_TIME
+	break_limit_button.visible = true
+	break_limit_button.disabled = false
+	_show_banner("SATURACION CRITICA // ROMPE EL LIMITE", Color(0.35, 0.72, 1.0), 2.6)
+	_flash_screen(Color(0.25, 0.55, 1.0), 0.1, 0.35)
+
+
+func _update_expansion_offer(delta: float) -> void:
+	if not _expansion_offered:
+		return
+	_expansion_offer_time = maxf(0.0, _expansion_offer_time - delta)
+	if _expansion_offer_time <= 0.0:
+		_expand_world(false)
+
+
+func _on_break_limit_pressed() -> void:
+	if _state != RunState.PLAYING or not _expansion_offered:
+		return
+	_expand_world(true)
+
+
+func _expand_world(manual: bool) -> void:
+	if _world_stage >= 3:
+		return
+	_expansion_offered = false
+	_expansion_offer_time = 0.0
+	break_limit_button.visible = false
+	_world_stage += 1
+	if manual:
+		_expansion_bonus += MANUAL_EXPANSION_BONUS
+
+	var next_rect := arena.play_rect_for_stage(_world_stage)
+	arena.set_expansion_stage(_world_stage)
+	_configure_boundaries(next_rect)
+	world_camera.enabled = true
+	var target_zoom := Vector2.ONE * arena.camera_zoom_for_stage(_world_stage)
+	create_tween().tween_property(world_camera, "zoom", target_zoom, 0.9) \
+		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+
+	if _current_phase < _world_stage:
+		_current_phase = _world_stage
+		patrol_obstacle.set_progression_active(_current_phase >= 2)
+		pulse_obstacle.set_progression_active(_current_phase >= 3)
+	var danger_name := "PATRULLA LIBERADA" if _world_stage == 2 else "TORMENTA DE PULSO"
+	var bonus_text := " // +%d" % MANUAL_EXPANSION_BONUS if manual else ""
+	_show_banner("SECTOR %d ABIERTO // %s%s" % [_world_stage, danger_name, bonus_text], Color(0.45, 0.82, 1.0), 3.0)
+	feedback.play_phase(player.global_position)
+	_flash_screen(Color(0.25, 0.62, 1.0), 0.22, 0.7)
+	settings_store.vibrate(110)
+	_update_hud()
+
+
+func _configure_boundaries(play_rect: Rect2) -> void:
+	var thickness := 32.0
+	var left := boundaries.get_node("Left") as StaticBody2D
+	var right := boundaries.get_node("Right") as StaticBody2D
+	var top := boundaries.get_node("Top") as StaticBody2D
+	var bottom := boundaries.get_node("Bottom") as StaticBody2D
+	left.position = Vector2(play_rect.position.x - thickness * 0.5, play_rect.get_center().y)
+	right.position = Vector2(play_rect.end.x + thickness * 0.5, play_rect.get_center().y)
+	top.position = Vector2(play_rect.get_center().x, play_rect.position.y - thickness * 0.5)
+	bottom.position = Vector2(play_rect.get_center().x, play_rect.end.y + thickness * 0.5)
+	(left.get_node("Collision") as CollisionShape2D).shape.size = Vector2(thickness, play_rect.size.y + thickness * 2.0)
+	(right.get_node("Collision") as CollisionShape2D).shape.size = Vector2(thickness, play_rect.size.y + thickness * 2.0)
+	(top.get_node("Collision") as CollisionShape2D).shape.size = Vector2(play_rect.size.x + thickness * 2.0, thickness)
+	(bottom.get_node("Collision") as CollisionShape2D).shape.size = Vector2(play_rect.size.x + thickness * 2.0, thickness)
+
+
+func _update_expansion_hud() -> void:
+	if _world_stage >= 3:
+		expansion_label.text = "MUNDO AL MAXIMO // SOBREVIVE A LA TORMENTA"
+		expansion_meter.max_value = 1.0
+		expansion_meter.value = 1.0
+		return
+	var threshold: int = EXPANSION_THRESHOLDS[_world_stage - 1]
+	expansion_meter.max_value = threshold
+	expansion_meter.value = mini(_echo_count, threshold)
+	if _expansion_offered:
+		expansion_label.text = "LIMITE LISTO // ABRIR EN %.1f S" % _expansion_offer_time
+		break_limit_button.text = "ROMPER EL LIMITE  //  +%d PTS\nNUEVO SECTOR + NUEVO PELIGRO" % MANUAL_EXPANSION_BONUS
+	else:
+		expansion_label.text = "SECTOR %d // SATURACION %d/%d ECOS" % [_world_stage, _echo_count, threshold]

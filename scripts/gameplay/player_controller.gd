@@ -29,13 +29,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		_handle_touch(event)
 	elif event is InputEventScreenDrag and event.index == _active_touch:
-		set_target(event.position)
+		set_target(_viewport_to_world(event.position))
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			set_target(event.position)
+			set_target(get_global_mouse_position())
 	elif event is InputEventMouseMotion:
 		if event.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			set_target(event.position)
+			set_target(get_global_mouse_position())
 
 
 func _physics_process(delta: float) -> void:
@@ -91,9 +91,13 @@ func reset_for_run(start_position: Vector2) -> void:
 func _handle_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed and _active_touch == -1:
 		_active_touch = event.index
-		set_target(event.position)
+		set_target(_viewport_to_world(event.position))
 	elif not event.pressed and event.index == _active_touch:
 		_active_touch = -1
+
+
+func _viewport_to_world(viewport_position: Vector2) -> Vector2:
+	return get_viewport().get_canvas_transform().affine_inverse() * viewport_position
 
 
 func _check_danger_collisions() -> void:

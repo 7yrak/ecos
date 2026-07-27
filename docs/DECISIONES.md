@@ -319,6 +319,35 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   `0.3.0`; las instalaciones anteriores deben desinstalarse primero. La nueva carpeta
   de firma debe respaldarse y conservarse para no repetir la rotacion.
 
+## D-029 - Saturacion que expande el mundo
+
+- Fecha: 2026-07-27
+- Estado: aceptada para validar
+- Decision: dividir cada intento en tres sectores. La cadena satura los dos primeros
+  con 3 y 6 ecos; el jugador puede romper el limite durante cuatro segundos para
+  obtener 250 puntos o esperar la apertura automatica. Cada apertura agranda limites
+  y camara y activa el peligro asociado al nuevo sector.
+- Motivo: acumular ecos reducia el espacio y la legibilidad sin producir una sensacion
+  positiva de avance. Convertir esa saturacion en una transformacion visible crea un
+  momento de expectativa, recupera espacio y hace que el caos construido por el
+  jugador tambien impulse la partida.
+- Consecuencia: el sector 2 libera la patrulla, el 3 el pulso y cada sector abierto
+  suma un Fragmento final. Umbrales, zoom, tiempo de decision y recompensa requieren
+  validacion tactil y de legibilidad en telefonos.
+
+## D-030 - APK exclusivamente local
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario; reemplaza D-021 y la consecuencia de D-024 sobre
+  artefactos.
+- Decision: ninguna APK se agrega a Git ni se distribuye desde el repositorio.
+  `releases/` es una salida local ignorada y conserva solo la APK vigente.
+- Motivo: separar el codigo fuente de los binarios exportados y evitar que GitHub
+  almacene artefactos Android pesados.
+- Consecuencia: el script release elimina las APK locales anteriores y genera la
+  actual dentro de `releases/`. La entrega a dispositivos o tiendas se hace fuera
+  del repositorio.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

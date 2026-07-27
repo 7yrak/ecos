@@ -4,6 +4,55 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - Romper el limite
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se solicito hacer el juego mas llamativo y aprovechar la saturacion de ecos para
+  agrandar el mapa durante la partida.
+
+Cambios:
+
+- Por solicitud del usuario, las APK dejan de versionarse y distribuirse desde
+  GitHub. `releases/` queda como salida exclusivamente local e ignorada.
+- El preset y el script release avanzan a `0.5.0` (`versionCode 15`), generan
+  `releases/ECOS-0.5.0-android.apk` y eliminan primero cualquier APK local anterior.
+- Se retiro el enlace de descarga del README y se agrego una nota versionada dentro
+  de `releases/` para documentar la politica sin almacenar el binario.
+- Cada intento tiene ahora tres sectores. Al llegar a 3 y 6 ecos, el HUD anuncia
+  saturacion critica y ofrece `ROMPER EL LIMITE`.
+- El jugador dispone de cuatro segundos para decidir. Abrir manualmente suma 250
+  puntos; si no pulsa, la expansion ocurre automaticamente y la partida no se detiene.
+- La arena no es un efecto decorativo: sus limites fisicos crecen de 624 x 940 a
+  872 x 1148 y finalmente a 1192 x 1444. La camara se aleja con una transicion para
+  revelar el espacio nuevo.
+- El segundo sector libera la patrulla y el tercero la tormenta de pulso, de modo que
+  ganar espacio siempre incorpora un riesgo nuevo.
+- Se agregaron medidor de saturacion, llamada de accion, banners, flash, vibracion,
+  puntuacion y resultado con sectores abiertos.
+- Los controles tactiles convierten coordenadas de pantalla a mundo para continuar
+  siendo precisos despues del zoom.
+- El tutorial incorpora la expansion y la suite cubre saturacion, eleccion, apertura
+  automatica, limites, camara, peligros, recompensa y reinicio.
+
+Verificacion:
+
+- Pasan 219 verificaciones headless en Godot 4.7.1.
+- Se renderizo el segundo sector a 720 x 1280 con seis ecos; HUD, limites, jugador,
+  peligros y banner permanecen visibles.
+- Se genero localmente `ECOS-0.5.0-android.apk`: versionCode 15, target SDK 36,
+  ARM64/x86_64, firmas v2/v3, sin modo depurable ni recursos de desarrollo.
+- SHA-256 local:
+  `627DE7B542AF8EBB7704152CDE7B5D7859DF9688FA7C498D1C0C7DAD816D6161`.
+- `git diff --check` no informa errores de espacios.
+
+Siguiente accion:
+
+- Probar los tres sectores en Galaxy A25 y S25 y ajustar umbrales, cuatro segundos de
+  decision, zoom final y bono segun legibilidad y tension real.
+
 ## 2026-07-23 - Tres niveles y Archivo de progresion
 
 Fase: Fase 3 - MVP de contenido

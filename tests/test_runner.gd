@@ -27,6 +27,7 @@ func _run() -> void:
 	await _test_responsive_layout()
 	await _test_run_scene()
 	await _test_arena_progression()
+	await _test_world_expansion()
 	await _test_level_variants()
 	await _test_recursive_echo_chain()
 	await _test_level_completion()
@@ -351,7 +352,7 @@ func _test_arena_progression() -> void:
 	await process_frame
 	_expect(not patrol.collision_shape.disabled, "la patrulla activa su colision")
 	run._update_hud()
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E2/3\nF0 CAD x1.0", "el HUD informa nivel, etapa, faltas y ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 S1/3\nF0 CAD x1.0", "el HUD informa nivel, sector, faltas y ritmo")
 	var patrol_start := patrol.position
 	patrol.set_physics_process(false)
 	patrol._physics_process(1.0)
@@ -374,7 +375,44 @@ func _test_arena_progression() -> void:
 	run._restart()
 	await process_frame
 	_expect(not patrol.progression_active and not pulse.progression_active, "repetir reinicia los obstaculos progresivos")
-	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 E1/3\nF0 CAD x1.0", "repetir limpia las faltas de ritmo")
+	_expect((run.get_node("UI/TopBar/Margin/Stats/Phase") as Label).text == "N1 S1/3\nF0 CAD x1.0", "repetir limpia sectores y faltas de ritmo")
+	run.queue_free()
+	await process_frame
+
+
+func _test_world_expansion() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	var initial_rect: Rect2 = run.arena.play_rect_for_stage(1)
+	var initial_right := run.boundaries.get_node("Right") as StaticBody2D
+
+	for _cycle in 3:
+		run._physics_process(run._level.echo_interval + 0.1)
+		await _open_latest_rift(run, true)
+	_expect(run._expansion_offered, "tres ecos saturan el primer sector")
+	_expect(run.break_limit_button.visible, "la saturacion ofrece romper el limite")
+	_expect((run.expansion_label as Label).text.contains("LIMITE LISTO"), "el HUD convierte la saturacion en una decision")
+	(run.break_limit_button as Button).pressed.emit()
+	await process_frame
+	_expect(run._world_stage == 2, "romper el limite abre el segundo sector")
+	_expect(run.world_camera.enabled and run.world_camera.zoom.x < 1.0, "la expansion aleja la camara")
+	_expect(initial_right.position.x > initial_rect.end.x and initial_right.position.x > 800.0, "los limites fisicos se desplazan y crean espacio real")
+	_expect(run.patrol_obstacle.progression_active, "el nuevo sector libera una patrulla")
+	_expect(run._expansion_bonus == RunController.MANUAL_EXPANSION_BONUS, "decidir a tiempo entrega una recompensa")
+
+	for _cycle in 3:
+		run._physics_process(run._level.echo_interval + 0.1)
+		await _open_latest_rift(run, true)
+	_expect(run._expansion_offered, "seis ecos saturan el segundo sector")
+	run._expand_world(false)
+	_expect(run._world_stage == 3, "la saturacion termina abriendo automaticamente el mundo completo")
+	_expect(run.pulse_obstacle.progression_active, "el sector final libera la tormenta de pulso")
+	_expect((run.expansion_label as Label).text.contains("MUNDO AL MAXIMO"), "el HUD celebra la expansion total")
+	run._restart()
+	await process_frame
+	_expect(run._world_stage == 1 and not run.world_camera.enabled, "repetir restaura el mundo inicial")
 	run.queue_free()
 	await process_frame
 
@@ -392,7 +430,7 @@ func _test_level_variants() -> void:
 	level_two_run._run_time = level_two_run._level.patrol_phase_time
 	level_two_run._update_progression()
 	level_two_run._update_hud()
-	_expect((level_two_run.phase_label as Label).text.begins_with("N2 E2/3"), "el HUD identifica la etapa dos y su progresion")
+	_expect((level_two_run.phase_label as Label).text.begins_with("N2 S1/3"), "el HUD identifica el nivel y su sector actual")
 	level_two_run.queue_free()
 	await process_frame
 

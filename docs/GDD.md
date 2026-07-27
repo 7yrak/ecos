@@ -17,9 +17,10 @@ creado por uno mismo en una cadena perfecta.
 1. Entrar en una arena.
 2. Mover una chispa con un dedo y recoger energia.
 3. Generar periodicamente un eco desde el ultimo miembro de la cadena.
-4. Evitar colisiones y usar ecos para multiplicar la puntuacion.
-5. Sobrevivir hasta agotar el tiempo objetivo y completar el nivel.
-6. Avanzar al siguiente nivel disponible o repetir para mejorar la puntuacion.
+4. Llenar el sector, romper el limite y revelar una arena mayor.
+5. Aceptar el nuevo peligro a cambio de espacio y una recompensa por decidir rapido.
+6. Evitar colisiones y sobrevivir hasta agotar el tiempo objetivo.
+7. Avanzar al siguiente nivel disponible o repetir para mejorar la puntuacion.
 
 ## Reglas provisionales
 
@@ -37,6 +38,11 @@ creado por uno mismo en una cadena perfecta.
   a la anterior.
 - No existe un maximo de ecos activos. Todos permanecen en movimiento hasta que
   finaliza el nivel.
+- Los sectores 1 y 2 se saturan con 3 y 6 ecos respectivamente. Al saturarse aparece
+  una decision de cuatro segundos para romper el limite; despues se abre de forma
+  automatica.
+- Romper manualmente entrega 250 puntos. Cada apertura amplia limites y camara, pero
+  libera la patrulla en el sector 2 y la tormenta de pulso en el sector 3.
 - Recorrer menos de 280 px en una ventana comprime el retraso de toda la cadena en
   pasos de 0.2x y no hay limite superior de presion.
 - Moverse activamente vuelve a ampliar el retraso de forma gradual. Las faltas lentas
@@ -58,6 +64,8 @@ Todos los valores son parametros de balance, no constantes definitivas.
   sigue en vivo la memoria retardada de su predecesor y la cadena crece sin limite fijo
   hasta ganar por tiempo o colisionar.
 - La puntuacion suma supervivencia y ecos creados.
+- La puntuacion premia con 250 puntos cada expansion elegida antes de la apertura
+  automatica.
 - La pantalla de resultado diferencia derrota y nivel superado; permite reintentar o
   avanzar cuando exista otro nivel en el catalogo.
 
@@ -103,6 +111,8 @@ Implementado:
 - Ecos que siguen posiciones pasadas exactas del predecesor con retraso acumulativo.
 - Presion reversible desde x1.0 que comprime el retraso de todas las generaciones para
   impedir la estrategia de movimiento extremadamente lento.
+- Tres sectores que expanden fisicamente la arena y alejan la camara al alcanzar 3 y
+  6 ecos; la eleccion manual se premia y cada sector activa un peligro adicional.
 - Tres niveles con geometria, duracion, frecuencia, distancia minima y retraso propios.
 - Archivo local con Fragmentos, tienda, equipamiento y primeras victorias persistentes.
 - Cuatro skins, dos niveles desbloqueables y tres poderes permanentes.
@@ -133,6 +143,7 @@ Principios:
 - Se obtiene jugando; ninguna apariencia basica exige pagar dinero real.
 - Una partida valida de al menos diez segundos entrega una recompensa minima.
 - Sobrevivir, alcanzar etapas y mejorar puntuacion aumenta la recompensa.
+- Cada sector abierto suma un Fragmento a la recompensa final.
 - No hay un limite diario que impida seguir progresando mediante juego.
 - Los precios iniciales deben permitir una apariencia comun en unas 10 a 15 partidas
   y una especial en unas 40 a 60, sujetos a datos reales.

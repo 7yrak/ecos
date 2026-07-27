@@ -5,20 +5,21 @@
 
 ## Resumen
 
-- Fecha de actualizacion: 2026-07-23
+- Fecha de actualizacion: 2026-07-27
 - Fase activa: Fase 3 - MVP de contenido
-- Hito activo: validar tres niveles, economia y poderes en dispositivos fisicos
-- Estado general: implementacion y release `0.4.0` terminados; validacion fisica pendiente
-- Ultima sesion: se publico la primera entrega con niveles, tienda y progreso persistente
+- Hito activo: validar expansion del mundo, tres niveles, economia y poderes
+- Estado general: expansion dinamica implementada y validada; APK solo local pendiente de validacion fisica
+- Ultima sesion: se retiro la distribucion de APK desde Git y la salida release paso a ser exclusivamente local
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version vigente es `0.4.0` (`versionCode 14`).
-- La APK firmada esta en `releases/ECOS-0.4.0-android.apk`; es el unico artefacto
-  vigente y su SHA-256 es
-  `cd92843cca343122d904d86d96a2e1077c08a4bff9851e3d40b4e62b1048345c`.
+- La version de trabajo es `0.5.0` (`versionCode 15`).
+- Las APK no forman parte de Git. La APK firmada se genera solo de forma local en
+  `releases/`, que conserva unicamente el artefacto vigente.
+- La salida local actual es `ECOS-0.5.0-android.apk`, SHA-256
+  `627DE7B542AF8EBB7704152CDE7B5D7859DF9688FA7C498D1C0C7DAD816D6161`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
 - `0.4.0` usa un certificado nuevo porque la clave privada anterior no estaba
@@ -36,30 +37,36 @@
 - La prioridad de fisica sigue el orden jugador, eco 1, eco 2 y siguientes, evitando
   que una generacion lea una posicion atrasada de su predecesor.
 - No hay un maximo de ecos activos y todos permanecen en movimiento durante el nivel.
+- Con 3 y 6 ecos la arena alcanza saturacion critica y ofrece `ROMPER EL LIMITE`.
+- Romperlo manualmente entrega 250 puntos; si no se decide en cuatro segundos, el
+  sector se abre automaticamente para evitar detener el ritmo.
+- Cada apertura mueve los limites fisicos, anima la arena y aleja la camara. El sector
+  2 libera la patrulla y el sector 3 la tormenta de pulso.
 - Los segmentos de cinco segundos solo miden distancia. Recorrer menos de 280 px
   agrega 0.2x de presion y reduce el retraso efectivo de toda la cadena.
 - Un segmento activo resta un nivel de presion y vuelve a ampliar la distancia. Las
   faltas lentas se conservan como estadistica del intento.
 - Se eliminaron cazadores separados, recorridos trasladados, recorte contra bordes y
   resonancias estaticas.
-- El HUD muestra nivel, etapa, faltas y presion de cadena; el tutorial explica el
-  seguimiento retardado y la compresion por movimiento lento.
+- El HUD muestra sector, saturacion, faltas y presion de cadena; el tutorial explica
+  seguimiento, compresion y la decision de romper el limite.
 - `ARCHIVO // TIENDA` ofrece cuatro skins, los tres niveles y tres poderes permanentes:
   Pulso, Estabilizador y Desfase.
 - Las partidas validas otorgan Fragmentos; cada primera victoria agrega un bono y los
   niveles siguientes se compran con la moneda obtenida al jugar.
 - Billetera, inventario, equipamiento, nivel seleccionado y primeras victorias se
   guardan localmente con esquema versionado.
-- Pasan 206 verificaciones headless sin fugas de recursos, incluidas posiciones
+- Pasan 219 verificaciones headless, incluidas posiciones
   pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
-  colisiones, reinicio, interfaz adaptable y diez ciclos tecnicos consecutivos.
+  expansion fisica, camara, recompensas, colisiones, reinicio, interfaz adaptable y
+  diez ciclos tecnicos consecutivos.
 - La identidad `com.tyrak.ecos` y el nombre del estudio siguen siendo provisionales.
 
 ## Siguiente accion exacta
 
-Desinstalar `0.3.0`, instalar `0.4.0` en Galaxy A25 y S25 y ejecutar los tres niveles
-y habilidades. Registrar tiempo medio, causa de muerte, recompensa por sesion, tiempo
-hasta cada compra y si las arenas 2 y 3 dejan ventanas de reaccion justas.
+Ejecutar los tres niveles en Galaxy A25 y S25 y observar si la expansion a los 3 y 6
+ecos se entiende, si el boton puede pulsarse bajo presion y si el zoom final mantiene
+legibles jugador, ecos y peligros.
 
 ## Tareas pendientes inmediatas
 
@@ -74,7 +81,13 @@ hasta cada compra y si las arenas 2 y 3 dejan ventanas de reaccion justas.
 - [x] Incorporar skins y tres poderes permanentes.
 - [x] Ampliar la suite a 206 verificaciones.
 - [x] Generar y auditar la APK `0.4.0`.
+- [x] Convertir la saturacion en tres sectores de arena expansibles.
+- [x] Agregar decision manual, apertura automatica, riesgo, recompensa y nuevo HUD.
+- [x] Ampliar la suite a 219 verificaciones.
+- [x] Retirar las APK del repositorio y convertir `releases/` en salida local ignorada.
+- [x] Generar y auditar localmente la APK firmada `0.5.0`.
 - [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
+- [ ] Balancear umbrales 3/6, espera de 4 segundos, zoom y bono de 250 puntos.
 - [ ] Balancear duraciones, frecuencias, precios, bonos y poderes.
 - [ ] Respaldar la nueva clave release fuera del equipo actual.
 - [ ] Confirmar nombre final del paquete Android y del estudio antes de publicar.
@@ -89,6 +102,8 @@ hasta cada compra y si las arenas 2 y 3 dejan ventanas de reaccion justas.
 
 - La cadena no tiene limite fijo; los 45 segundos acotan memoria y nodos, pero deben
   medirse FPS y legibilidad en un dispositivo de gama media.
+- El zoom del sector 3 aumenta el espacio real, pero reduce el tamano aparente de
+  jugador, ecos y obstaculos; debe validarse en pantallas pequenas.
 - Cada generacion agrega 1.2 segundos de retraso. Las generaciones lejanas pueden
   quedar demasiado separadas para sentirse relacionadas con el jugador.
 - Una presion alta reduce el retraso de todas las generaciones y puede comprimir la

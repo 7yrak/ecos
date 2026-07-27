@@ -277,13 +277,13 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="TutorialOverlay/Center"]
-custom_minimum_size = Vector2(610, 760)
+custom_minimum_size = Vector2(610, 900)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_tutorial")
 
 [node name="Content" type="VBoxContainer" parent="TutorialOverlay/Center/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 26
+theme_override_constants/separation = 17
 alignment = 1
 
 [node name="Kicker" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
@@ -301,7 +301,7 @@ text = "COMO SOBREVIVIR"
 horizontal_alignment = 1
 
 [node name="StepOne" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 24
@@ -309,7 +309,7 @@ text = "01  TOCA Y ARRASTRA\nMueve la luz verde por la arena."
 vertical_alignment = 1
 
 [node name="StepTwo" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
-custom_minimum_size = Vector2(0, 118)
+custom_minimum_size = Vector2(0, 105)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
@@ -317,11 +317,19 @@ text = "02  CREA LA CADENA\nCada cinco segundos nace un eco que sigue con retras
 vertical_alignment = 1
 
 [node name="StepThree" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
-custom_minimum_size = Vector2(0, 142)
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.86, 0.86, 1)
 theme_override_font_sizes/font_size = 22
 text = "03  MANTEN DISTANCIA\nSobrevive hasta agotar el tiempo. Moverte poco comprime\ntoda la cadena y acerca los ecos a tu estela."
+vertical_alignment = 1
+
+[node name="StepFour" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "04  ROMPE EL LIMITE\nCon 3 y 6 ecos puedes expandir el mundo. Decide rapido\npara ganar puntos: cada sector libera un nuevo peligro."
 vertical_alignment = 1
 
 [node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]

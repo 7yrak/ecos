@@ -40,6 +40,11 @@ Android nativo.
 ./scripts/dev/install_android_debug.sh
 ```
 
+En Windows, la salida release local equivalente se genera con
+`scripts/dev/export_android_release.ps1`, indicando las rutas locales de Godot,
+Android SDK y `release.env`. Ambos scripts reemplazan la APK anterior y escriben
+unicamente en `releases/`, cuyos binarios estan ignorados por Git.
+
 La exportacion release lee la firma desde
 `~/.local/share/ecos/signing/release.env`. El keystore y su clave son secretos
 locales: no se versionan y deben respaldarse en un lugar seguro antes de publicar

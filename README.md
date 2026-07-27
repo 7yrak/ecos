@@ -5,18 +5,16 @@ que repiten su recorrido y modifican la partida.
 
 Repositorio oficial: <https://github.com/7yrak/ecos>
 
-## Descargar APK
+## APK Android
 
-- [Descargar ECOS 0.4.0 para Android](https://raw.githubusercontent.com/7yrak/ecos/main/releases/ECOS-0.4.0-android.apk)
-- SHA-256: `cd92843cca343122d904d86d96a2e1077c08a4bff9851e3d40b4e62b1048345c`
+Las APK no se almacenan ni distribuyen desde este repositorio. La version release se
+genera localmente en `releases/` mediante `scripts/dev/export_android_release.sh` en
+Linux o `scripts/dev/export_android_release.ps1` en Windows; esa salida esta ignorada
+por Git.
 
-La firma de `0.4.0` reemplaza la identidad de desarrollo anterior porque la clave
-privada de `0.3.0` no estaba disponible. Para pasar desde `0.3.0` se debe desinstalar
-la aplicacion anterior antes de instalar `0.4.0`.
-
-Android puede solicitar autorizacion para instalar aplicaciones desde el navegador
-o gestor de archivos. Play Protect tambien puede pedir analizar la aplicacion porque
-se distribuye fuera de Google Play. La APK no solicita permisos de Android.
+La firma usada desde `0.4.0` reemplaza la identidad de desarrollo anterior porque la
+clave privada de `0.3.0` no estaba disponible. Para pasar desde `0.3.0` se debe
+desinstalar la aplicacion anterior.
 
 ## Como retomar el proyecto
 
@@ -44,3 +42,6 @@ cuatro skins, tres poderes permanentes y una tienda con Fragmentos obtenidos al 
 Billetera, compras, equipamiento, nivel seleccionado y primeras victorias se guardan
 localmente. El primer eco sigue la memoria del jugador y cada generacion posterior
 sigue a la anterior; moverse poco comprime toda la cadena.
+Al alcanzar 3 y 6 ecos, el jugador puede romper el limite: la arena y la camara se
+expanden, aparece un peligro nuevo y decidir antes de la apertura automatica entrega
+una bonificacion de puntuacion.

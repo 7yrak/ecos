@@ -5,7 +5,8 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 SIGNING_ENV="${ECOS_SIGNING_ENV:-$HOME/.local/share/ecos/signing/release.env}"
-OUTPUT_PATH="$PROJECT_ROOT/build/android/ECOS-0.4.0-android.apk"
+OUTPUT_DIR="$PROJECT_ROOT/releases"
+OUTPUT_PATH="$OUTPUT_DIR/ECOS-0.5.0-android.apk"
 
 if [[ ! -f "$SIGNING_ENV" ]]; then
   printf 'No existe la configuracion de firma: %s\n' "$SIGNING_ENV" >&2
@@ -26,8 +27,8 @@ export GODOT_ANDROID_KEYSTORE_RELEASE_USER
 export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD
 
 "$PROJECT_ROOT/scripts/dev/check_environment.sh"
-mkdir -p "$(dirname "$OUTPUT_PATH")"
-rm -f "$OUTPUT_PATH"
+mkdir -p "$OUTPUT_DIR"
+find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.apk' -delete
 
 "$PROJECT_ROOT/scripts/dev/godot.sh" \
   --headless \
@@ -41,6 +42,7 @@ if [[ ! -s "$OUTPUT_PATH" ]]; then
 fi
 
 "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify "$OUTPUT_PATH"
+rm -f "$OUTPUT_PATH.idsig"
 if "$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt2" dump xmltree "$OUTPUT_PATH" \
   --file AndroidManifest.xml 2>/dev/null | rg -q 'debuggable.*true'; then
   printf 'La APK release quedo marcada como depurable.\n' >&2
