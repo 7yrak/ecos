@@ -48,3 +48,7 @@ una bonificacion de puntuacion.
 Cada nivel tiene ademas una coreografia fija de muros, compuertas y barridos sorpresa:
 aparecen siempre en el mismo segundo y lugar, con un aviso breve, para que repetir
 tambien signifique aprender la memoria del nivel.
+Menu, tutorial, tienda, HUD, gameplay y resultados comparten una identidad de
+transmision neon. Cada nivel usa una paleta propia y la tienda muestra vistas previas
+animadas de skins, etapas y poderes. El menu tiene arte cinematografico propio y cada
+nivel revela una arquitectura ilustrada diferente a medida que el mundo se expande.

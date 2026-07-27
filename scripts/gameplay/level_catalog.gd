@@ -14,6 +14,16 @@ const LEVELS := [
 		"follow_delay": 1.2,
 		"minimum_segment_distance": 280.0,
 		"first_clear_bonus": 20,
+		"visual_palette": {
+			"void": Color("#030b12"),
+			"arena": Color("#09242a"),
+			"primary": Color("#55f2bd"),
+			"secondary": Color("#32aee8"),
+			"danger": Color("#ff5b52"),
+			"warning": Color("#ffc857"),
+			"name": "MAREA ESMERALDA",
+			"background_path": "res://assets/visuals/arena-emerald.png",
+		},
 		"surprise_events": [
 			{
 				"time": 7.0, "sector": 1, "name": "CORTE FANTASMA",
@@ -92,6 +102,16 @@ const LEVELS := [
 		"follow_delay": 1.15,
 		"minimum_segment_distance": 305.0,
 		"first_clear_bonus": 30,
+		"visual_palette": {
+			"void": Color("#030817"),
+			"arena": Color("#071c38"),
+			"primary": Color("#58c8ff"),
+			"secondary": Color("#8c7bff"),
+			"danger": Color("#ff6f4f"),
+			"warning": Color("#ffd35a"),
+			"name": "CORRIENTE ELECTRICA",
+			"background_path": "res://assets/visuals/arena-electric.png",
+		},
 		"surprise_events": [
 			{
 				"time": 6.0, "sector": 1, "name": "COMPUERTA NORTE",
@@ -184,6 +204,16 @@ const LEVELS := [
 		"follow_delay": 1.05,
 		"minimum_segment_distance": 330.0,
 		"first_clear_bonus": 45,
+		"visual_palette": {
+			"void": Color("#10030d"),
+			"arena": Color("#260b22"),
+			"primary": Color("#ff6295"),
+			"secondary": Color("#b67cff"),
+			"danger": Color("#ff314f"),
+			"warning": Color("#ffe36a"),
+			"name": "NUCLEO CARMESI",
+			"background_path": "res://assets/visuals/arena-crimson.png",
+		},
 		"surprise_events": [
 			{
 				"time": 5.5, "sector": 1, "name": "FISURA ROJA",

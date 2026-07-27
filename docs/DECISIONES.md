@@ -362,9 +362,23 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   Todos muestran una huella no letal antes de activarse y dejan rutas de escape
   disenadas. El balance debe ajustar espacios y avisos, no introducir aleatoriedad.
 
+## D-032 - Lenguaje visual de transmision neon
+
+- Fecha: 2026-07-27
+- Estado: aceptada para el MVP
+- Decision: unificar menu, tutorial, ajustes, tienda, gameplay, HUD y resultados con
+  una interfaz de transmision neon: fondos profundos, reticulas, lineas de escaneo,
+  brillos acotados y animacion procedimental. Cada nivel hereda una paleta propia.
+- Motivo: el prototipo era funcional, pero las pantallas no comunicaban una identidad
+  suficientemente llamativa ni reforzaban la progresion entre niveles.
+- Consecuencia: Marea Esmeralda, Corriente Electrica y Nucleo Carmesi diferencian los
+  tres niveles mediante ilustracion ambiental, color y geometria. Los fondos se cargan
+  bajo demanda y la tipografia Oxanium se distribuye con su licencia OFL. Las nuevas
+  animaciones deben mantener legibilidad y rendimiento en gama media; futuras pantallas
+  deben reutilizar este mismo lenguaje.
+
 ## Decisiones pendientes del usuario
 
-- Estilo visual definitivo.
 - Publico objetivo y clasificacion de edad buscada.
 - Android solamente o futura version para otras plataformas.
 - Nombre de paquete Android y nombre del estudio/desarrollador.

@@ -6,10 +6,6 @@ signal expired(obstacle)
 
 enum State { WARNING, ACTIVE, RETRACTING }
 
-const WARNING_COLOR := Color(1.0, 0.82, 0.28)
-const WALL_COLOR := Color(1.0, 0.3, 0.34)
-const SWEEP_COLOR := Color(1.0, 0.58, 0.18)
-const GATE_COLOR := Color(0.34, 0.72, 1.0)
 const RETRACT_DURATION := 0.45
 
 var beat_index := 0
@@ -25,6 +21,10 @@ var collision_active := false
 var _origin_position := Vector2.ZERO
 var _state_time := 0.0
 var _collision_shape: CollisionShape2D
+var _warning_color := Color(1.0, 0.82, 0.28)
+var _wall_color := Color(1.0, 0.3, 0.34)
+var _sweep_color := Color(1.0, 0.58, 0.18)
+var _gate_color := Color(0.34, 0.72, 1.0)
 
 
 func _init() -> void:
@@ -86,6 +86,14 @@ func stop() -> void:
 	set_physics_process(false)
 
 
+func set_palette(palette: Dictionary) -> void:
+	_warning_color = palette.get("warning", _warning_color)
+	_wall_color = palette.get("danger", _wall_color)
+	_sweep_color = palette.get("warning", _sweep_color)
+	_gate_color = palette.get("secondary", _gate_color)
+	queue_redraw()
+
+
 func warning_progress() -> float:
 	if state != State.WARNING:
 		return 1.0
@@ -137,15 +145,15 @@ func _draw_warning(rect: Rect2) -> void:
 	var progress := warning_progress()
 	var pulse := 0.45 + sin(progress * TAU * 4.0) * 0.2
 	if not travel_offset.is_zero_approx():
-		draw_line(Vector2.ZERO, travel_offset, Color(WARNING_COLOR, 0.24), 18.0, true)
-		draw_line(Vector2.ZERO, travel_offset, Color(WARNING_COLOR, 0.72), 3.0, true)
-	draw_rect(rect.grow(12.0 + progress * 8.0), Color(WARNING_COLOR, 0.05 + progress * 0.08), true)
-	_draw_dashed_rect(rect, Color(WARNING_COLOR, pulse), 4.0)
+		draw_line(Vector2.ZERO, travel_offset, Color(_warning_color, 0.24), 18.0, true)
+		draw_line(Vector2.ZERO, travel_offset, Color(_warning_color, 0.72), 3.0, true)
+	draw_rect(rect.grow(12.0 + progress * 8.0), Color(_warning_color, 0.05 + progress * 0.08), true)
+	_draw_dashed_rect(rect, Color(_warning_color, pulse), 4.0)
 	var marker_radius := minf(24.0, maxf(15.0, minf(obstacle_size.x, obstacle_size.y) * 0.35))
 	draw_circle(Vector2.ZERO, marker_radius, Color(0.04, 0.08, 0.1, 0.88))
-	draw_arc(Vector2.ZERO, marker_radius, -PI * 0.5, -PI * 0.5 + TAU * progress, 24, WARNING_COLOR, 4.0, true)
-	draw_line(Vector2(0.0, -10.0), Vector2(0.0, 5.0), WARNING_COLOR, 4.0, true)
-	draw_circle(Vector2(0.0, 12.0), 2.8, WARNING_COLOR)
+	draw_arc(Vector2.ZERO, marker_radius, -PI * 0.5, -PI * 0.5 + TAU * progress, 24, _warning_color, 4.0, true)
+	draw_line(Vector2(0.0, -10.0), Vector2(0.0, 5.0), _warning_color, 4.0, true)
+	draw_circle(Vector2(0.0, 12.0), 2.8, _warning_color)
 
 
 func _draw_active(rect: Rect2) -> void:
@@ -209,7 +217,7 @@ func _draw_gate_core(rect: Rect2, color: Color) -> void:
 
 func _style_color() -> Color:
 	if style == "sweep":
-		return SWEEP_COLOR
+		return _sweep_color
 	if style == "gate":
-		return GATE_COLOR
-	return WALL_COLOR
+		return _gate_color
+	return _wall_color

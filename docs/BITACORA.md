@@ -4,6 +4,85 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - Direccion artistica sustancial
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- La primera renovacion mejoro coherencia y efectos, pero todavia se percibia como un
+  prototipo construido principalmente con formas simples.
+
+Cambios:
+
+- Se genero e integro arte original vertical para el menu: una senal luminosa escapa
+  por un corredor de cristal mientras una cadena de ecos rojos repite su ruta.
+- Marea Esmeralda, Corriente Electrica y Nucleo Carmesi recibieron fondos ilustrados
+  propios con arquitectura, materiales y atmosfera diferentes.
+- El recorte del fondo usa coordenadas estables del mundo. Expandir la arena revela
+  regiones nuevas de la ilustracion en lugar de estirar o reemplazar la imagen.
+- Los fondos de nivel se cargan bajo demanda para mantener acotada la memoria movil.
+- La interfaz adopta Oxanium como familia global; su archivo OFL se conserva junto a
+  la fuente.
+- Los obstaculos base incorporan chasis oscuro, terminales de energia, orbitas y
+  pulsos animados para dejar de percibirse como rectangulos planos.
+- La version avanza a `0.8.0` (`versionCode 18`).
+
+Verificacion:
+
+- Pasan 291 verificaciones headless en Godot 4.7.1 sin errores de script.
+- Se revisaron menu, tienda, tutorial, los tres niveles y resultados a 720 x 1280.
+- APK local `ECOS-0.8.0-android.apk`: 58,915,558 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos ni recursos de pruebas.
+- SHA-256:
+  `6AAB8C7FA631F1D0303E934F5521B3BAEAD05E19F7813BC98ACB4D9D154F0325`.
+
+Siguiente accion:
+
+- Validar en Galaxy A25 si el arte mantiene 60 FPS y si el contraste de los peligros
+  sigue siendo suficiente durante la expansion completa.
+
+## 2026-07-27 - Renovacion visual integral
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se solicito mejorar visualmente todo el juego y mantener un estilo consistente en
+  menu, tutorial, tienda, gameplay y resultados.
+
+Cambios:
+
+- Se definio un sistema cromatico por nivel: Marea Esmeralda, Corriente Electrica y
+  Nucleo Carmesi. Cada paleta controla arena, HUD, obstaculos, avisos y cierre.
+- La arena agrega profundidad, reticula mayor y menor, particulas deterministas,
+  barrido ambiental, anillos de sector y bordes con brillo por capas.
+- Jugador y ecos ahora tienen nucleos animados, orbitas, marcadores generacionales y
+  estelas acotadas. Alertas, impactos y expansiones incorporan sacudida de camara.
+- El menu renueva composicion, jerarquia y animacion. Tutorial y ajustes usan la misma
+  identidad, y el tutorial incorpora un diagrama animado de ruta, ecos y obstaculo.
+- La tienda agrega vistas previas procedimentales para skins, niveles y poderes,
+  tarjetas con acento propio y una entrada animada.
+- El HUD adapta sus colores a cada mundo y la pantalla de resultados cambia borde,
+  encabezado y entrada segun victoria o derrota.
+- La version avanza a `0.7.0` (`versionCode 17`) y la APK se mantiene solo de forma
+  local.
+
+Verificacion:
+
+- Pasan 290 verificaciones headless en Godot 4.7.1 sin errores de script.
+- Se revisaron renderizados de menu, tutorial, tienda, gameplay, resultados y las
+  tres paletas a 720 x 1280.
+- APK local `ECOS-0.7.0-android.apk`: 52,622,812 bytes, firmas v2/v3, `targetSdk 36`,
+  ARM64 y x86_64, sin permisos ni recursos de pruebas.
+- SHA-256:
+  `FCEDA4410A153640BC542C723F4DF0B989126F0865B7532A24E709A5CC41271E`.
+
+Siguiente accion:
+
+- Medir en Galaxy A25 y S25 la fluidez del sector 3 con seis o mas ecos y varios
+  patrones simultaneos, ademas de comprobar contraste bajo brillo exterior.
+
 ## 2026-07-27 - La memoria del nivel
 
 Fase: Fase 3 - MVP de contenido

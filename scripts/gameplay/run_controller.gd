@@ -30,6 +30,7 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var echoes: Node2D = $Echoes
 @onready var rifts: Node2D = $Rifts
 @onready var feedback: GameplayFeedback = $Feedback
+@onready var atmosphere: GameplayOverlay = $UI/Atmosphere
 @onready var upper_obstacle: ArenaObstacle = $Obstacles/Upper
 @onready var lower_obstacle: ArenaObstacle = $Obstacles/Lower
 @onready var patrol_obstacle: ArenaObstacle = $Obstacles/Patrol
@@ -48,6 +49,8 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var break_limit_button: Button = $UI/BreakLimitButton
 @onready var power_button: Button = $UI/PowerButton
 @onready var game_over_overlay: ColorRect = $UI/GameOver
+@onready var result_panel: PanelContainer = $UI/GameOver/Center/Panel
+@onready var result_kicker: Label = $UI/GameOver/Center/Panel/Content/Kicker
 @onready var result_title: Label = $UI/GameOver/Center/Panel/Content/Title
 @onready var result_label: Label = $UI/GameOver/Center/Panel/Content/Result
 @onready var restart_button: Button = $UI/GameOver/Center/Panel/Content/Restart
@@ -80,6 +83,8 @@ var _pattern_warning_time := 0.0
 var _last_armed_beat := 0
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
+var _camera_tween: Tween
+var _camera_zoom_tween: Tween
 var _run_id := 0
 var _reward_granted := false
 var _power_used := false
@@ -158,6 +163,10 @@ func _start_run() -> void:
 	_run_id += 1
 	if is_instance_valid(_flash_tween):
 		_flash_tween.kill()
+	if is_instance_valid(_camera_tween):
+		_camera_tween.kill()
+	if is_instance_valid(_camera_zoom_tween):
+		_camera_zoom_tween.kill()
 	_state = RunState.PLAYING
 	_level_won = false
 	_reward_granted = false
@@ -184,9 +193,11 @@ func _start_run() -> void:
 	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
+	_apply_visual_identity()
 	arena.set_expansion_stage(1, false)
-	world_camera.enabled = false
+	world_camera.enabled = true
 	world_camera.zoom = Vector2.ONE
+	world_camera.offset = Vector2.ZERO
 	_configure_boundaries(arena.play_rect_for_stage(1))
 	_configure_arena_for_level()
 	upper_obstacle.reset_for_run(true)
@@ -199,7 +210,8 @@ func _start_run() -> void:
 	player.set_skin(progress_store.equipped_skin)
 	game_over_overlay.visible = false
 	result_title.text = "FIN DEL ECO"
-	result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
+	result_title.add_theme_color_override("font_color", _level.visual_palette.danger)
+	result_kicker.text = "REPORTE // %s" % str(_level.visual_palette.name)
 	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
 	pattern_warning_label.visible = false
@@ -208,7 +220,7 @@ func _start_run() -> void:
 	instruction_label.text = "%s // %d S" % [_level.title, roundi(_level.duration)]
 	instruction_label.modulate.a = 1.0
 	_configure_power_button()
-	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], Color(0.584, 1.0, 0.796), 2.4)
+	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], _level.visual_palette.primary, 2.4)
 	_update_hud()
 
 
@@ -256,6 +268,7 @@ func _on_rift_opened(rift) -> void:
 		_level.follow_delay,
 		rift.pressured
 	)
+	echo.set_palette(_level.visual_palette)
 	echo.set_pressure_multiplier(_chain_pressure_multiplier)
 	echo.hit_player.connect(_on_echo_hit_player)
 	_total_echo_count += 1
@@ -268,12 +281,14 @@ func _on_rift_opened(rift) -> void:
 func _on_player_danger_hit(collider: Node) -> void:
 	if _ignore_or_absorb_hit(collider):
 		return
+	_shake_camera(18.0, 0.3)
 	_end_run("OBSTACULO")
 
 
 func _on_echo_hit_player(echo: EchoPlayback) -> void:
 	if _ignore_or_absorb_hit(echo):
 		return
+	_shake_camera(22.0, 0.34)
 	_end_run("TU ECO TE ALCANZO")
 
 
@@ -304,7 +319,9 @@ func _show_result(reason: String) -> void:
 		(child as EchoPlayback).stop()
 	if _level_won:
 		result_title.text = "NIVEL SUPERADO"
-		result_title.add_theme_color_override("font_color", Color(0.584, 1.0, 0.796))
+		result_title.add_theme_color_override("font_color", _level.visual_palette.primary)
+		result_kicker.text = "TRANSMISION ESTABLE // %s" % str(_level.visual_palette.name)
+		result_panel.add_theme_stylebox_override("panel", _result_panel_style(_level.visual_palette.primary))
 		feedback.play_phase(player.global_position)
 		_flash_screen(Color(0.18, 0.82, 0.655), 0.2, 0.45)
 		var next_level := _level_number + 1
@@ -316,13 +333,23 @@ func _show_result(reason: String) -> void:
 			restart_button.text = "REPETIR NIVEL"
 	else:
 		result_title.text = "FIN DEL ECO"
-		result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
+		result_title.add_theme_color_override("font_color", _level.visual_palette.danger)
+		result_kicker.text = "SENAL INTERRUMPIDA // %s" % str(_level.visual_palette.name)
+		result_panel.add_theme_stylebox_override("panel", _result_panel_style(_level.visual_palette.danger))
 		feedback.play_hit(player.global_position)
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
 	var reward := _grant_run_reward()
 	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nPATRONES DESCUBIERTOS  %02d / %02d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _discovered_event_count, _level.surprise_events.size(), _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
 	game_over_overlay.visible = true
+	result_panel.modulate.a = 0.0
+	result_panel.scale = Vector2.ONE * 0.9
+	result_panel.pivot_offset = result_panel.size * 0.5
+	create_tween().set_parallel(true) \
+		.tween_property(result_panel, "modulate:a", 1.0, 0.28) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	create_tween().tween_property(result_panel, "scale", Vector2.ONE, 0.38) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
 
@@ -447,12 +474,13 @@ func _spawn_surprise_event(event: Dictionary, event_index: int) -> void:
 	for obstacle_config in event.obstacles:
 		var obstacle = SurpriseObstacleScript.new()
 		obstacle.configure(obstacle_config, warning, duration, event_index, event_name)
+		obstacle.set_palette(_level.visual_palette)
 		surprises.add_child(obstacle)
 		obstacle.armed.connect(_on_surprise_armed)
 	_discovered_event_count = event_index
 	_pattern_warning_time = warning
 	pattern_warning_label.text = "MEMORIZA %02d/%02d // %s // %.1f S" % [event_index, _level.surprise_events.size(), event_name, warning]
-	pattern_warning_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
+	pattern_warning_label.add_theme_color_override("font_color", _level.visual_palette.warning)
 	pattern_warning_label.modulate.a = 1.0
 	pattern_warning_label.scale = Vector2.ONE * 0.88
 	pattern_warning_label.pivot_offset = pattern_warning_label.size * 0.5
@@ -470,10 +498,11 @@ func _on_surprise_armed(obstacle) -> void:
 	_last_armed_beat = obstacle.beat_index
 	_pattern_warning_time = 0.75
 	pattern_warning_label.text = "¡AHORA! // %02d // %s" % [obstacle.beat_index, obstacle.pattern_name]
-	pattern_warning_label.add_theme_color_override("font_color", Color(1.0, 0.34, 0.3))
+	pattern_warning_label.add_theme_color_override("font_color", _level.visual_palette.danger)
 	pattern_warning_label.modulate.a = 1.0
 	pattern_warning_label.visible = true
 	feedback.play_pulse(obstacle.global_position)
+	_shake_camera(9.0, 0.22)
 	_flash_screen(Color(1.0, 0.2, 0.16), 0.1, 0.2)
 	settings_store.vibrate(45)
 
@@ -529,6 +558,57 @@ func _configure_arena_for_level() -> void:
 	pulse_obstacle.pulse_warning_duration = profile.pulse_warning
 	pulse_obstacle.pulse_active_duration = profile.pulse_active
 	pulse_obstacle.pulse_safe_duration = profile.pulse_safe
+
+
+func _apply_visual_identity() -> void:
+	var palette: Dictionary = _level.visual_palette
+	arena.set_palette(palette)
+	atmosphere.set_palette(palette)
+	feedback.set_palette(palette)
+	for obstacle in [upper_obstacle, lower_obstacle, patrol_obstacle, pulse_obstacle]:
+		(obstacle as ArenaObstacle).set_palette(palette)
+	($UI/TopBar as ColorRect).color = Color(palette.void, 0.96)
+	($UI/ExpansionStatus as ColorRect).color = Color(palette.void, 0.91)
+	($UI/TopBar/Margin/Stats/Brand as Label).add_theme_color_override("font_color", palette.primary)
+	time_label.add_theme_color_override("font_color", palette.primary.lightened(0.48))
+	score_label.add_theme_color_override("font_color", palette.primary.lightened(0.48))
+	echo_label.add_theme_color_override("font_color", palette.danger)
+	phase_label.add_theme_color_override("font_color", palette.warning)
+	expansion_label.add_theme_color_override("font_color", palette.secondary)
+	pattern_memory_label.add_theme_color_override("font_color", palette.warning)
+	result_kicker.add_theme_color_override("font_color", palette.secondary)
+
+
+func _result_panel_style(accent: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(_level.visual_palette.void.lightened(0.08), 0.985)
+	style.border_color = Color(accent, 0.88)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(26)
+	style.content_margin_left = 42.0
+	style.content_margin_top = 36.0
+	style.content_margin_right = 42.0
+	style.content_margin_bottom = 36.0
+	style.shadow_color = Color(accent, 0.18)
+	style.shadow_size = 22
+	return style
+
+
+func _shake_camera(intensity: float, duration: float) -> void:
+	if is_instance_valid(_camera_tween):
+		_camera_tween.kill()
+	world_camera.offset = Vector2.ZERO
+	_camera_tween = create_tween()
+	var slice := duration / 5.0
+	for target in [
+		Vector2(intensity, -intensity * 0.45),
+		Vector2(-intensity * 0.7, intensity * 0.55),
+		Vector2(intensity * 0.4, -intensity * 0.3),
+		Vector2(-intensity * 0.2, intensity * 0.18),
+		Vector2.ZERO,
+	]:
+		_camera_tween.tween_property(world_camera, "offset", target, slice) \
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 func _grant_run_reward() -> int:
@@ -653,7 +733,10 @@ func _expand_world(manual: bool) -> void:
 	_configure_boundaries(next_rect)
 	world_camera.enabled = true
 	var target_zoom := Vector2.ONE * arena.camera_zoom_for_stage(_world_stage)
-	create_tween().tween_property(world_camera, "zoom", target_zoom, 0.9) \
+	if is_instance_valid(_camera_zoom_tween):
+		_camera_zoom_tween.kill()
+	_camera_zoom_tween = create_tween()
+	_camera_zoom_tween.tween_property(world_camera, "zoom", target_zoom, 0.9) \
 		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 
 	if _current_phase < _world_stage:
@@ -664,6 +747,7 @@ func _expand_world(manual: bool) -> void:
 	var bonus_text := " // +%d" % MANUAL_EXPANSION_BONUS if manual else ""
 	_show_banner("SECTOR %d ABIERTO // %s%s" % [_world_stage, danger_name, bonus_text], Color(0.45, 0.82, 1.0), 3.0)
 	feedback.play_phase(player.global_position)
+	_shake_camera(14.0, 0.46)
 	_flash_screen(Color(0.25, 0.62, 1.0), 0.22, 0.7)
 	settings_store.vibrate(110)
 	_update_hud()

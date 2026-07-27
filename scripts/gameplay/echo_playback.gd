@@ -18,6 +18,9 @@ var pressure_multiplier := 1.0
 var mode := Mode.FOLLOWER
 var generation := 0
 var pressured := false
+var _trail: PackedVector2Array = PackedVector2Array()
+var _level_danger := Color(1.0, 0.45, 0.36)
+var _level_warning := Color(1.0, 0.68, 0.25)
 
 
 func _ready() -> void:
@@ -30,6 +33,10 @@ func _physics_process(delta: float) -> void:
 	_age += delta
 	_update_follower(delta)
 	monitoring = _age >= _collision_activation_age and not _hit_reported
+	if _trail.is_empty() or _trail[-1].distance_to(global_position) >= 9.0:
+		_trail.append(global_position)
+		if _trail.size() > 12:
+			_trail.remove_at(0)
 	queue_redraw()
 
 
@@ -52,6 +59,14 @@ func configure_follower(
 	if is_instance_valid(_target):
 		_follow_timeline.add_sample(0.0, _target.global_position)
 	process_physics_priority = generation + 1
+	_trail.clear()
+	_trail.append(spawn_position)
+
+
+func set_palette(palette: Dictionary) -> void:
+	_level_danger = palette.get("danger", _level_danger)
+	_level_warning = palette.get("warning", _level_warning)
+	queue_redraw()
 
 
 func set_pressure_multiplier(multiplier: float) -> void:
@@ -92,10 +107,24 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _draw() -> void:
 	var wave := 4.0 + sin(_age * 6.0 * pressure_multiplier) * 3.0
-	var color := Color(1.0, 0.68, 0.25) if pressured else Color(1.0, 0.45, 0.36)
+	var color := _level_warning if pressured else _level_danger
+	if _trail.size() > 1:
+		for index in range(1, _trail.size()):
+			var progress := float(index) / float(_trail.size())
+			draw_line(
+				to_local(_trail[index - 1]),
+				to_local(_trail[index]),
+				Color(color, progress * 0.2),
+				1.0 + progress * 4.0,
+				true
+			)
 	draw_circle(Vector2.ZERO, 28.0 + wave, Color(color, 0.1))
 	draw_arc(Vector2.ZERO, 24.0 + wave, 0.0, TAU, 36, Color(color, 0.75), 3.0, true)
 	draw_circle(Vector2.ZERO, 17.0, Color(color, 0.4))
+	for tick in mini(8, generation + 2):
+		var angle := _age * (0.8 + generation * 0.04) + TAU * float(tick) / float(mini(8, generation + 2))
+		var start := Vector2.from_angle(angle) * (30.0 + wave)
+		draw_line(start, start + Vector2.from_angle(angle) * 6.0, Color(color, 0.5), 2.0, true)
 	if pressure_multiplier > 1.05:
 		draw_arc(Vector2.ZERO, 31.0 + wave, -PI * 0.75, PI * 0.35, 18, Color(1.0, 0.82, 0.32, 0.85), 3.0, true)
 	if is_instance_valid(_target):

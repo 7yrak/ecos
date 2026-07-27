@@ -11,6 +11,9 @@ var last_cue := -1
 var _streams: Array[AudioStreamWAV] = []
 var _players: Array[AudioStreamPlayer] = []
 var _next_player := 0
+var _primary := Color(0.58, 1.0, 0.8)
+var _danger := Color(1.0, 0.45, 0.36)
+var _warning := Color(1.0, 0.68, 0.25)
 
 
 func _ready() -> void:
@@ -40,38 +43,44 @@ func _exit_tree() -> void:
 
 func play_echo(world_position: Vector2) -> void:
 	_play(Cue.ECHO)
-	_spawn_ring(world_position, Color(1.0, 0.45, 0.36, 0.85), 2.0)
+	_spawn_ring(world_position, Color(_danger, 0.85), 2.0)
 
 
 func play_rift(world_position: Vector2, pressured: bool) -> void:
 	_play(Cue.RIFT)
-	var color := Color(1.0, 0.68, 0.25, 0.95) if pressured else Color(1.0, 0.34, 0.28, 0.9)
+	var color := Color(_warning, 0.95) if pressured else Color(_danger, 0.9)
 	_spawn_ring(world_position, color, 2.6)
 
 
 func play_phase(world_position: Vector2) -> void:
 	_play(Cue.PHASE)
-	_spawn_ring(world_position, Color(1.0, 0.72, 0.28, 0.9), 3.2)
+	_spawn_ring(world_position, Color(_primary, 0.9), 3.2)
 
 
 func play_pulse(world_position: Vector2) -> void:
 	_play(Cue.PULSE)
-	_spawn_ring(world_position, Color(1.0, 0.38, 0.31, 0.9), 2.5)
+	_spawn_ring(world_position, Color(_danger, 0.9), 2.5)
 
 
 func play_pressure(world_position: Vector2) -> void:
 	_play(Cue.PRESSURE)
-	_spawn_ring(world_position, Color(1.0, 0.68, 0.25, 0.95), 2.8)
+	_spawn_ring(world_position, Color(_warning, 0.95), 2.8)
 
 
 func play_hit(world_position: Vector2) -> void:
 	_play(Cue.HIT)
-	_spawn_ring(world_position, Color(1.0, 0.22, 0.18, 1.0), 3.8)
+	_spawn_ring(world_position, Color(_danger.lightened(0.08), 1.0), 3.8)
 
 
 func play_hazard(world_position: Vector2) -> void:
 	_play(Cue.HAZARD)
-	_spawn_ring(world_position, Color(1.0, 0.78, 0.24, 0.95), 3.4)
+	_spawn_ring(world_position, Color(_warning, 0.95), 3.4)
+
+
+func set_palette(palette: Dictionary) -> void:
+	_primary = palette.get("primary", _primary)
+	_danger = palette.get("danger", _danger)
+	_warning = palette.get("warning", _warning)
 
 
 func clear_active() -> void:

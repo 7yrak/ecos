@@ -5,10 +5,6 @@ signal danger_state_changed(active: bool)
 
 enum Kind { STATIC, PATROL, PULSE }
 
-const DANGER_COLOR := Color(1.0, 0.38, 0.31, 1.0)
-const PATROL_COLOR := Color(1.0, 0.68, 0.25, 1.0)
-const SAFE_COLOR := Color(0.25, 0.78, 0.82, 1.0)
-
 @export var kind: Kind = Kind.STATIC
 @export var obstacle_size := Vector2(200.0, 30.0)
 @export var movement_offset := Vector2.ZERO
@@ -23,6 +19,10 @@ var progression_active := true
 var collision_active := false
 var _origin_position := Vector2.ZERO
 var _elapsed := 0.0
+var _visual_time := 0.0
+var _danger_color := Color(1.0, 0.38, 0.31, 1.0)
+var _patrol_color := Color(1.0, 0.68, 0.25, 1.0)
+var _safe_color := Color(0.25, 0.78, 0.82, 1.0)
 
 
 func _ready() -> void:
@@ -50,6 +50,7 @@ func _physics_process(delta: float) -> void:
 func reset_for_run(active: bool) -> void:
 	progression_active = active
 	_elapsed = 0.0
+	_visual_time = 0.0
 	position = _origin_position
 	visible = active
 	set_physics_process(active and kind != Kind.STATIC)
@@ -75,6 +76,18 @@ func configure_geometry(
 	var shape := RectangleShape2D.new()
 	shape.size = obstacle_size
 	collision_shape.shape = shape
+	queue_redraw()
+
+
+func _process(delta: float) -> void:
+	_visual_time = fmod(_visual_time + delta, 1000.0)
+	queue_redraw()
+
+
+func set_palette(palette: Dictionary) -> void:
+	_danger_color = palette.get("danger", _danger_color)
+	_patrol_color = palette.get("warning", _patrol_color)
+	_safe_color = palette.get("secondary", _safe_color)
 	queue_redraw()
 
 
@@ -104,15 +117,20 @@ func _draw() -> void:
 		return
 
 	var rect := Rect2(-obstacle_size * 0.5, obstacle_size)
-	var color := DANGER_COLOR
+	var color := _danger_color
 	if kind == Kind.PATROL:
-		color = PATROL_COLOR
+		color = _patrol_color
 	elif kind == Kind.PULSE and not collision_active:
-		color = SAFE_COLOR
+		color = _safe_color
+	var energy := 0.78 + sin(_visual_time * 5.0 + float(kind)) * 0.16
 
-	draw_rect(rect.grow(8.0), Color(color, 0.08), true)
+	draw_rect(rect.grow(18.0), Color(color, 0.028), true)
+	draw_rect(rect.grow(10.0), Color(color, 0.09), true)
+	draw_rect(rect.grow(5.0), Color(0.015, 0.035, 0.045, 0.9), true)
 	draw_rect(rect, Color(color, 0.2 if collision_active else 0.1), true)
-	draw_rect(rect, Color(color, 0.95), false, 3.0)
+	draw_rect(rect, Color(color, energy), false, 3.0)
+	draw_line(Vector2(rect.position.x + 8.0, rect.position.y + 5.0), Vector2(rect.end.x - 8.0, rect.position.y + 5.0), Color(color.lightened(0.35), 0.45), 2.0)
+	_draw_energy_nodes(rect, color)
 
 	if kind == Kind.STATIC:
 		for x in range(int(rect.position.x) + 20, int(rect.end.x), 34):
@@ -125,3 +143,18 @@ func _draw() -> void:
 		var radius := minf(obstacle_size.x * 0.2, 34.0)
 		draw_arc(Vector2.ZERO, radius, 0.0, TAU, 24, Color(color, 0.9), 3.0, true)
 		draw_circle(Vector2.ZERO, 5.0, Color(color, 0.95))
+
+
+func _draw_energy_nodes(rect: Rect2, color: Color) -> void:
+	var horizontal := obstacle_size.x >= obstacle_size.y
+	var axis: Vector2 = Vector2.RIGHT if horizontal else Vector2.DOWN
+	var span: float = obstacle_size.x if horizontal else obstacle_size.y
+	for direction in [-1.0, 1.0]:
+		var center: Vector2 = axis * (span * 0.5 - 8.0) * direction
+		draw_circle(center, 10.0, Color(0.01, 0.025, 0.035, 0.95))
+		draw_circle(center, 6.0 + sin(_visual_time * 7.0 + direction) * 1.0, Color(color, 0.86))
+		draw_arc(center, 13.0, _visual_time * direction, _visual_time * direction + PI * 1.25, 16, Color(color, 0.45), 2.0)
+	if horizontal:
+		draw_line(Vector2(rect.position.x + 18.0, rect.end.y - 5.0), Vector2(rect.end.x - 18.0, rect.end.y - 5.0), Color(color, 0.3), 2.0)
+	else:
+		draw_line(Vector2(rect.end.x - 5.0, rect.position.y + 18.0), Vector2(rect.end.x - 5.0, rect.end.y - 18.0), Color(color, 0.3), 2.0)

@@ -154,6 +154,10 @@ func _test_level_catalog() -> void:
 	_expect(level_two.duration == 55.0 and level_three.duration == 65.0, "cada etapa aumenta su objetivo temporal")
 	_expect(level_two.echo_interval < level.echo_interval and level_three.echo_interval < level_two.echo_interval, "las etapas avanzadas aceleran la aparicion de ecos")
 	_expect(level_two.arena_profile.upper_size != level.arena_profile.upper_size, "la segunda etapa cambia la geometria de la arena")
+	_expect(level.visual_palette.has_all(["void", "arena", "primary", "secondary", "danger", "warning", "name", "background_path"]), "cada etapa declara una identidad visual completa")
+	_expect(level.visual_palette.primary != level_two.visual_palette.primary, "Contracorriente cambia la paleta del mundo")
+	_expect(level_two.visual_palette.primary != level_three.visual_palette.primary, "Nucleo Rojo presenta una identidad cromatica propia")
+	_expect(ResourceLoader.exists(level.visual_palette.background_path) and ResourceLoader.exists(level_two.visual_palette.background_path) and ResourceLoader.exists(level_three.visual_palette.background_path), "las tres etapas tienen arte ambiental propio")
 	_expect(level.surprise_events.size() == 6, "Primera Estela contiene seis sorpresas diseñadas")
 	_expect(level_two.surprise_events.size() == 8, "Contracorriente contiene ocho sorpresas diseñadas")
 	_expect(level_three.surprise_events.size() == 10, "Nucleo Rojo contiene diez sorpresas diseñadas")
@@ -425,7 +429,7 @@ func _test_world_expansion() -> void:
 	_expect((run.expansion_label as Label).text.contains("MUNDO AL MAXIMO"), "el HUD celebra la expansion total")
 	run._restart()
 	await process_frame
-	_expect(run._world_stage == 1 and not run.world_camera.enabled, "repetir restaura el mundo inicial")
+	_expect(run._world_stage == 1 and run.world_camera.enabled and is_equal_approx(run.world_camera.zoom.x, 1.0), "repetir restaura el mundo inicial")
 	run.queue_free()
 	await process_frame
 

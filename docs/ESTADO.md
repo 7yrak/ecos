@@ -7,25 +7,40 @@
 
 - Fecha de actualizacion: 2026-07-27
 - Fase activa: Fase 3 - MVP de contenido
-- Hito activo: validar expansion del mundo, tres niveles, economia y poderes
-- Estado general: expansion y coreografias fijas implementadas; APK local pendiente de validacion fisica
-- Ultima sesion: cada nivel recibio obstaculos sorpresa deterministas para aprender al repetir
+- Hito activo: validar la renovacion visual, expansion, coreografias y rendimiento movil
+- Estado general: direccion artistica integral implementada; APK local pendiente de validacion fisica
+- Ultima sesion: se integraron arte cinematografico, escenarios ilustrados y tipografia propia
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version de trabajo es `0.6.0` (`versionCode 16`).
+- La version de trabajo es `0.8.0` (`versionCode 18`).
 - Las APK no forman parte de Git. La APK firmada se genera solo de forma local en
   `releases/`, que conserva unicamente el artefacto vigente.
-- La salida local actual es `ECOS-0.6.0-android.apk`, SHA-256
-  `040081100A24848B70C6DB8E167C2C4106DC626BB9CAEFDAC4154FA5CEB0E655`.
+- La salida local actual es `ECOS-0.8.0-android.apk`, SHA-256
+  `6AAB8C7FA631F1D0303E934F5521B3BAEAD05E19F7813BC98ACB4D9D154F0325`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
 - `0.4.0` usa un certificado nuevo porque la clave privada anterior no estaba
   disponible. Debe desinstalarse `0.3.0` antes de instalar esta version.
 - Certificado SHA-256:
   `30138bb0de7250cbbe749724966e8feb46d58a6916de929cd6192584575bcfb2`.
+- El lenguaje visual combina arte ilustrado con reticula jerarquica, barrido ambiental,
+  brillos por capas, esquinas de telemetria y transiciones procedimentales acotadas.
+- El menu usa una ilustracion vertical original con la senal perseguida por sus ecos.
+  Cada nivel incorpora ademas una arquitectura ambiental ilustrada propia.
+- La expansion no solo agranda el espacio: revela progresivamente mas arte lateral del
+  mundo. Las texturas de nivel se cargan bajo demanda para no retener las tres en memoria.
+- Toda la interfaz usa Oxanium y conserva su licencia OFL dentro de `assets/fonts/`.
+- Cada nivel tiene una paleta completa: Marea Esmeralda, Corriente Electrica y Nucleo
+  Carmesi. Arena, HUD, bordes, avisos, obstaculos y resultados heredan esa identidad.
+- El jugador y los ecos incorporan nucleo animado, orbitas y estelas acotadas. Las
+  alertas y aperturas agregan sacudida de camara determinista.
+- El menu presenta una composicion mas profunda y una jerarquia renovada; tutorial,
+  ajustes, tienda y resultados usan los mismos paneles, color, brillo y movimiento.
+- La tienda muestra una vista previa procedimental de cada skin, nivel y poder antes
+  de comprarlo o equiparlo.
 - El nivel 1, `PRIMERA ESTELA / INICIAL`, se gana al sobrevivir 45 segundos.
 - El nivel 2, `CONTRACORRIENTE / INTERMEDIA`, dura 55 segundos y cambia barreras,
   patrulla y pulso a una arena de corredores verticales.
@@ -62,7 +77,7 @@
   niveles siguientes se compran con la moneda obtenida al jugar.
 - Billetera, inventario, equipamiento, nivel seleccionado y primeras victorias se
   guardan localmente con esquema versionado.
-- Pasan 287 verificaciones headless, incluidas posiciones
+- Pasan 291 verificaciones headless, incluidas identidades y arte visual por nivel, posiciones
   pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
   expansion fisica, coreografias deterministas, avisos no letales, barridos, camara,
   recompensas, colisiones, reinicio, interfaz adaptable y diez ciclos tecnicos.
@@ -70,9 +85,8 @@
 
 ## Siguiente accion exacta
 
-Ejecutar los tres niveles en Galaxy A25 y S25 y observar si la expansion a los 3 y 6
-ecos se entiende, si el boton puede pulsarse bajo presion y si el zoom final mantiene
-legibles jugador, ecos y peligros.
+Ejecutar los tres niveles en Galaxy A25 y S25 y medir fluidez, temperatura y
+legibilidad con seis o mas ecos, patrones activos y el sector 3 completamente abierto.
 
 ## Tareas pendientes inmediatas
 
@@ -95,6 +109,12 @@ legibles jugador, ecos y peligros.
 - [x] Incorporar 24 patrones sorpresa fijos entre los tres niveles.
 - [x] Agregar aviso, activacion, trayectoria, retirada y memoria visible del nivel.
 - [x] Ampliar la suite a 287 verificaciones y generar la APK local `0.6.0`.
+- [x] Renovar menu, tutorial, ajustes, tienda, gameplay, HUD y resultados.
+- [x] Incorporar paletas visuales propias para los tres niveles.
+- [x] Ampliar la suite a 290 verificaciones y generar la APK local `0.7.0`.
+- [x] Integrar arte cinematografico de menu y tres escenarios ilustrados.
+- [x] Reemplazar la tipografia generica y reforzar la silueta de los obstaculos.
+- [x] Ampliar la suite a 291 verificaciones y generar la APK local `0.8.0`.
 - [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
 - [ ] Balancear umbrales 3/6, espera de 4 segundos, zoom y bono de 250 puntos.
 - [ ] Balancear duraciones, frecuencias, precios, bonos y poderes.

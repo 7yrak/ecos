@@ -71,6 +71,7 @@ func _on_store_closed() -> void:
 
 func _show_tutorial() -> void:
 	tutorial_overlay.visible = true
+	_animate_overlay($TutorialOverlay/Center/Panel)
 	tutorial_back_button.grab_focus()
 
 
@@ -82,6 +83,7 @@ func _hide_tutorial() -> void:
 func _show_settings() -> void:
 	_sync_settings()
 	settings_overlay.visible = true
+	_animate_overlay($SettingsOverlay/Center/Panel)
 	settings_back_button.grab_focus()
 
 
@@ -134,3 +136,13 @@ func _animate_entry() -> void:
 	tween.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	tween.tween_property(content, "modulate:a", 1.0, 0.55)
 	tween.tween_property(content, "position:y", 0.0, 0.7)
+
+
+func _animate_overlay(panel: Control) -> void:
+	panel.modulate.a = 0.0
+	panel.scale = Vector2.ONE * 0.94
+	panel.pivot_offset = panel.size * 0.5
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.22)
+	tween.tween_property(panel, "scale", Vector2.ONE, 0.32) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

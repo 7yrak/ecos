@@ -4,7 +4,9 @@ extends ColorRect
 signal closed
 
 const StoreCatalogScript = preload("res://scripts/app/store_catalog.gd")
+const StoreItemPreviewScript = preload("res://scripts/menu/store_item_preview.gd")
 
+@onready var panel: PanelContainer = $Center/Panel
 @onready var wallet_label: Label = $Center/Panel/Content/Header/Wallet
 @onready var skins_button: Button = $Center/Panel/Content/Tabs/Skins
 @onready var stages_button: Button = $Center/Panel/Content/Tabs/Stages
@@ -31,6 +33,13 @@ func open(category := "skins") -> void:
 	status_label.text = "TODO SE GUARDA EN ESTE DISPOSITIVO"
 	_refresh()
 	visible = true
+	panel.modulate.a = 0.0
+	panel.scale = Vector2.ONE * 0.94
+	panel.pivot_offset = panel.size * 0.5
+	var tween := create_tween().set_parallel(true)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.22)
+	tween.tween_property(panel, "scale", Vector2.ONE, 0.3) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	back_button.grab_focus()
 
 
@@ -65,12 +74,17 @@ func _refresh() -> void:
 
 func _create_card(item: Dictionary) -> Control:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(0.0, 128.0)
-	panel.add_theme_stylebox_override("panel", _card_style())
+	panel.custom_minimum_size = Vector2(0.0, 146.0)
+	panel.add_theme_stylebox_override("panel", _card_style(_item_color(item)))
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 18)
 	panel.add_child(row)
+
+	var preview = StoreItemPreviewScript.new()
+	preview.custom_minimum_size = Vector2(104.0, 104.0)
+	preview.configure(_category, item)
+	row.add_child(preview)
 
 	var copy := VBoxContainer.new()
 	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -147,12 +161,14 @@ func _item_color(item: Dictionary) -> Color:
 	return Color(1.0, 0.68, 0.25)
 
 
-func _card_style() -> StyleBoxFlat:
+func _card_style(accent: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.025, 0.075, 0.095, 0.98)
-	style.border_color = Color(0.18, 0.82, 0.655, 0.28)
+	style.bg_color = Color(0.018, 0.06, 0.082, 0.98)
+	style.border_color = Color(accent, 0.42)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(18)
+	style.shadow_color = Color(accent, 0.09)
+	style.shadow_size = 9
 	style.content_margin_left = 22.0
 	style.content_margin_top = 16.0
 	style.content_margin_right = 18.0
@@ -164,4 +180,6 @@ func _action_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	style.set_corner_radius_all(14)
+	style.shadow_color = Color(color, 0.18)
+	style.shadow_size = 8
 	return style
