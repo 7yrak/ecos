@@ -3,6 +3,7 @@ extends SceneTree
 const TimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
 const StoreCatalogScript = preload("res://scripts/app/store_catalog.gd")
+const SurpriseObstacleScript = preload("res://scripts/gameplay/surprise_obstacle.gd")
 const RunScene = preload("res://scenes/gameplay/run.tscn")
 const AppScene = preload("res://scenes/app/main.tscn")
 
@@ -27,6 +28,7 @@ func _run() -> void:
 	await _test_responsive_layout()
 	await _test_run_scene()
 	await _test_arena_progression()
+	await _test_surprise_choreography()
 	await _test_world_expansion()
 	await _test_level_variants()
 	await _test_recursive_echo_chain()
@@ -152,6 +154,16 @@ func _test_level_catalog() -> void:
 	_expect(level_two.duration == 55.0 and level_three.duration == 65.0, "cada etapa aumenta su objetivo temporal")
 	_expect(level_two.echo_interval < level.echo_interval and level_three.echo_interval < level_two.echo_interval, "las etapas avanzadas aceleran la aparicion de ecos")
 	_expect(level_two.arena_profile.upper_size != level.arena_profile.upper_size, "la segunda etapa cambia la geometria de la arena")
+	_expect(level.surprise_events.size() == 6, "Primera Estela contiene seis sorpresas diseñadas")
+	_expect(level_two.surprise_events.size() == 8, "Contracorriente contiene ocho sorpresas diseñadas")
+	_expect(level_three.surprise_events.size() == 10, "Nucleo Rojo contiene diez sorpresas diseñadas")
+	_expect(level.surprise_events == LevelCatalogScript.get_level(1).surprise_events, "la coreografia se repite sin aleatoriedad")
+	for designed_level in [level, level_two, level_three]:
+		var previous_time := 0.0
+		for event in designed_level.surprise_events:
+			_expect(event.time > previous_time and event.time < designed_level.duration, "cada sorpresa tiene un segundo fijo y ordenado")
+			_expect(event.warning >= 0.65 and event.obstacles.size() > 0, "cada sorpresa avisa y deja una ruta disenada")
+			previous_time = event.time
 	_expect(not LevelCatalogScript.has_level(4), "el catalogo termina en el contenido disenado")
 
 
@@ -289,8 +301,9 @@ func _test_run_scene() -> void:
 		and feedback.stream_data_size(GameplayFeedback.Cue.PHASE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PULSE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PRESSURE) > 0 \
-		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0
-	_expect(audio_ready, "genera los seis sonidos procedurales")
+		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.HAZARD) > 0
+	_expect(audio_ready, "genera los siete sonidos procedurales")
 
 	run._physics_process(5.1)
 	_expect(echoes.get_child_count() == 0 and run.rifts.get_child_count() == 1, "avisa la grieta antes de crear el eco")
@@ -413,6 +426,58 @@ func _test_world_expansion() -> void:
 	run._restart()
 	await process_frame
 	_expect(run._world_stage == 1 and not run.world_camera.enabled, "repetir restaura el mundo inicial")
+	run.queue_free()
+	await process_frame
+
+
+func _test_surprise_choreography() -> void:
+	var run := RunScene.instantiate() as RunController
+	root.add_child(run)
+	await process_frame
+	run.set_physics_process(false)
+	var first_event: Dictionary = run._level.surprise_events[0]
+	_expect(run.surprises.get_child_count() == 0, "la secuencia comienza sin sorpresas adelantadas")
+	run._run_time = first_event.time - 0.1
+	run._update_surprise_sequence()
+	_expect(run.surprises.get_child_count() == 0, "el obstaculo no aparece antes de su segundo fijo")
+	run._run_time = first_event.time
+	run._update_surprise_sequence()
+	_expect(run.surprises.get_child_count() == first_event.obstacles.size(), "el segundo exacto revela la composicion disenada")
+	var obstacle = run.surprises.get_child(0)
+	obstacle.set_physics_process(false)
+	_expect(obstacle.state == 0 and not obstacle.collision_active, "la sorpresa comienza como aviso no letal")
+	_expect(obstacle.is_in_group("danger") and obstacle.collision_layer == 4, "el obstaculo usa las capas fisicas de peligro")
+	_expect(run.pattern_warning_label.visible and run.pattern_warning_label.text.contains("CORTE FANTASMA"), "el HUD nombra el patron que debe memorizarse")
+	_expect(run.feedback.last_cue == GameplayFeedback.Cue.HAZARD, "el aviso tiene una alerta sonora propia")
+	_expect(run.pattern_memory_label.text.contains("01/06"), "el HUD registra el patron descubierto")
+
+	obstacle._physics_process(obstacle.warning_duration + 0.05)
+	await process_frame
+	_expect(obstacle.state == 1 and obstacle.collision_active, "el obstaculo se arma solo despues del aviso")
+	_expect(not (obstacle.get_node("Collision") as CollisionShape2D).disabled, "la colision se activa al terminar la cuenta regresiva")
+	_expect(run.pattern_warning_label.text.contains("¡AHORA!"), "la activacion comunica el momento que debe recordarse")
+	obstacle._physics_process(obstacle.active_duration + 0.05)
+	await process_frame
+	_expect(obstacle.state == 2 and not obstacle.collision_active, "el patron se retira despues de su duracion fija")
+	obstacle._physics_process(0.5)
+	await process_frame
+	_expect(not is_instance_valid(obstacle), "la sorpresa desaparece al completar su coreografia")
+
+	var sweep_event: Dictionary = run._level.surprise_events[2]
+	var sweep = SurpriseObstacleScript.new()
+	sweep.configure(sweep_event.obstacles[0], sweep_event.warning, sweep_event.duration, 3, sweep_event.name)
+	run.surprises.add_child(sweep)
+	await process_frame
+	sweep.set_physics_process(false)
+	var sweep_origin: Vector2 = sweep.position
+	sweep._physics_process(sweep.warning_duration + 0.01)
+	sweep._physics_process(sweep.active_duration * 0.5)
+	_expect(not sweep.position.is_equal_approx(sweep_origin), "los barridos recorren siempre la trayectoria declarada")
+
+	run._restart()
+	await process_frame
+	_expect(run.surprises.get_child_count() == 0 and run._next_surprise_event_index == 0, "repetir reinicia la secuencia desde el primer descubrimiento")
+	_expect(run.pattern_memory_label.text.contains("00/06"), "repetir limpia la memoria visible del nivel")
 	run.queue_free()
 	await process_frame
 

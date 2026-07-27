@@ -9,6 +9,7 @@ enum RunState { PLAYING, GAME_OVER }
 
 const EchoTimelineScript = preload("res://scripts/gameplay/echo_timeline.gd")
 const LevelCatalogScript = preload("res://scripts/gameplay/level_catalog.gd")
+const SurpriseObstacleScript = preload("res://scripts/gameplay/surprise_obstacle.gd")
 const ECHO_SCENE := preload("res://scenes/gameplay/echo.tscn")
 const RIFT_SCRIPT := preload("res://scripts/gameplay/echo_rift_warning.gd")
 const SAMPLE_INTERVAL := 0.05
@@ -25,6 +26,7 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var arena: ArenaVisual = $Arena
 @onready var world_camera: Camera2D = $WorldCamera
 @onready var boundaries: Node2D = $Boundaries
+@onready var surprises: Node2D = $Surprises
 @onready var echoes: Node2D = $Echoes
 @onready var rifts: Node2D = $Rifts
 @onready var feedback: GameplayFeedback = $Feedback
@@ -41,6 +43,8 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var instruction_label: Label = $UI/Instruction
 @onready var expansion_label: Label = $UI/ExpansionStatus/Content/Label
 @onready var expansion_meter: ProgressBar = $UI/ExpansionStatus/Content/Meter
+@onready var pattern_memory_label: Label = $UI/ExpansionStatus/Content/PatternMemory
+@onready var pattern_warning_label: Label = $UI/PatternWarning
 @onready var break_limit_button: Button = $UI/BreakLimitButton
 @onready var power_button: Button = $UI/PowerButton
 @onready var game_over_overlay: ColorRect = $UI/GameOver
@@ -70,6 +74,10 @@ var _world_stage := 1
 var _expansion_offer_time := 0.0
 var _expansion_offered := false
 var _expansion_bonus := 0
+var _next_surprise_event_index := 0
+var _discovered_event_count := 0
+var _pattern_warning_time := 0.0
+var _last_armed_beat := 0
 var _phase_banner_time := 0.0
 var _flash_tween: Tween
 var _run_id := 0
@@ -126,6 +134,7 @@ func _physics_process(delta: float) -> void:
 	_sample_accumulator += delta
 	_record_samples()
 	_update_progression()
+	_update_surprise_sequence()
 	_update_expansion_offer(delta)
 
 	if _segment_time >= _level.echo_interval:
@@ -137,6 +146,7 @@ func _physics_process(delta: float) -> void:
 		_complete_level()
 		return
 	_update_phase_banner(delta)
+	_update_pattern_warning(delta)
 	if _run_time > 3.5:
 		instruction_label.modulate.a = move_toward(instruction_label.modulate.a, 0.0, delta * 0.7)
 
@@ -144,6 +154,7 @@ func _physics_process(delta: float) -> void:
 func _start_run() -> void:
 	_clear_echoes()
 	_clear_rifts()
+	_clear_surprises()
 	_run_id += 1
 	if is_instance_valid(_flash_tween):
 		_flash_tween.kill()
@@ -166,6 +177,10 @@ func _start_run() -> void:
 	_expansion_offer_time = 0.0
 	_expansion_offered = false
 	_expansion_bonus = 0
+	_next_surprise_event_index = 0
+	_discovered_event_count = 0
+	_pattern_warning_time = 0.0
+	_last_armed_beat = 0
 	_phase_banner_time = 0.0
 	_timeline = EchoTimelineScript.new()
 	feedback.clear_active()
@@ -187,6 +202,7 @@ func _start_run() -> void:
 	result_title.add_theme_color_override("font_color", Color(1.0, 0.45, 0.36))
 	restart_button.text = "REPETIR NIVEL"
 	phase_banner.visible = false
+	pattern_warning_label.visible = false
 	impact_flash.visible = false
 	break_limit_button.visible = false
 	instruction_label.text = "%s // %d S" % [_level.title, roundi(_level.duration)]
@@ -280,6 +296,8 @@ func _show_result(reason: String) -> void:
 	_state = RunState.GAME_OVER
 	player.set_movement_enabled(false)
 	_clear_rifts()
+	_clear_surprises()
+	pattern_warning_label.visible = false
 	patrol_obstacle.set_physics_process(false)
 	pulse_obstacle.set_physics_process(false)
 	for child in echoes.get_children():
@@ -303,7 +321,7 @@ func _show_result(reason: String) -> void:
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
 	var reward := _grant_run_reward()
-	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nPATRONES DESCUBIERTOS  %02d / %02d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _discovered_event_count, _level.surprise_events.size(), _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
 	game_over_overlay.visible = true
 	settings_store.vibrate(70)
 	restart_button.grab_focus()
@@ -333,6 +351,12 @@ func _clear_echoes() -> void:
 
 func _clear_rifts() -> void:
 	for child in rifts.get_children():
+		child.queue_free()
+
+
+func _clear_surprises() -> void:
+	for child in surprises.get_children():
+		child.stop()
 		child.queue_free()
 
 
@@ -407,6 +431,63 @@ func _update_phase_banner(delta: float) -> void:
 		phase_banner.visible = false
 
 
+func _update_surprise_sequence() -> void:
+	while _next_surprise_event_index < _level.surprise_events.size():
+		var event: Dictionary = _level.surprise_events[_next_surprise_event_index]
+		if _run_time < float(event.time):
+			return
+		_spawn_surprise_event(event, _next_surprise_event_index + 1)
+		_next_surprise_event_index += 1
+
+
+func _spawn_surprise_event(event: Dictionary, event_index: int) -> void:
+	var event_name := str(event.name)
+	var warning := float(event.get("warning", 1.0))
+	var duration := float(event.get("duration", 4.0))
+	for obstacle_config in event.obstacles:
+		var obstacle = SurpriseObstacleScript.new()
+		obstacle.configure(obstacle_config, warning, duration, event_index, event_name)
+		surprises.add_child(obstacle)
+		obstacle.armed.connect(_on_surprise_armed)
+	_discovered_event_count = event_index
+	_pattern_warning_time = warning
+	pattern_warning_label.text = "MEMORIZA %02d/%02d // %s // %.1f S" % [event_index, _level.surprise_events.size(), event_name, warning]
+	pattern_warning_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.28))
+	pattern_warning_label.modulate.a = 1.0
+	pattern_warning_label.scale = Vector2.ONE * 0.88
+	pattern_warning_label.pivot_offset = pattern_warning_label.size * 0.5
+	pattern_warning_label.visible = true
+	create_tween().tween_property(pattern_warning_label, "scale", Vector2.ONE, 0.18) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	feedback.play_hazard(player.global_position)
+	_flash_screen(Color(1.0, 0.72, 0.18), 0.08, 0.22)
+	_update_hud()
+
+
+func _on_surprise_armed(obstacle) -> void:
+	if _state != RunState.PLAYING or obstacle.beat_index == _last_armed_beat:
+		return
+	_last_armed_beat = obstacle.beat_index
+	_pattern_warning_time = 0.75
+	pattern_warning_label.text = "¡AHORA! // %02d // %s" % [obstacle.beat_index, obstacle.pattern_name]
+	pattern_warning_label.add_theme_color_override("font_color", Color(1.0, 0.34, 0.3))
+	pattern_warning_label.modulate.a = 1.0
+	pattern_warning_label.visible = true
+	feedback.play_pulse(obstacle.global_position)
+	_flash_screen(Color(1.0, 0.2, 0.16), 0.1, 0.2)
+	settings_store.vibrate(45)
+
+
+func _update_pattern_warning(delta: float) -> void:
+	if _pattern_warning_time <= 0.0:
+		return
+	_pattern_warning_time = maxf(0.0, _pattern_warning_time - delta)
+	if _pattern_warning_time < 0.35:
+		pattern_warning_label.modulate.a = _pattern_warning_time / 0.35
+	if _pattern_warning_time <= 0.0:
+		pattern_warning_label.visible = false
+
+
 func _on_pulse_state_changed(active: bool) -> void:
 	if not active or _state != RunState.PLAYING:
 		return
@@ -433,6 +514,7 @@ func _update_hud() -> void:
 	score_label.text = "PUNTOS\n%04d" % _score
 	echo_label.text = "ECOS\n%02d" % _echo_count
 	phase_label.text = "N%d S%d/3\nF%d CAD x%.1f" % [_level.number, _world_stage, _slow_offenses, _chain_pressure_multiplier]
+	pattern_memory_label.text = "MEMORIA DEL NIVEL %02d/%02d" % [_discovered_event_count, _level.surprise_events.size()]
 	_update_expansion_hud()
 
 
@@ -532,7 +614,7 @@ func _offer_expansion_if_ready() -> void:
 	if _world_stage >= 3 or _expansion_offered:
 		return
 	var threshold: int = EXPANSION_THRESHOLDS[_world_stage - 1]
-	if _echo_count < threshold:
+	if _total_echo_count < threshold:
 		return
 	_expansion_offered = true
 	_expansion_offer_time = EXPANSION_DECISION_TIME
@@ -611,9 +693,9 @@ func _update_expansion_hud() -> void:
 		return
 	var threshold: int = EXPANSION_THRESHOLDS[_world_stage - 1]
 	expansion_meter.max_value = threshold
-	expansion_meter.value = mini(_echo_count, threshold)
+	expansion_meter.value = mini(_total_echo_count, threshold)
 	if _expansion_offered:
 		expansion_label.text = "LIMITE LISTO // ABRIR EN %.1f S" % _expansion_offer_time
 		break_limit_button.text = "ROMPER EL LIMITE  //  +%d PTS\nNUEVO SECTOR + NUEVO PELIGRO" % MANUAL_EXPANSION_BONUS
 	else:
-		expansion_label.text = "SECTOR %d // SATURACION %d/%d ECOS" % [_world_stage, _echo_count, threshold]
+		expansion_label.text = "SECTOR %d // SATURACION %d/%d ECOS" % [_world_stage, _total_echo_count, threshold]

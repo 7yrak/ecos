@@ -348,6 +348,20 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   actual dentro de `releases/`. La entrega a dispositivos o tiendas se hace fuera
   del repositorio.
 
+## D-031 - Coreografias fijas que se aprenden
+
+- Fecha: 2026-07-27
+- Estado: aceptada para validar
+- Decision: cada nivel contiene una secuencia propia y determinista de obstaculos
+  temporales. Posicion, segundo, forma, movimiento, aviso y duracion se mantienen
+  iguales en todos los intentos; no se eligen aleatoriamente.
+- Motivo: el jugador debe aprender dos memorias complementarias: la ruta que regresara
+  como ecos y la coreografia del escenario, como ocurre en juegos de precision que se
+  descubren mediante repeticion.
+- Consecuencia: Primera Estela usa 6 patrones, Contracorriente 8 y Nucleo Rojo 10.
+  Todos muestran una huella no letal antes de activarse y dejan rutas de escape
+  disenadas. El balance debe ajustar espacios y avisos, no introducir aleatoriedad.
+
 ## Decisiones pendientes del usuario
 
 - Estilo visual definitivo.

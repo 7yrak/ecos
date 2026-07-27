@@ -12,6 +12,7 @@ var follow_delay: float
 var minimum_segment_distance: float
 var first_clear_bonus: int
 var arena_profile: Dictionary
+var surprise_events: Array
 
 
 func _init(config: Dictionary) -> void:
@@ -26,3 +27,4 @@ func _init(config: Dictionary) -> void:
 	minimum_segment_distance = config.minimum_segment_distance
 	first_clear_bonus = config.first_clear_bonus
 	arena_profile = config.arena_profile
+	surprise_events = config.get("surprise_events", []).duplicate(true)

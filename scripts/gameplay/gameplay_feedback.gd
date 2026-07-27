@@ -1,7 +1,7 @@
 class_name GameplayFeedback
 extends Node2D
 
-enum Cue { ECHO, RIFT, PHASE, PULSE, PRESSURE, HIT }
+enum Cue { ECHO, RIFT, PHASE, PULSE, PRESSURE, HIT, HAZARD }
 
 const SAMPLE_RATE := 22050
 const PLAYER_COUNT := 4
@@ -21,6 +21,7 @@ func _ready() -> void:
 		_create_tone(920.0, 680.0, 0.1, 0.22),
 		_create_tone(310.0, 120.0, 0.2, 0.3),
 		_create_tone(190.0, 52.0, 0.3, 0.38, 0.28),
+		_create_tone(180.0, 1180.0, 0.3, 0.32, 0.12),
 	]
 	for _index in PLAYER_COUNT:
 		var player := AudioStreamPlayer.new()
@@ -66,6 +67,11 @@ func play_pressure(world_position: Vector2) -> void:
 func play_hit(world_position: Vector2) -> void:
 	_play(Cue.HIT)
 	_spawn_ring(world_position, Color(1.0, 0.22, 0.18, 1.0), 3.8)
+
+
+func play_hazard(world_position: Vector2) -> void:
+	_play(Cue.HAZARD)
+	_spawn_ring(world_position, Color(1.0, 0.78, 0.24, 0.95), 3.4)
 
 
 func clear_active() -> void:

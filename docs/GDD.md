@@ -43,6 +43,12 @@ creado por uno mismo en una cadena perfecta.
   automatica.
 - Romper manualmente entrega 250 puntos. Cada apertura amplia limites y camara, pero
   libera la patrulla en el sector 2 y la tormenta de pulso en el sector 3.
+- Cada nivel contiene una secuencia fija de apariciones sorpresa. El mismo patron
+  conserva segundo, posicion, geometria, trayectoria y duracion en todos los intentos.
+- Una marca amarilla muestra forma y recorrido antes de activar la colision. El aviso
+  varia entre 0.65 y 1.25 segundos segun dificultad y momento del nivel.
+- La primera partida descubre la secuencia; las siguientes permiten combinar la
+  memoria del nivel con la memoria del recorrido que siguen los ecos.
 - Recorrer menos de 280 px en una ventana comprime el retraso de toda la cadena en
   pasos de 0.2x y no hay limite superior de presion.
 - Moverse activamente vuelve a ampliar el retraso de forma gradual. Las faltas lentas
@@ -113,6 +119,9 @@ Implementado:
   impedir la estrategia de movimiento extremadamente lento.
 - Tres sectores que expanden fisicamente la arena y alejan la camara al alcanzar 3 y
   6 ecos; la eleccion manual se premia y cada sector activa un peligro adicional.
+- Veinticuatro patrones fijos: 6 en Primera Estela, 8 en Contracorriente y 10 en
+  Nucleo Rojo. Combinan muros temporales, compuertas y barridos con rutas de escape
+  deliberadas.
 - Tres niveles con geometria, duracion, frecuencia, distancia minima y retraso propios.
 - Archivo local con Fragmentos, tienda, equipamiento y primeras victorias persistentes.
 - Cuatro skins, dos niveles desbloqueables y tres poderes permanentes.

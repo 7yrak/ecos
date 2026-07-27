@@ -8,18 +8,18 @@
 - Fecha de actualizacion: 2026-07-27
 - Fase activa: Fase 3 - MVP de contenido
 - Hito activo: validar expansion del mundo, tres niveles, economia y poderes
-- Estado general: expansion dinamica implementada y validada; APK solo local pendiente de validacion fisica
-- Ultima sesion: se retiro la distribucion de APK desde Git y la salida release paso a ser exclusivamente local
+- Estado general: expansion y coreografias fijas implementadas; APK local pendiente de validacion fisica
+- Ultima sesion: cada nivel recibio obstaculos sorpresa deterministas para aprender al repetir
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version de trabajo es `0.5.0` (`versionCode 15`).
+- La version de trabajo es `0.6.0` (`versionCode 16`).
 - Las APK no forman parte de Git. La APK firmada se genera solo de forma local en
   `releases/`, que conserva unicamente el artefacto vigente.
-- La salida local actual es `ECOS-0.5.0-android.apk`, SHA-256
-  `627DE7B542AF8EBB7704152CDE7B5D7859DF9688FA7C498D1C0C7DAD816D6161`.
+- La salida local actual es `ECOS-0.6.0-android.apk`, SHA-256
+  `040081100A24848B70C6DB8E167C2C4106DC626BB9CAEFDAC4154FA5CEB0E655`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
 - `0.4.0` usa un certificado nuevo porque la clave privada anterior no estaba
@@ -42,6 +42,12 @@
   sector se abre automaticamente para evitar detener el ritmo.
 - Cada apertura mueve los limites fisicos, anima la arena y aleja la camara. El sector
   2 libera la patrulla y el sector 3 la tormenta de pulso.
+- `PRIMERA ESTELA` tiene 6 patrones sorpresa, `CONTRACORRIENTE` 8 y `NUCLEO ROJO`
+  10. Cada patron conserva tiempo, posicion, tamano, trayectoria y duracion.
+- Los patrones usan muros, compuertas y barridos. Una huella amarilla no letal avisa
+  entre 0.65 y 1.25 segundos antes de activar la colision.
+- El HUD nombra el patron, marca `¡AHORA!` al activarlo y registra cuantos patrones
+  de la memoria fija del nivel fueron descubiertos.
 - Los segmentos de cinco segundos solo miden distancia. Recorrer menos de 280 px
   agrega 0.2x de presion y reduce el retraso efectivo de toda la cadena.
 - Un segmento activo resta un nivel de presion y vuelve a ampliar la distancia. Las
@@ -56,10 +62,10 @@
   niveles siguientes se compran con la moneda obtenida al jugar.
 - Billetera, inventario, equipamiento, nivel seleccionado y primeras victorias se
   guardan localmente con esquema versionado.
-- Pasan 219 verificaciones headless, incluidas posiciones
+- Pasan 287 verificaciones headless, incluidas posiciones
   pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
-  expansion fisica, camara, recompensas, colisiones, reinicio, interfaz adaptable y
-  diez ciclos tecnicos consecutivos.
+  expansion fisica, coreografias deterministas, avisos no letales, barridos, camara,
+  recompensas, colisiones, reinicio, interfaz adaptable y diez ciclos tecnicos.
 - La identidad `com.tyrak.ecos` y el nombre del estudio siguen siendo provisionales.
 
 ## Siguiente accion exacta
@@ -86,6 +92,9 @@ legibles jugador, ecos y peligros.
 - [x] Ampliar la suite a 219 verificaciones.
 - [x] Retirar las APK del repositorio y convertir `releases/` en salida local ignorada.
 - [x] Generar y auditar localmente la APK firmada `0.5.0`.
+- [x] Incorporar 24 patrones sorpresa fijos entre los tres niveles.
+- [x] Agregar aviso, activacion, trayectoria, retirada y memoria visible del nivel.
+- [x] Ampliar la suite a 287 verificaciones y generar la APK local `0.6.0`.
 - [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
 - [ ] Balancear umbrales 3/6, espera de 4 segundos, zoom y bono de 250 puntos.
 - [ ] Balancear duraciones, frecuencias, precios, bonos y poderes.
@@ -104,6 +113,9 @@ legibles jugador, ecos y peligros.
   medirse FPS y legibilidad en un dispositivo de gama media.
 - El zoom del sector 3 aumenta el espacio real, pero reduce el tamano aparente de
   jugador, ecos y obstaculos; debe validarse en pantallas pequenas.
+- La combinacion de ecos, obstaculos base y patrones fijos puede crear cruces mas
+  exigentes de lo previsto; deben medirse muertes por patron y ajustar huecos antes
+  de reducir los avisos.
 - Cada generacion agrega 1.2 segundos de retraso. Las generaciones lejanas pueden
   quedar demasiado separadas para sentirse relacionadas con el jugador.
 - Una presion alta reduce el retraso de todas las generaciones y puede comprimir la

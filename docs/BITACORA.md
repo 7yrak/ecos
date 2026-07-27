@@ -4,6 +4,50 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - La memoria del nivel
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se solicito que cada nivel sorprenda con mas obstaculos, pero que repita siempre la
+  misma secuencia para que el jugador la descubra y memorice como su propia ruta.
+
+Cambios:
+
+- Se creo un obstaculo temporal con tres estados: aviso no letal, activacion con
+  colision y retirada. Su dibujo cambia de huella amarilla a peligro neon activo.
+- Los barridos muestran durante el aviso toda su futura trayectoria y despues se
+  desplazan con una curva fija; muros y compuertas anticipan su geometria completa.
+- Primera Estela incorpora 6 patrones, Contracorriente 8 y Nucleo Rojo 10. Los 24
+  eventos tienen segundo, sector, nombre, posiciones, tamanos, movimientos y
+  duraciones escritos en el catalogo de niveles.
+- Los huecos centrales, laterales y diagonales fueron disenados para conservar rutas
+  alternativas dentro del sector correspondiente.
+- El HUD anuncia `MEMORIZA`, cambia a `¡AHORA!` al armar el peligro y conserva un
+  contador de patrones descubiertos. El resultado informa cuanto de la secuencia se
+  alcanzo a ver.
+- La saturacion usa ecos creados totales, no solo ecos activos, para que el poder
+  Pulso no cambie el momento previsto de las expansiones y la coreografia.
+- El tutorial explica que cada nivel repite sus apariciones en el mismo segundo y
+  lugar.
+- La version avanza a `0.6.0` (`versionCode 16`) y se genera solo de forma local.
+
+Verificacion:
+
+- Pasan 287 verificaciones headless en Godot 4.7.1 sin errores de script.
+- La suite valida orden y repetibilidad de los 24 patrones, avisos sin colision,
+  activacion, retirada, trayectoria de barridos, audio, HUD y reinicio.
+- Se renderizaron aviso y activacion del Barrido Ambar a 720 x 1280; huella,
+  trayectoria, ecos, obstaculos base y textos permanecen distinguibles.
+- APK local `ECOS-0.6.0-android.apk`: firmas v2/v3, SHA-256
+  `040081100A24848B70C6DB8E167C2C4106DC626BB9CAEFDAC4154FA5CEB0E655`.
+
+Siguiente accion:
+
+- Jugar los tres niveles en telefono y registrar para cada muerte el nombre del
+  patron, si el aviso fue percibido y si existia una salida legible entre los ecos.
+
 ## 2026-07-27 - Romper el limite
 
 Fase: Fase 3 - MVP de contenido

@@ -45,3 +45,6 @@ sigue a la anterior; moverse poco comprime toda la cadena.
 Al alcanzar 3 y 6 ecos, el jugador puede romper el limite: la arena y la camara se
 expanden, aparece un peligro nuevo y decidir antes de la apertura automatica entrega
 una bonificacion de puntuacion.
+Cada nivel tiene ademas una coreografia fija de muros, compuertas y barridos sorpresa:
+aparecen siempre en el mismo segundo y lugar, con un aviso breve, para que repetir
+tambien signifique aprender la memoria del nivel.

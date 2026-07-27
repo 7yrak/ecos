@@ -277,7 +277,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="TutorialOverlay/Center"]
-custom_minimum_size = Vector2(610, 900)
+custom_minimum_size = Vector2(610, 1030)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_tutorial")
 
@@ -330,6 +330,14 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.45, 0.82, 1, 1)
 theme_override_font_sizes/font_size = 22
 text = "04  ROMPE EL LIMITE\nCon 3 y 6 ecos puedes expandir el mundo. Decide rapido\npara ganar puntos: cada sector libera un nuevo peligro."
+vertical_alignment = 1
+
+[node name="StepFive" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 128)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.68, 0.25, 1)
+theme_override_font_sizes/font_size = 22
+text = "05  APRENDE LA SECUENCIA\nCada nivel revela obstaculos siempre en el mismo segundo\ny lugar. Recuerda el aviso y prepara tu proxima ruta."
 vertical_alignment = 1
 
 [node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]
