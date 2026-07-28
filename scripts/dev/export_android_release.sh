@@ -6,7 +6,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 SIGNING_ENV="${ECOS_SIGNING_ENV:-$HOME/.local/share/ecos/signing/release.env}"
 OUTPUT_DIR="$PROJECT_ROOT/releases"
-OUTPUT_PATH="$OUTPUT_DIR/ECOS-0.10.1-android.apk"
+OUTPUT_PATH="$OUTPUT_DIR/ECOS-0.11.0-android.apk"
 
 if [[ ! -f "$SIGNING_ENV" ]]; then
   printf 'No existe la configuracion de firma: %s\n' "$SIGNING_ENV" >&2

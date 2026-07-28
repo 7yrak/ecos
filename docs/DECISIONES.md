@@ -432,6 +432,22 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   arriba y muestra una indicacion explicita. Un desplazamiento sobre un boton cancela
   su accion, mientras un toque corto sigue funcionando.
 
+## D-037 - Diorama 3D reactivo sin abandonar la simulacion 2D
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario
+- Decision: profundizar la presentacion 3D con una arena suspendida modular,
+  expansiones fisicas, ecos holograficos por generacion, obstaculos con aparicion
+  tridimensional y una superficie que responde al dedo y al movimiento. La
+  simulacion, entrada, colisiones y coreografias siguen siendo 2D autoritativas.
+- Motivo: el usuario priorizo estas cinco mejoras para obtener un salto visual
+  reconocible y mas interaccion sin sacrificar claridad, precision tactil ni memoria
+  determinista de los niveles.
+- Consecuencia: calidad alta conserva sombras, 74 particulas ambientales y diez
+  particulas de estela por eco; rendimiento reduce resolucion, elimina sombras y
+  baja esas cantidades. El caso critico de sector 3 con seis o mas ecos debe medirse
+  en Galaxy A25 antes de aumentar efectos.
+
 ## Decisiones pendientes del usuario
 
 - Publico objetivo y clasificacion de edad buscada.

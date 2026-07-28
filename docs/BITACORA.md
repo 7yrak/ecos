@@ -4,6 +4,47 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - Diorama 3D reactivo
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se priorizaron cinco mejoras visuales: arena 3D profunda, expansion fisica,
+  ecos holograficos generacionales, obstaculos con apariciones propias y superficie
+  reactiva al dedo y al movimiento.
+
+Cambios:
+
+- La arena se reconstruyo como una plataforma suspendida formada por placas con
+  separacion y espesor, base inferior, muros profundos, torres, anclajes y particulas.
+- Cada expansion levanta desde el vacio solamente las placas del sector nuevo,
+  despliega cuatro puentes y acompana la apertura con elevacion, giro y zoom temporal
+  de la camara 3D.
+- Los ecos alternan colores por generacion y agregan carcasa holografica, tres
+  orbitas, haz, luz propia y estela volumetrica.
+- Muros, compuertas y barridos emergen durante el aviso, golpean al activarse y se
+  hunden al retirarse; cada familia recibe detalles y proyeccion de peligro propias.
+- Tocar y arrastrar genera ondas iluminadas; moverse deja ondas menores, y un barrido
+  de energia con luz movil recorre el suelo.
+- Calidad alta y rendimiento ajustan resolucion, sombras y cantidades de particulas.
+- La version avanza a `0.11.0` (`versionCode 22`).
+
+Verificacion:
+
+- Pasan 353 verificaciones headless en Godot 4.7.1.
+- Se revisaron visualmente los sectores 1 y 3 a 720 x 1280, incluido un caso con
+  cinco generaciones de ecos y un patron sorpresa activo.
+- APK local `ECOS-0.11.0-android.apk`: 65,154,983 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos.
+- SHA-256:
+  `6A8EC63A56BCFF6F0B4C663547BD243B68449EADBC6BBEADD807DDFB45DA907F`.
+
+Siguiente accion:
+
+- Medir FPS, temperatura y legibilidad en Galaxy A25 con sector 3, seis o mas ecos
+  y un patron sorpresa activo en calidad alta y rendimiento.
+
 ## 2026-07-27 - Desplazamiento tactil de tienda
 
 Fase: Fase 3 - MVP de contenido

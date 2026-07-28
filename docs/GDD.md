@@ -110,6 +110,15 @@ Implementado:
 - Ajustes persistentes de volumen, vibracion y sensibilidad.
 - Presentacion 2.5D con camara ortografica inclinada, geometria 3D sincronizada,
   materiales emisivos, iluminacion, sombras y particulas.
+- Arena modular suspendida con placas, volumen inferior, estructuras laterales y
+  arquitectura profunda que se adapta a cada sector.
+- Expansiones fisicas donde las placas suben desde el vacio, aparecen puentes y la
+  camara ejecuta una revelacion cinematografica sin alterar las colisiones 2D.
+- Ecos holograficos diferenciados por generacion mediante color, orbitas, haces,
+  luces y estelas volumetricas.
+- Obstaculos que emergen, golpean y se retiran con siluetas propias para muros,
+  compuertas y barridos.
+- Suelo reactivo al toque, arrastre y movimiento con ondas, luces y barrido emisivo.
 - Simulacion, entrada y colisiones 2D separadas del render 3D para conservar
   precision tactil y reproducibilidad.
 - Selector persistente entre calidad 2.5D alta y modo de rendimiento.

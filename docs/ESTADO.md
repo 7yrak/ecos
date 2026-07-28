@@ -8,18 +8,18 @@
 - Fecha de actualizacion: 2026-07-27
 - Fase activa: Fase 3 - MVP de contenido
 - Hito activo: validar nueve etapas 2.5D, sus coreografias y el rendimiento movil
-- Estado general: expansion de contenido y pausa implementadas; APK pendiente de validacion fisica
-- Ultima sesion: se corrigio el desplazamiento tactil de la tienda sobre tarjetas y botones
+- Estado general: renovacion 3D reactiva implementada; APK pendiente de validacion fisica
+- Ultima sesion: se profundizo el gameplay con arena modular, ecos holograficos y respuesta tactil
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version de trabajo es `0.10.1` (`versionCode 21`).
+- La version de trabajo es `0.11.0` (`versionCode 22`).
 - Las APK no forman parte de Git. La APK firmada se genera solo de forma local en
   `releases/`, que conserva unicamente el artefacto vigente.
-- La salida local actual es `ECOS-0.10.1-android.apk`, SHA-256
-  `1C17C8D3BD31FDA801A354CFC1B5A4E45724AB584E9BD04A2A8EAACDF2F7B1F0`.
+- La salida local actual es `ECOS-0.11.0-android.apk`, SHA-256
+  `6A8EC63A56BCFF6F0B4C663547BD243B68449EADBC6BBEADD807DDFB45DA907F`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
 - `0.4.0` usa un certificado nuevo porque la clave privada anterior no estaba
@@ -36,6 +36,19 @@
 - El gameplay usa una presentacion 2.5D real en un `SubViewport`: camara ortografica
   inclinada, geometria con volumen, iluminacion, materiales emisivos, sombras y
   particulas sincronizadas con el estado autoritativo 2D.
+- La arena es ahora un diorama 3D suspendido: placas de suelo separadas, base profunda,
+  muros con espesor, torres laterales, anclajes iluminados, niebla y particulas de
+  profundidad sustituyen la superficie visual plana.
+- Abrir un sector levanta fisicamente las placas nuevas desde el vacio, despliega
+  cuatro puentes y ejecuta un movimiento cinematografico de elevacion y giro de camara.
+- Cada generacion de eco alterna una identidad cromatica, nucleo y carcasa
+  holograficos, tres orbitas, haz vertical, luz propia y una estela volumetrica.
+- Los obstaculos emergen desde debajo del suelo durante el aviso, golpean visualmente
+  al armarse y se retiran hacia el vacio. Muros, compuertas y barridos usan siluetas
+  tridimensionales distintas y proyectan su huella sobre el piso.
+- Tocar o arrastrar produce ondas y luz en la posicion del dedo. El desplazamiento
+  del jugador deja ondas menores, mientras un barrido emisivo recorre el sector y una
+  luz superficial acompana el movimiento.
 - Jugador, ecos, obstaculos base y sorpresas se representan en 3D. Colisiones, entrada,
   tiempos y coreografias permanecen en 2D para no perder precision ni determinismo.
 - Ajustes guarda un modo de calidad 2.5D alta a 720 x 1280 y otro de rendimiento a
@@ -95,7 +108,8 @@
   niveles siguientes se compran con la moneda obtenida al jugar.
 - Billetera, inventario, equipamiento, nivel seleccionado y primeras victorias se
   guardan localmente con esquema versionado.
-- Pasan 348 verificaciones headless, incluidas las nueve etapas, pausa, salida al menu,
+- Pasan 353 verificaciones headless, incluidas las cinco capacidades visuales nuevas,
+  las nueve etapas, pausa, salida al menu,
   identidades y arte visual por nivel, posiciones
   pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
   expansion fisica, coreografias deterministas, avisos no letales, barridos, camara,
@@ -144,6 +158,10 @@ temperatura y legibilidad con seis o mas ecos, patrones activos y el sector 3 ab
 - [x] Habilitar desplazamiento tactil directo sobre todas las tarjetas de tienda.
 - [x] Evitar compras o selecciones accidentales durante un arrastre.
 - [x] Ampliar la suite a 348 verificaciones y generar la APK local `0.10.1`.
+- [x] Construir una arena 3D profunda con placas, torres, anclajes y particulas.
+- [x] Animar expansiones con placas emergentes, puentes y camara cinematografica.
+- [x] Renovar ecos, obstaculos y suelo con hologramas y respuesta tactil.
+- [x] Ampliar la suite a 353 verificaciones y generar la APK local `0.11.0`.
 - [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
 - [ ] Balancear umbrales 3/6, espera de 4 segundos, zoom y bono de 250 puntos.
 - [ ] Balancear duraciones, frecuencias, precios, bonos y poderes.

@@ -137,6 +137,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		_show_pause()
 		get_viewport().set_input_as_handled()
 		return
+	if _state == RunState.PLAYING:
+		if event is InputEventScreenTouch and event.pressed:
+			world_25d.react_to_pointer(_pointer_to_design(event.position), 1.15)
+		elif event is InputEventScreenDrag:
+			world_25d.react_to_pointer(_pointer_to_design(event.position), 0.58 + minf(0.72, event.relative.length() / 34.0))
+		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			world_25d.react_to_pointer(_pointer_to_design(event.position), 1.0)
+		elif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			world_25d.react_to_pointer(_pointer_to_design(event.position), 0.62)
 	if _state != RunState.GAME_OVER:
 		return
 	if event is InputEventScreenTouch and event.pressed:
@@ -145,6 +154,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		_on_primary_action()
 	elif event is InputEventKey and event.pressed and not event.echo:
 		_on_primary_action()
+
+
+func _pointer_to_design(viewport_position: Vector2) -> Vector2:
+	var world_position := get_viewport().get_canvas_transform().affine_inverse() * viewport_position
+	return to_local(world_position)
 
 
 func _physics_process(delta: float) -> void:
@@ -819,7 +833,7 @@ func _expand_world(manual: bool) -> void:
 
 	var next_rect := arena.play_rect_for_stage(_world_stage)
 	arena.set_expansion_stage(_world_stage)
-	world_25d.set_arena_stage(_world_stage)
+	world_25d.set_arena_stage(_world_stage, true)
 	_configure_boundaries(next_rect)
 	world_camera.enabled = true
 	var target_zoom := Vector2.ONE * arena.camera_zoom_for_stage(_world_stage)
