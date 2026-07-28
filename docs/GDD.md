@@ -2,7 +2,7 @@
 
 ## Propuesta
 
-ECOS es un arcade 2D de partidas cortas en el que cada movimiento del jugador
+ECOS es un arcade 2.5D de partidas cortas en el que cada movimiento del jugador
 regresa como un eco. Los ecos ayudan a recoger energia y activar elementos, pero
 tambien se convierten en obstaculos. La dificultad nace de convivir con las propias
 decisiones pasadas.
@@ -31,6 +31,9 @@ creado por uno mismo en una cadena perfecta.
   segundos y cambia la arena a corredores verticales.
 - El nivel 3, `NUCLEO ROJO / AVANZADA`, dura 65 segundos, crea ecos cada 4 segundos
   y combina barreras inclinadas con patrulla vertical.
+- Los niveles 4 a 9 aumentan gradualmente hasta 90 segundos. Forja Ascendente,
+  Abismo Violeta, Santuario Glacial, Motor del Sol, Horizonte Roto y Corazon de
+  Hielo aportan geometria, ritmo, materiales y memoria propios.
 - La primera grieta sigue al jugador durante su aviso de 0.7 segundos; las siguientes
   siguen al ultimo eco creado y abren donde este se encuentre.
 - Cada eco registra en vivo las posiciones de su predecesor y las sigue con 1.2
@@ -105,6 +108,11 @@ Implementado:
 - Menu principal animado, tutorial y flujo hacia partida y resultado.
 - Interfaz adaptable desde 9:16 hasta 20:9.
 - Ajustes persistentes de volumen, vibracion y sensibilidad.
+- Presentacion 2.5D con camara ortografica inclinada, geometria 3D sincronizada,
+  materiales emisivos, iluminacion, sombras y particulas.
+- Simulacion, entrada y colisiones 2D separadas del render 3D para conservar
+  precision tactil y reproducibilidad.
+- Selector persistente entre calidad 2.5D alta y modo de rendimiento.
 - Vibracion breve al terminar una ronda cuando esta habilitada.
 - Tres tipos de obstaculo: barrera fija, patrulla movil y pulso intermitente.
 - Nivel 1 con objetivo de 45 segundos y tres etapas: fija desde el inicio, patrulla a
@@ -119,10 +127,14 @@ Implementado:
   impedir la estrategia de movimiento extremadamente lento.
 - Tres sectores que expanden fisicamente la arena y alejan la camara al alcanzar 3 y
   6 ecos; la eleccion manual se premia y cada sector activa un peligro adicional.
-- Veinticuatro patrones fijos: 6 en Primera Estela, 8 en Contracorriente y 10 en
-  Nucleo Rojo. Combinan muros temporales, compuertas y barridos con rutas de escape
-  deliberadas.
-- Tres niveles con geometria, duracion, frecuencia, distancia minima y retraso propios.
+- Noventa y tres patrones fijos entre nueve niveles. Combinan muros temporales,
+  compuertas y barridos con rutas de escape deliberadas.
+- Nueve niveles con geometria, duracion, frecuencia, distancia minima y retraso
+  propios.
+- Pausa durante el intento con continuar, reiniciar y volver al menu; detiene toda la
+  simulacion, incluidos ecos, obstaculos y temporizadores.
+- Tienda desplazable con arrastre tactil directo sobre tarjetas y botones; un gesto
+  de desplazamiento nunca ejecuta una compra o seleccion.
 - Archivo local con Fragmentos, tienda, equipamiento y primeras victorias persistentes.
 - Cuatro skins, dos niveles desbloqueables y tres poderes permanentes.
 

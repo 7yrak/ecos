@@ -377,6 +377,61 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   animaciones deben mantener legibilidad y rendimiento en gama media; futuras pantallas
   deben reutilizar este mismo lenguaje.
 
+## D-033 - Simulacion 2D con presentacion 2.5D
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario para validar
+- Decision: conservar entrada, movimiento, colisiones, tiempos y coreografias en el
+  mundo 2D autoritativo, y sincronizar cada fotograma una presentacion 3D ortografica
+  inclinada. Jugador, ecos, obstaculos y marco usan geometria 3D, materiales, luces,
+  sombras y particulas. La interfaz sigue siendo 2D.
+- Motivo: el volumen y la profundidad hacen que el juego resulte sustancialmente mas
+  llamativo sin perder la respuesta tactil, el aprendizaje determinista de niveles ni
+  la compatibilidad con las pruebas existentes.
+- Consecuencia: la expansion aleja la misma camara 2D que contiene el `SubViewport`,
+  por lo que revela mas mundo 3D sin alterar coordenadas de juego. Ajustes ofrece
+  calidad alta a 720 x 1280 y rendimiento a 540 x 960, con menos particulas y sin
+  sombras dinamicas. Ambos perfiles requieren medicion en dispositivos fisicos.
+
+## D-034 - Nueve etapas y seis mundos visuales
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario para validar
+- Decision: ampliar el catalogo de tres a nueve etapas. Las seis nuevas agregan 69
+  patrones deterministas y se agrupan en Forja Ambar, Vacio Violeta y Santuario
+  Glacial. Cada familia usa una textura ambiental original y un perfil material 3D;
+  sus segundas etapas cambian paleta, geometria, ritmo y coreografia.
+- Motivo: tres etapas no entregaban suficiente recorrido ni variedad visual para
+  sostener descubrimiento, memoria y progresion de tienda.
+- Consecuencia: el juego suma 93 patrones fijos. Las nuevas partidas duran entre 68
+  y 90 segundos, por lo que precios, espacios, temperatura, cantidad de ecos y
+  legibilidad requieren pruebas fisicas antes de publicar.
+
+## D-035 - Pausa y salida durante el intento
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario
+- Decision: mantener un boton `II` visible durante toda partida activa. Su panel
+  permite continuar, reiniciar la etapa o volver al menu y pausa el arbol completo
+  para detener movimiento, ecos, peligros y tiempo.
+- Motivo: obligar a perder para abandonar una partida era una friccion innecesaria y
+  podia hacer que el usuario cerrara la aplicacion.
+- Consecuencia: salir desde pausa no entrega recompensa ni registra victoria; al
+  cambiar de pantalla se restablece siempre el estado global de pausa.
+
+## D-036 - Listas tactiles sin depender de la barra
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario
+- Decision: permitir que el `ScrollContainer` reciba el gesto desde toda la tarjeta,
+  incluidos textos y botones. Las acciones usan una capa tactil que solo activa
+  comprar o seleccionar cuando el movimiento permanece dentro de 8 px.
+- Motivo: en Android, los controles hijos detenian el evento y obligaban a arrastrar
+  la barra lateral, un patron impropio de una interfaz movil.
+- Consecuencia: el arrastre conserva la inercia nativa, reinicia cada categoria desde
+  arriba y muestra una indicacion explicita. Un desplazamiento sobre un boton cancela
+  su accion, mientras un toque corto sigue funcionando.
+
 ## Decisiones pendientes del usuario
 
 - Publico objetivo y clasificacion de edad buscada.

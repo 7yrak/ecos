@@ -45,12 +45,11 @@ func _draw_skin() -> void:
 
 func _draw_stage() -> void:
 	var level := int(item.get("level", 1))
-	var colors := [Color("#55f2bd"), Color("#58c8ff"), Color("#ff6295")]
-	var accent: Color = colors[clampi(level - 1, 0, 2)]
+	var accent: Color = item.get("accent", Color("#55f2bd"))
 	var arena := Rect2(14.0, 20.0, size.x - 28.0, size.y - 40.0)
 	draw_rect(arena, Color(accent, 0.07), true)
 	draw_rect(arena, Color(accent, 0.7), false, 2.0)
-	for index in level + 1:
+	for index in mini(7, level + 1):
 		var x := arena.position.x + 17.0 + float(index) * 20.0
 		draw_line(Vector2(x, arena.position.y + 10.0), Vector2(x + 17.0, arena.end.y - 10.0), Color(accent, 0.46), 4.0)
 	draw_circle(arena.get_center() + Vector2(sin(_phase) * 15.0, 0.0), 6.0, accent)

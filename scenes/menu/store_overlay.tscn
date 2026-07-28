@@ -146,10 +146,12 @@ text = "PODERES"
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+scroll_deadzone = 8
 
 [node name="Cards" type="VBoxContainer" parent="Center/Panel/Content/List"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_constants/separation = 14
 
 [node name="Status" type="Label" parent="Center/Panel/Content"]

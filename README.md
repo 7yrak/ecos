@@ -1,6 +1,6 @@
 # ECOS
 
-Juego arcade 2D para Android en el que los movimientos del jugador generan ecos
+Juego arcade 2.5D para Android en el que los movimientos del jugador generan ecos
 que repiten su recorrido y modifican la partida.
 
 Repositorio oficial: <https://github.com/7yrak/ecos>
@@ -37,7 +37,7 @@ desinstalar la aplicacion anterior.
 
 ## Estado
 
-La Fase 3 esta activa. El juego incluye tres niveles con arenas y ritmos propios,
+La Fase 3 esta activa. El juego incluye nueve niveles con arenas y ritmos propios,
 cuatro skins, tres poderes permanentes y una tienda con Fragmentos obtenidos al jugar.
 Billetera, compras, equipamiento, nivel seleccionado y primeras victorias se guardan
 localmente. El primer eco sigue la memoria del jugador y cada generacion posterior
@@ -52,3 +52,10 @@ Menu, tutorial, tienda, HUD, gameplay y resultados comparten una identidad de
 transmision neon. Cada nivel usa una paleta propia y la tienda muestra vistas previas
 animadas de skins, etapas y poderes. El menu tiene arte cinematografico propio y cada
 nivel revela una arquitectura ilustrada diferente a medida que el mundo se expande.
+El gameplay se presenta en un mundo 3D ortografico inclinado: jugador, ecos, marcos y
+obstaculos tienen volumen, materiales, luces y particulas, mientras la simulacion 2D
+conserva la precision tactil y las coreografias deterministas. Ajustes permite elegir
+calidad 2.5D alta o un modo de rendimiento para telefonos mas modestos.
+Las etapas 4 a 9 agregan 69 patrones nuevos y tres familias ambientales: Forja Ambar,
+Vacio Violeta y Santuario Glacial. Durante cualquier intento, el boton `II` abre una
+pausa real con opciones para continuar, reiniciar o volver al menu.

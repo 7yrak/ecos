@@ -12,7 +12,7 @@ $ErrorActionPreference = 'Stop'
 
 $projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $outputDir = Join-Path $projectRoot 'releases'
-$outputPath = Join-Path $outputDir 'ECOS-0.8.0-android.apk'
+$outputPath = Join-Path $outputDir 'ECOS-0.10.1-android.apk'
 $apksigner = Join-Path $AndroidSdk 'build-tools\36.0.0\apksigner.bat'
 
 foreach ($requiredPath in @($GodotBin, $SigningEnv, $apksigner)) {

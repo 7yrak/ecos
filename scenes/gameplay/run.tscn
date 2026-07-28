@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/run_controller.gd" id="1_run"]
 [ext_resource type="Script" path="res://scripts/gameplay/arena_visual.gd" id="2_arena"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/arena_obstacle.tscn" id="4_obstacle"]
 [ext_resource type="Script" path="res://scripts/gameplay/gameplay_feedback.gd" id="5_feedback"]
 [ext_resource type="Script" path="res://scripts/gameplay/gameplay_overlay.gd" id="6_overlay"]
+[ext_resource type="Script" path="res://scripts/gameplay/world_25d.gd" id="7_world_25d"]
+[ext_resource type="Script" path="res://scripts/gameplay/pause_overlay.gd" id="8_pause"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape_vertical_wall"]
 size = Vector2(32, 940)
@@ -88,6 +90,12 @@ corner_radius_bottom_left = 7
 
 [node name="Run" type="Node2D"]
 script = ExtResource("1_run")
+
+[node name="World25D" type="SubViewport" parent="."]
+disable_3d = false
+size = Vector2i(720, 1280)
+render_target_update_mode = 4
+script = ExtResource("7_world_25d")
 
 [node name="Arena" type="Node2D" parent="."]
 script = ExtResource("2_arena")
@@ -399,6 +407,111 @@ theme_override_styles/hover = SubResource("StyleBox_restart_hover")
 theme_override_styles/pressed = SubResource("StyleBox_restart_hover")
 theme_override_styles/focus = SubResource("StyleBox_restart")
 text = "ROMPER EL LIMITE  //  +250 PTS\nNUEVO SECTOR + NUEVO PELIGRO"
+
+[node name="PauseButton" type="Button" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -86.0
+offset_top = 278.0
+offset_right = -22.0
+offset_bottom = 342.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBox_menu")
+theme_override_styles/hover = SubResource("StyleBox_menu_hover")
+theme_override_styles/pressed = SubResource("StyleBox_menu_hover")
+theme_override_styles/focus = SubResource("StyleBox_menu_hover")
+text = "Ⅱ"
+tooltip_text = "PAUSAR"
+
+[node name="PauseOverlay" type="ColorRect" parent="UI"]
+visible = false
+process_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.78)
+script = ExtResource("8_pause")
+
+[node name="Center" type="CenterContainer" parent="UI/PauseOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="UI/PauseOverlay/Center"]
+custom_minimum_size = Vector2(570, 650)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_game_over")
+
+[node name="Content" type="VBoxContainer" parent="UI/PauseOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="Kicker" type="Label" parent="UI/PauseOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "TRANSMISION SUSPENDIDA"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="UI/PauseOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 1, 0.95, 1)
+theme_override_font_sizes/font_size = 48
+text = "PAUSA"
+horizontal_alignment = 1
+
+[node name="Level" type="Label" parent="UI/PauseOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.64, 0.78, 0.8, 1)
+theme_override_font_sizes/font_size = 22
+text = "NIVEL 01 // PRIMERA ESTELA"
+horizontal_alignment = 1
+
+[node name="Continue" type="Button" parent="UI/PauseOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.027, 0.059, 0.09, 1)
+theme_override_colors/font_hover_color = Color(0.027, 0.059, 0.09, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBox_restart")
+theme_override_styles/hover = SubResource("StyleBox_restart_hover")
+theme_override_styles/pressed = SubResource("StyleBox_restart_hover")
+theme_override_styles/focus = SubResource("StyleBox_restart")
+text = "CONTINUAR"
+
+[node name="Restart" type="Button" parent="UI/PauseOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 0.86, 1)
+theme_override_colors/font_hover_color = Color(0.584, 1, 0.796, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBox_menu")
+theme_override_styles/hover = SubResource("StyleBox_menu_hover")
+theme_override_styles/pressed = SubResource("StyleBox_menu_hover")
+theme_override_styles/focus = SubResource("StyleBox_menu_hover")
+text = "REINICIAR ETAPA"
+
+[node name="Menu" type="Button" parent="UI/PauseOverlay/Center/Panel/Content"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.52, 0.42, 1)
+theme_override_colors/font_hover_color = Color(1, 0.72, 0.62, 1)
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBox_menu")
+theme_override_styles/hover = SubResource("StyleBox_menu_hover")
+theme_override_styles/pressed = SubResource("StyleBox_menu_hover")
+theme_override_styles/focus = SubResource("StyleBox_menu_hover")
+text = "SALIR AL MENU"
 
 [node name="GameOver" type="ColorRect" parent="UI"]
 visible = false

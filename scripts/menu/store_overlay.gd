@@ -5,12 +5,14 @@ signal closed
 
 const StoreCatalogScript = preload("res://scripts/app/store_catalog.gd")
 const StoreItemPreviewScript = preload("res://scripts/menu/store_item_preview.gd")
+const StoreTouchActionScript = preload("res://scripts/menu/store_touch_action.gd")
 
 @onready var panel: PanelContainer = $Center/Panel
 @onready var wallet_label: Label = $Center/Panel/Content/Header/Wallet
 @onready var skins_button: Button = $Center/Panel/Content/Tabs/Skins
 @onready var stages_button: Button = $Center/Panel/Content/Tabs/Stages
 @onready var powers_button: Button = $Center/Panel/Content/Tabs/Powers
+@onready var list: ScrollContainer = $Center/Panel/Content/List
 @onready var cards: VBoxContainer = $Center/Panel/Content/List/Cards
 @onready var status_label: Label = $Center/Panel/Content/Status
 @onready var back_button: Button = $Center/Panel/Content/Back
@@ -30,7 +32,7 @@ func _ready() -> void:
 
 func open(category := "skins") -> void:
 	_category = category
-	status_label.text = "TODO SE GUARDA EN ESTE DISPOSITIVO"
+	status_label.text = _category_status(category)
 	_refresh()
 	visible = true
 	panel.modulate.a = 0.0
@@ -56,8 +58,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _show_category(category: String) -> void:
 	_category = category
-	status_label.text = "COMPRA UNA VEZ Y EQUIPA CUANDO QUIERAS"
+	status_label.text = _category_status(category)
+	list.scroll_vertical = 0
 	_refresh()
+
+
+func _category_status(category: String) -> String:
+	if category == "stages":
+		return "DESLIZA SOBRE LAS TARJETAS PARA VER MAS ETAPAS"
+	return "COMPRA UNA VEZ Y EQUIPA CUANDO QUIERAS"
 
 
 func _refresh() -> void:
@@ -75,9 +84,11 @@ func _refresh() -> void:
 func _create_card(item: Dictionary) -> Control:
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(0.0, 146.0)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_theme_stylebox_override("panel", _card_style(_item_color(item)))
 
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 18)
 	panel.add_child(row)
 
@@ -88,24 +99,34 @@ func _create_card(item: Dictionary) -> Control:
 
 	var copy := VBoxContainer.new()
 	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	copy.add_theme_constant_override("separation", 7)
 	row.add_child(copy)
 
 	var name_label := Label.new()
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	name_label.text = str(item.name)
 	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", _item_color(item))
 	copy.add_child(name_label)
 
 	var description_label := Label.new()
+	description_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	description_label.text = str(item.description)
 	description_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	description_label.add_theme_font_size_override("font_size", 18)
 	description_label.add_theme_color_override("font_color", Color(0.68, 0.8, 0.82))
 	copy.add_child(description_label)
 
+	var action_wrapper := Control.new()
+	action_wrapper.custom_minimum_size = Vector2(178.0, 76.0)
+	action_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(action_wrapper)
+
 	var action := Button.new()
 	action.custom_minimum_size = Vector2(178.0, 76.0)
+	action.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	action.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	action.text = _action_text(item)
 	action.add_theme_font_size_override("font_size", 20)
 	action.add_theme_color_override("font_color", Color(0.03, 0.08, 0.1))
@@ -116,7 +137,12 @@ func _create_card(item: Dictionary) -> Control:
 	action.add_theme_stylebox_override("disabled", _action_style(Color(0.06, 0.15, 0.17)))
 	action.disabled = _is_active(item)
 	action.pressed.connect(_on_item_pressed.bind(str(item.id)))
-	row.add_child(action)
+	action_wrapper.add_child(action)
+
+	var touch_action = StoreTouchActionScript.new()
+	touch_action.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	touch_action.tapped.connect(_on_item_pressed.bind(str(item.id)))
+	action_wrapper.add_child(touch_action)
 	return panel
 
 
@@ -158,7 +184,7 @@ func _item_color(item: Dictionary) -> Color:
 		return item.primary
 	if _category == "powers":
 		return Color(0.58, 0.72, 1.0)
-	return Color(1.0, 0.68, 0.25)
+	return item.get("accent", Color(1.0, 0.68, 0.25))
 
 
 func _card_style(accent: Color) -> StyleBoxFlat:

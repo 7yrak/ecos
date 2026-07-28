@@ -18,6 +18,7 @@ signal play_requested(level_number: int)
 @onready var vibration_toggle: CheckButton = $SettingsOverlay/Center/Panel/Content/VibrationRow/Toggle
 @onready var sensitivity_slider: HSlider = $SettingsOverlay/Center/Panel/Content/SensitivitySlider
 @onready var sensitivity_value: Label = $SettingsOverlay/Center/Panel/Content/SensitivityHeader/Value
+@onready var quality_toggle: CheckButton = $SettingsOverlay/Center/Panel/Content/QualityRow/Toggle
 @onready var settings_back_button: Button = $SettingsOverlay/Center/Panel/Content/Back
 @onready var store_overlay: StoreOverlay = $StoreOverlay
 @onready var settings_store := get_node("/root/Settings") as SettingsStore
@@ -36,6 +37,7 @@ func _ready() -> void:
 	volume_slider.value_changed.connect(_on_volume_changed)
 	vibration_toggle.toggled.connect(_on_vibration_toggled)
 	sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
+	quality_toggle.toggled.connect(_on_quality_toggled)
 	tutorial_overlay.visible = false
 	settings_overlay.visible = false
 	_sync_settings()
@@ -96,6 +98,7 @@ func _sync_settings() -> void:
 	volume_slider.set_value_no_signal(settings_store.master_volume)
 	vibration_toggle.set_pressed_no_signal(settings_store.vibration_enabled)
 	sensitivity_slider.set_value_no_signal(settings_store.sensitivity)
+	quality_toggle.set_pressed_no_signal(settings_store.high_quality_25d)
 	_update_setting_labels()
 
 
@@ -114,16 +117,22 @@ func _on_sensitivity_changed(value: float) -> void:
 	_update_setting_labels()
 
 
+func _on_quality_toggled(enabled: bool) -> void:
+	settings_store.set_high_quality_25d(enabled)
+	_update_setting_labels()
+
+
 func _update_setting_labels() -> void:
 	volume_value.text = "%d%%" % roundi(settings_store.master_volume * 100.0)
 	sensitivity_value.text = "%.2fx" % settings_store.sensitivity
 	vibration_toggle.text = "ACTIVA" if settings_store.vibration_enabled else "INACTIVA"
+	quality_toggle.text = "ALTA" if settings_store.high_quality_25d else "RENDIMIENTO"
 
 
 func _sync_progress() -> void:
 	status_label.text = "%d FRAGMENTOS" % progress_store.fragments
 	play_button.text = "JUGAR // ETAPA %02d" % progress_store.selected_level
-	footer_label.text = "SKIN %s  /  PODER %s" % [
+	footer_label.text = "MODO 2.5D  //  SKIN %s  /  PODER %s" % [
 		progress_store.equipped_skin.to_upper(),
 		progress_store.equipped_power.to_upper(),
 	]

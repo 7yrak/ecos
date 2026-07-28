@@ -51,7 +51,7 @@ Avance: menu, tutorial, navegacion, interfaz adaptable, ajustes persistentes,
 progresion de arena, tres obstaculos y feedback audiovisual completados. El nivel 1
 tiene victoria a los 45 segundos y una cadena recursiva sin limite fijo: cada eco sigue
 con memoria retardada a su predecesor. Las faltas lentas comprimen toda la cadena. El
-catalogo incorpora tres niveles con arena y ritmo propios sin duplicar el controlador.
+catalogo incorpora nueve niveles con arena y ritmo propios sin duplicar el controlador.
 Pendiente: validacion final en dispositivos fisicos.
 
 Objetivo: representar la calidad visual y sonora esperada del producto final.
@@ -79,7 +79,7 @@ Criterio de salida:
 
 Estado: activa desde el 2026-07-23.
 
-Avance: moneda local, guardado versionado, tienda, cuatro skins, tres niveles
+Avance: moneda local, guardado versionado, tienda, cuatro skins, nueve niveles
 desbloqueables y tres poderes permanentes implementados. Pendientes: modo infinito,
 generacion por semillas, cosmeticos restantes, misiones y desafio diario.
 

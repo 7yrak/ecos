@@ -7,10 +7,12 @@ const CONFIG_PATH := "user://settings.cfg"
 const DEFAULT_VOLUME := 1.0
 const DEFAULT_VIBRATION := true
 const DEFAULT_SENSITIVITY := 1.0
+const DEFAULT_HIGH_QUALITY_25D := true
 
 var master_volume := DEFAULT_VOLUME
 var vibration_enabled := DEFAULT_VIBRATION
 var sensitivity := DEFAULT_SENSITIVITY
+var high_quality_25d := DEFAULT_HIGH_QUALITY_25D
 
 
 func _ready() -> void:
@@ -37,6 +39,12 @@ func set_sensitivity(value: float) -> void:
 	settings_changed.emit()
 
 
+func set_high_quality_25d(enabled: bool) -> void:
+	high_quality_25d = enabled
+	_save_settings()
+	settings_changed.emit()
+
+
 func vibrate(duration_ms: int = 60) -> void:
 	if vibration_enabled and OS.has_feature("mobile"):
 		Input.vibrate_handheld(duration_ms)
@@ -49,6 +57,7 @@ func _load_settings() -> void:
 	master_volume = clampf(float(config.get_value("audio", "master_volume", DEFAULT_VOLUME)), 0.0, 1.0)
 	vibration_enabled = bool(config.get_value("feedback", "vibration", DEFAULT_VIBRATION))
 	sensitivity = clampf(float(config.get_value("controls", "sensitivity", DEFAULT_SENSITIVITY)), 0.65, 1.35)
+	high_quality_25d = bool(config.get_value("graphics", "high_quality_25d", DEFAULT_HIGH_QUALITY_25D))
 
 
 func _save_settings() -> void:
@@ -56,6 +65,7 @@ func _save_settings() -> void:
 	config.set_value("audio", "master_volume", master_volume)
 	config.set_value("feedback", "vibration", vibration_enabled)
 	config.set_value("controls", "sensitivity", sensitivity)
+	config.set_value("graphics", "high_quality_25d", high_quality_25d)
 	var error := config.save(CONFIG_PATH)
 	if error != OK:
 		push_warning("No se pudieron guardar los ajustes: %s" % error_string(error))

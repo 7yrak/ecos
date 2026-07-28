@@ -24,6 +24,7 @@ const MANUAL_EXPANSION_BONUS := 250
 
 @onready var player: PlayerController = $Player
 @onready var arena: ArenaVisual = $Arena
+@onready var world_25d: World25D = $World25D
 @onready var world_camera: Camera2D = $WorldCamera
 @onready var boundaries: Node2D = $Boundaries
 @onready var surprises: Node2D = $Surprises
@@ -48,6 +49,15 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var pattern_warning_label: Label = $UI/PatternWarning
 @onready var break_limit_button: Button = $UI/BreakLimitButton
 @onready var power_button: Button = $UI/PowerButton
+@onready var pause_button: Button = $UI/PauseButton
+@onready var pause_overlay: PauseOverlay = $UI/PauseOverlay
+@onready var pause_panel: PanelContainer = $UI/PauseOverlay/Center/Panel
+@onready var pause_kicker: Label = $UI/PauseOverlay/Center/Panel/Content/Kicker
+@onready var pause_title: Label = $UI/PauseOverlay/Center/Panel/Content/Title
+@onready var pause_level_label: Label = $UI/PauseOverlay/Center/Panel/Content/Level
+@onready var pause_continue_button: Button = $UI/PauseOverlay/Center/Panel/Content/Continue
+@onready var pause_restart_button: Button = $UI/PauseOverlay/Center/Panel/Content/Restart
+@onready var pause_menu_button: Button = $UI/PauseOverlay/Center/Panel/Content/Menu
 @onready var game_over_overlay: ColorRect = $UI/GameOver
 @onready var result_panel: PanelContainer = $UI/GameOver/Center/Panel
 @onready var result_kicker: Label = $UI/GameOver/Center/Panel/Content/Kicker
@@ -96,10 +106,16 @@ func _ready() -> void:
 		_level = LevelCatalogScript.first_level()
 		_level_number = _level.number
 	_center_world_for_viewport()
+	_setup_25d()
 	player.danger_hit.connect(_on_player_danger_hit)
 	pulse_obstacle.danger_state_changed.connect(_on_pulse_state_changed)
 	break_limit_button.pressed.connect(_on_break_limit_pressed)
 	power_button.pressed.connect(_on_power_pressed)
+	pause_button.pressed.connect(_show_pause)
+	pause_overlay.resume_requested.connect(_hide_pause)
+	pause_continue_button.pressed.connect(_hide_pause)
+	pause_restart_button.pressed.connect(_restart_from_pause)
+	pause_menu_button.pressed.connect(_menu_from_pause)
 	restart_button.pressed.connect(_on_primary_action)
 	menu_button.pressed.connect(menu_requested.emit)
 	player.set_sensitivity(settings_store.sensitivity)
@@ -117,6 +133,10 @@ func configure_level(level_number: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and _state == RunState.PLAYING:
+		_show_pause()
+		get_viewport().set_input_as_handled()
+		return
 	if _state != RunState.GAME_OVER:
 		return
 	if event is InputEventScreenTouch and event.pressed:
@@ -172,6 +192,8 @@ func _start_run() -> void:
 	_reward_granted = false
 	_power_used = false
 	_power_invulnerability_time = 0.0
+	pause_overlay.visible = false
+	pause_button.visible = true
 	_run_time = 0.0
 	_segment_time = 0.0
 	_sample_accumulator = 0.0
@@ -195,6 +217,7 @@ func _start_run() -> void:
 	feedback.clear_active()
 	_apply_visual_identity()
 	arena.set_expansion_stage(1, false)
+	world_25d.set_arena_stage(1)
 	world_camera.enabled = true
 	world_camera.zoom = Vector2.ONE
 	world_camera.offset = Vector2.ZERO
@@ -208,6 +231,7 @@ func _start_run() -> void:
 	_timeline.add_sample(0.0, start_position)
 	player.reset_for_run(start_position)
 	player.set_skin(progress_store.equipped_skin)
+	world_25d.set_player_skin(progress_store.equipped_skin)
 	game_over_overlay.visible = false
 	result_title.text = "FIN DEL ECO"
 	result_title.add_theme_color_override("font_color", _level.visual_palette.danger)
@@ -269,6 +293,7 @@ func _on_rift_opened(rift) -> void:
 		rift.pressured
 	)
 	echo.set_palette(_level.visual_palette)
+	echo.modulate.a = 0.0 if not OS.has_feature("headless") else 1.0
 	echo.set_pressure_multiplier(_chain_pressure_multiplier)
 	echo.hit_player.connect(_on_echo_hit_player)
 	_total_echo_count += 1
@@ -276,6 +301,44 @@ func _on_rift_opened(rift) -> void:
 	feedback.play_echo(echo.global_position)
 	_offer_expansion_if_ready()
 	_update_hud()
+
+
+func _exit_tree() -> void:
+	if is_instance_valid(get_tree()) and get_tree().paused:
+		get_tree().paused = false
+
+
+func _show_pause() -> void:
+	if _state != RunState.PLAYING or get_tree().paused:
+		return
+	pause_level_label.text = "NIVEL %02d // %s\nTIEMPO %04.1f / %02d S" % [
+		_level.number,
+		_level.title,
+		_run_time,
+		roundi(_level.duration),
+	]
+	pause_overlay.visible = true
+	pause_button.visible = false
+	get_tree().paused = true
+	pause_continue_button.grab_focus()
+
+
+func _hide_pause() -> void:
+	get_tree().paused = false
+	pause_overlay.visible = false
+	if _state == RunState.PLAYING:
+		pause_button.visible = true
+		pause_button.grab_focus()
+
+
+func _restart_from_pause() -> void:
+	_hide_pause()
+	_restart()
+
+
+func _menu_from_pause() -> void:
+	_hide_pause()
+	menu_requested.emit()
 
 
 func _on_player_danger_hit(collider: Node) -> void:
@@ -309,6 +372,7 @@ func _complete_level() -> void:
 
 func _show_result(reason: String) -> void:
 	_state = RunState.GAME_OVER
+	pause_button.visible = false
 	player.set_movement_enabled(false)
 	_clear_rifts()
 	_clear_surprises()
@@ -475,6 +539,7 @@ func _spawn_surprise_event(event: Dictionary, event_index: int) -> void:
 		var obstacle = SurpriseObstacleScript.new()
 		obstacle.configure(obstacle_config, warning, duration, event_index, event_name)
 		obstacle.set_palette(_level.visual_palette)
+		obstacle.modulate.a = 0.42 if not OS.has_feature("headless") else 1.0
 		surprises.add_child(obstacle)
 		obstacle.armed.connect(_on_surprise_armed)
 	_discovered_event_count = event_index
@@ -563,6 +628,7 @@ func _configure_arena_for_level() -> void:
 func _apply_visual_identity() -> void:
 	var palette: Dictionary = _level.visual_palette
 	arena.set_palette(palette)
+	world_25d.set_palette(palette)
 	atmosphere.set_palette(palette)
 	feedback.set_palette(palette)
 	for obstacle in [upper_obstacle, lower_obstacle, patrol_obstacle, pulse_obstacle]:
@@ -577,6 +643,29 @@ func _apply_visual_identity() -> void:
 	expansion_label.add_theme_color_override("font_color", palette.secondary)
 	pattern_memory_label.add_theme_color_override("font_color", palette.warning)
 	result_kicker.add_theme_color_override("font_color", palette.secondary)
+	pause_panel.add_theme_stylebox_override("panel", _result_panel_style(palette.secondary))
+	pause_kicker.add_theme_color_override("font_color", palette.secondary)
+	pause_title.add_theme_color_override("font_color", palette.primary.lightened(0.38))
+
+
+func _setup_25d() -> void:
+	world_25d.attach_run(self)
+	if OS.has_feature("headless"):
+		return
+	world_25d.set_high_quality(settings_store.high_quality_25d)
+	var display := Sprite2D.new()
+	display.name = "World25DDisplay"
+	display.texture = world_25d.get_texture()
+	display.position = START_POSITION
+	display.scale = Vector2.ONE * world_25d.display_scale()
+	display.z_index = -30
+	add_child(display)
+	move_child(display, 0)
+	arena.set_25d_enabled(true)
+	player.modulate.a = 0.0
+	for obstacle in [upper_obstacle, lower_obstacle, patrol_obstacle, pulse_obstacle]:
+		(obstacle as ArenaObstacle).modulate.a = 0.0
+		(obstacle as ArenaObstacle).set_process(false)
 
 
 func _result_panel_style(accent: Color) -> StyleBoxFlat:
@@ -730,6 +819,7 @@ func _expand_world(manual: bool) -> void:
 
 	var next_rect := arena.play_rect_for_stage(_world_stage)
 	arena.set_expansion_stage(_world_stage)
+	world_25d.set_arena_stage(_world_stage)
 	_configure_boundaries(next_rect)
 	world_camera.enabled = true
 	var target_zoom := Vector2.ONE * arena.camera_zoom_for_stage(_world_stage)

@@ -168,13 +168,20 @@ func _test_level_catalog() -> void:
 			_expect(event.time > previous_time and event.time < designed_level.duration, "cada sorpresa tiene un segundo fijo y ordenado")
 			_expect(event.warning >= 0.65 and event.obstacles.size() > 0, "cada sorpresa avisa y deja una ruta disenada")
 			previous_time = event.time
-	_expect(not LevelCatalogScript.has_level(4), "el catalogo termina en el contenido disenado")
+	_expect(LevelCatalogScript.level_count() == 9, "el catalogo incorpora nueve etapas")
+	for level_number in range(4, 10):
+		var extended_level = LevelCatalogScript.get_level(level_number)
+		_expect(extended_level != null and extended_level.number == level_number, "la etapa %d se puede cargar" % level_number)
+		_expect(extended_level.surprise_events.size() == level_number + 5, "la etapa %d agrega una coreografia extensa" % level_number)
+		_expect(extended_level.surprise_events == LevelCatalogScript.get_level(level_number).surprise_events, "la etapa %d repite su memoria sin azar" % level_number)
+		_expect(ResourceLoader.exists(extended_level.visual_palette.background_path), "la etapa %d tiene textura ambiental" % level_number)
+	_expect(LevelCatalogScript.has_level(9) and not LevelCatalogScript.has_level(10), "el catalogo termina en la novena etapa")
 
 
 func _test_progress_store() -> void:
 	var progress := root.get_node("Progress") as ProgressStore
 	_expect(StoreCatalogScript.SKINS.size() == 4, "la tienda ofrece cuatro skins")
-	_expect(StoreCatalogScript.STAGES.size() == 3, "la tienda ofrece tres etapas")
+	_expect(StoreCatalogScript.STAGES.size() == 9, "la tienda ofrece nueve etapas")
 	_expect(StoreCatalogScript.POWERS.size() == 4, "la tienda ofrece tres poderes y la opcion sin poder")
 	_expect(progress.owns("skins", "signal") and progress.owns("stages", "level_1"), "el progreso comienza con skin y etapa iniciales")
 	progress.add_fragments(30)
@@ -213,7 +220,42 @@ func _test_app_navigation() -> void:
 	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 4, "la tienda muestra el catalogo de skins")
 	(store_overlay.get_node("Center/Panel/Content/Tabs/Stages") as Button).pressed.emit()
 	await process_frame
-	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 3, "la tienda cambia al catalogo de etapas")
+	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 9, "la tienda cambia al catalogo de nueve etapas")
+	var stage_list := store_overlay.get_node("Center/Panel/Content/List") as ScrollContainer
+	var stage_cards := store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer
+	var first_stage_action_wrapper := stage_cards.get_child(0).get_child(0).get_child(2) as Control
+	var first_stage_action := first_stage_action_wrapper.get_child(0) as Button
+	var first_stage_touch_action = first_stage_action_wrapper.get_child(1)
+	_expect(stage_list.scroll_deadzone == 8 and stage_cards.mouse_filter == Control.MOUSE_FILTER_IGNORE, "la lista acepta arrastre tactil sobre las tarjetas")
+	_expect(first_stage_action.mouse_filter == Control.MOUSE_FILTER_IGNORE and first_stage_touch_action.mouse_filter == Control.MOUSE_FILTER_PASS, "los botones permiten deslizar sin bloquear la lista")
+	var tapped_count := [0]
+	first_stage_touch_action.tapped.connect(func(): tapped_count[0] += 1)
+	var touch_press := InputEventScreenTouch.new()
+	touch_press.index = 4
+	touch_press.pressed = true
+	touch_press.position = Vector2(80.0, 40.0)
+	first_stage_touch_action._gui_input(touch_press)
+	var touch_drag := InputEventScreenDrag.new()
+	touch_drag.index = 4
+	touch_drag.position = Vector2(80.0, 5.0)
+	first_stage_touch_action._gui_input(touch_drag)
+	var touch_release := InputEventScreenTouch.new()
+	touch_release.index = 4
+	touch_release.pressed = false
+	touch_release.position = Vector2(80.0, 5.0)
+	first_stage_touch_action._gui_input(touch_release)
+	_expect(tapped_count[0] == 0, "arrastrar sobre un boton no compra ni selecciona accidentalmente")
+	var tap_press := InputEventScreenTouch.new()
+	tap_press.index = 5
+	tap_press.pressed = true
+	tap_press.position = Vector2(80.0, 40.0)
+	first_stage_touch_action._gui_input(tap_press)
+	var tap_release := InputEventScreenTouch.new()
+	tap_release.index = 5
+	tap_release.pressed = false
+	tap_release.position = Vector2(82.0, 42.0)
+	first_stage_touch_action._gui_input(tap_release)
+	_expect(tapped_count[0] == 1, "un toque corto conserva la accion de comprar o seleccionar")
 	(store_overlay.get_node("Center/Panel/Content/Tabs/Powers") as Button).pressed.emit()
 	await process_frame
 	_expect((store_overlay.get_node("Center/Panel/Content/List/Cards") as VBoxContainer).get_child_count() == 4, "la tienda cambia al catalogo de poderes")
@@ -227,25 +269,43 @@ func _test_app_navigation() -> void:
 	var previous_volume := settings_store.master_volume
 	var previous_vibration := settings_store.vibration_enabled
 	var previous_sensitivity := settings_store.sensitivity
+	var previous_quality := settings_store.high_quality_25d
 	var volume_slider := menu.get_node("SettingsOverlay/Center/Panel/Content/VolumeSlider") as HSlider
 	var vibration_toggle := menu.get_node("SettingsOverlay/Center/Panel/Content/VibrationRow/Toggle") as CheckButton
 	var sensitivity_slider := menu.get_node("SettingsOverlay/Center/Panel/Content/SensitivitySlider") as HSlider
+	var quality_toggle := menu.get_node("SettingsOverlay/Center/Panel/Content/QualityRow/Toggle") as CheckButton
 	_expect(is_equal_approx(volume_slider.max_value, 1.0), "volumen usa una escala normalizada")
 	volume_slider.value = 0.75
 	vibration_toggle.button_pressed = false
 	sensitivity_slider.value = 1.2
+	quality_toggle.button_pressed = false
 	_expect(is_equal_approx(settings_store.master_volume, 0.75), "ajustes cambia el volumen")
 	_expect(not settings_store.vibration_enabled, "ajustes cambia la vibracion")
 	_expect(is_equal_approx(settings_store.sensitivity, 1.2), "ajustes cambia la sensibilidad")
+	_expect(not settings_store.high_quality_25d, "ajustes cambia la calidad 2.5D")
 	settings_store.set_master_volume(previous_volume)
 	settings_store.set_vibration_enabled(previous_vibration)
 	settings_store.set_sensitivity(previous_sensitivity)
+	settings_store.set_high_quality_25d(previous_quality)
 	(menu.get_node("SettingsOverlay/Center/Panel/Content/Back") as Button).pressed.emit()
 	_expect(not settings_overlay.visible, "ajustes vuelve al menu")
 
 	(menu.get_node("Content/Layout/Actions/Play") as Button).pressed.emit()
 	await process_frame
 	_expect(app.current_screen is RunController, "jugar abre una partida")
+
+	var active_run := app.current_screen as RunController
+	active_run.pause_button.pressed.emit()
+	_expect(paused and active_run.pause_overlay.visible, "pausar detiene la partida y abre sus opciones")
+	active_run.pause_continue_button.pressed.emit()
+	_expect(not paused and not active_run.pause_overlay.visible, "continuar reanuda la partida")
+	active_run.pause_button.pressed.emit()
+	active_run.pause_menu_button.pressed.emit()
+	await process_frame
+	_expect(app.current_screen is MainMenu and not paused, "la pausa permite salir al menu sin perder")
+	menu = app.current_screen as MainMenu
+	menu.play_button.pressed.emit()
+	await process_frame
 
 	var run := app.current_screen as RunController
 	run.set_physics_process(false)
@@ -296,7 +356,18 @@ func _test_run_scene() -> void:
 	var echoes := run.get_node("Echoes") as Node2D
 	var feedback := run.get_node("Feedback") as GameplayFeedback
 	var obstacle := run.get_node("Obstacles/Upper") as ArenaObstacle
+	var world_25d := run.get_node("World25D") as World25D
 	_expect(player != null, "la partida contiene al jugador")
+	_expect(world_25d != null and world_25d.size == Vector2i(720, 1280), "la partida incorpora el mundo 2.5D sincronizado")
+	_expect(is_equal_approx(world_25d.display_scale(), 1.0 / World25D.FINAL_ZOOM), "el mundo 2.5D conserva la escala de expansion")
+	world_25d.set_high_quality(false)
+	_expect(world_25d.size == Vector2i(540, 960), "el modo rendimiento reduce la resolucion 3D")
+	_expect(is_equal_approx(world_25d.display_scale(), (1.0 / World25D.FINAL_ZOOM) * 4.0 / 3.0), "el modo rendimiento conserva el encuadre")
+	world_25d.set_high_quality(true)
+	run.pause_button.pressed.emit()
+	_expect(paused and run.pause_overlay.visible, "el boton de pausa esta disponible durante el intento")
+	run.pause_restart_button.pressed.emit()
+	_expect(not paused and is_zero_approx(run._run_time), "reiniciar desde pausa comienza la etapa de nuevo")
 	_expect(player.collision_layer == 1 and player.collision_mask == 4, "capas fisicas del jugador")
 	_expect(obstacle.is_in_group("danger") and obstacle.collision_layer == 4, "obstaculo peligroso configurado")
 	_expect(echoes.get_child_count() == 0, "la partida comienza sin ecos")
@@ -514,6 +585,21 @@ func _test_level_variants() -> void:
 	_expect(level_three_run._level.echo_interval == 4.0 and level_three_run._level.follow_delay == 1.05, "Nucleo Rojo comprime ritmo y retraso de ecos")
 	level_three_run.queue_free()
 	await process_frame
+
+	for level_number in range(4, 10):
+		var extended_run := RunScene.instantiate() as RunController
+		extended_run.configure_level(level_number)
+		root.add_child(extended_run)
+		await process_frame
+		extended_run.set_physics_process(false)
+		_expect(extended_run._level_number == level_number, "la partida carga la etapa %d" % level_number)
+		_expect(extended_run._level.visual_palette.has("surface_style"), "la etapa %d define materiales 2.5D" % level_number)
+		var first_extended_event: Dictionary = extended_run._level.surprise_events[0]
+		extended_run._run_time = float(first_extended_event.time) + 0.01
+		extended_run._update_surprise_sequence()
+		_expect(extended_run.surprises.get_child_count() > 0, "la etapa %d ejecuta su primera sorpresa" % level_number)
+		extended_run.queue_free()
+		await process_frame
 
 
 func _test_recursive_echo_chain() -> void:

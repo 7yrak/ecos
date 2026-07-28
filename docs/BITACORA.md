@@ -4,6 +4,127 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - Desplazamiento tactil de tienda
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- En Android, la lista de etapas solo podia moverse arrastrando la barra lateral
+  porque tarjetas, textos y botones interceptaban el gesto.
+
+Cambios:
+
+- El contenido no interactivo deja pasar eventos al `ScrollContainer` y la zona
+  muerta tactil se fija en 8 px para responder con rapidez.
+- Comprar y seleccionar conservan apariencia, foco y teclado, pero reciben el tacto
+  mediante una capa que diferencia toque corto de arrastre.
+- Arrastrar sobre un boton desplaza la lista y cancela su accion; un toque corto la
+  ejecuta normalmente.
+- Al abrir Etapas se muestra `DESLIZA SOBRE LAS TARJETAS PARA VER MAS ETAPAS` y cada
+  cambio de categoria vuelve al inicio de la lista.
+- La version avanza a `0.10.1` (`versionCode 21`).
+
+Verificacion:
+
+- Pasan 348 verificaciones headless en Godot 4.7.1, incluidas propagacion tactil,
+  cancelacion por arrastre y activacion por toque corto.
+- Se reviso visualmente la tienda a 720 x 1280 sin cambios de composicion.
+- APK local `ECOS-0.10.1-android.apk`: 65,134,503 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos ni recursos de pruebas.
+- SHA-256:
+  `1C17C8D3BD31FDA801A354CFC1B5A4E45724AB584E9BD04A2A8EAACDF2F7B1F0`.
+
+Siguiente accion:
+
+- Confirmar en Galaxy A25 que el arrastre sobre texto, espacio libre y botones
+  conserva inercia y nunca compra durante un desplazamiento.
+
+## 2026-07-27 - Nueve etapas, nuevos mundos y pausa
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se solicito agregar muchas mas etapas, permitir salir al menu sin perder y mejorar
+  nuevamente la calidad visual y las texturas.
+
+Cambios:
+
+- El catalogo crece de 3 a 9 etapas: Forja Ascendente, Abismo Violeta, Santuario
+  Glacial, Motor del Sol, Horizonte Roto y Corazon de Hielo se suman a las originales.
+- Las seis etapas nuevas agregan 69 patrones de memoria. Junto a los 24 existentes,
+  el juego contiene 93 apariciones deterministas con nombre, segundo, forma, aviso,
+  duracion y trayectoria reproducibles.
+- Se generaron e integraron tres fondos originales de alta definicion: una catedral
+  industrial de metal fundido, un observatorio de cristal sobre el vacio y un templo
+  cuantico congelado.
+- El render 2.5D interpreta perfiles de superficie `forge`, `crystal` e `ice` para
+  variar metalicidad, rugosidad, luz ambiental, niebla y color de contraluz.
+- La tienda muestra nueve tarjetas de etapa, colores propios y desplazamiento para
+  recorrer el catalogo completo.
+- Se agrego el boton `II` durante el intento. La pausa detiene toda la simulacion y
+  ofrece continuar, reiniciar o salir al menu.
+- Tutorial, flujo de navegacion, pruebas y documentacion se actualizaron. La version
+  avanza a `0.10.0` (`versionCode 20`).
+
+Verificacion:
+
+- Pasan 344 verificaciones headless en Godot 4.7.1.
+- Se revisaron Forja Ascendente, Abismo Violeta, Santuario Glacial, Corazon de Hielo,
+  la tienda de nueve etapas y el panel de pausa a 720 x 1280.
+- APK local `ECOS-0.10.0-android.apk`: 65,130,226 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos ni recursos de pruebas.
+- SHA-256:
+  `4277EE13B27E665A9CC56C8326D175C8A611795DEFF2E1AFC5DED81C04E8A0E4`.
+
+Siguiente accion:
+
+- Medir calidad alta y rendimiento en Galaxy A25 usando especialmente Corazon de
+  Hielo, seis o mas ecos y el tercer sector abierto.
+
+## 2026-07-27 - Mundo 2.5D sincronizado
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se autorizo convertir la renovacion visual a 2.5D y aplicar la propuesta completa
+  sin abandonar la mecanica de memoria ni las coreografias aprendibles.
+
+Cambios:
+
+- Se creo un mundo 3D real dentro de un `SubViewport` con camara ortografica
+  inclinada, dos luces direccionales, niebla, materiales emisivos y fondo ambiental.
+- Jugador, ecos, obstaculos base, sorpresas y marco de la arena ahora tienen
+  geometria con volumen. El jugador incorpora nucleo, carcasa, orbitas, luz y estela
+  de particulas; cada eco usa esferas y anillos generacionales.
+- El render 3D se sincroniza con los nodos 2D que siguen controlando tacto, fisica,
+  colisiones, posiciones, apariciones y temporizadores. Esto conserva las rutas de
+  escape y la memoria fija de cada nivel.
+- La expansion actualiza el marco 3D y mantiene el alejamiento de camara para revelar
+  progresivamente mas escenario.
+- Ajustes agrega un selector persistente: calidad alta renderiza el mundo a
+  720 x 1280 con sombras y 32 particulas; rendimiento usa 540 x 960, desactiva las
+  sombras dinamicas y reduce la estela a 16 particulas.
+- Menu y tutorial comunican el nuevo modo 2.5D. La version avanza a `0.9.0`
+  (`versionCode 19`).
+
+Verificacion:
+
+- Pasan 296 verificaciones headless en Godot 4.7.1.
+- Se revisaron los tres escenarios 2.5D, una expansion y el panel de ajustes a
+  720 x 1280 con el render Compatibility.
+- APK local `ECOS-0.9.0-android.apk`: 58,932,113 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos ni recursos de pruebas.
+- SHA-256:
+  `2C58DEC8F5B6A31D612482E53301275875BB4836A2779EC2E1E20A93DFA4FB79`.
+
+Siguiente accion:
+
+- Comparar calidad alta y rendimiento en Galaxy A25 con seis o mas ecos y el tercer
+  sector abierto; medir FPS, temperatura, legibilidad y consumo.
+
 ## 2026-07-27 - Direccion artistica sustancial
 
 Fase: Fase 3 - MVP de contenido

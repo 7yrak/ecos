@@ -16,6 +16,7 @@ var _previous_rect: Rect2 = PLAY_RECTS[0]
 var _reveal_strength := 0.0
 var _expansion_tween: Tween
 var _phase := 0.0
+var _mode_25d := false
 var _palette := {
 	"void": Color("#030b12"),
 	"arena": Color("#09242a"),
@@ -41,6 +42,11 @@ func set_palette(palette: Dictionary) -> void:
 	var background_path := str(palette.get("background_path", ""))
 	if not background_path.is_empty():
 		_palette["background"] = load(background_path)
+	queue_redraw()
+
+
+func set_25d_enabled(enabled: bool) -> void:
+	_mode_25d = enabled
 	queue_redraw()
 
 
@@ -90,19 +96,20 @@ func _draw() -> void:
 	var arena_color: Color = _palette.arena
 	var primary: Color = _palette.primary
 	var secondary: Color = _palette.secondary
-	draw_rect(Rect2(-560.0, -460.0, 1840.0, 2240.0), void_color, true)
-	_draw_environment_art()
-	_draw_depth_field(primary, secondary)
+	if not _mode_25d:
+		draw_rect(Rect2(-560.0, -460.0, 1840.0, 2240.0), void_color, true)
+		_draw_environment_art()
+		_draw_depth_field(primary, secondary)
 
 	for layer in 4:
 		var grow := float(34 - layer * 8)
 		var alpha := 0.025 + float(layer) * 0.018
 		draw_rect(_draw_rect.grow(grow), Color(secondary, alpha), false, 4.0 + float(layer) * 2.0)
-	draw_rect(_draw_rect, Color(arena_color, 0.42), true)
-	draw_rect(_draw_rect.grow(-5.0), Color(primary, 0.025), true)
+	draw_rect(_draw_rect, Color(arena_color, 0.12 if _mode_25d else 0.42), true)
+	draw_rect(_draw_rect.grow(-5.0), Color(primary, 0.035 if _mode_25d else 0.025), true)
 
 	if expansion_stage > 1:
-		draw_rect(_previous_rect, Color(void_color.lightened(0.08), 0.58), true)
+		draw_rect(_previous_rect, Color(void_color.lightened(0.08), 0.16 if _mode_25d else 0.58), true)
 		var sector_color := Color(secondary, 0.08 + _reveal_strength * 0.15)
 		draw_rect(_draw_rect, sector_color, false, 16.0 + _reveal_strength * 22.0)
 
