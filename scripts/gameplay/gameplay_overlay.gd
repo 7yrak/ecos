@@ -4,6 +4,7 @@ extends Control
 var _phase := 0.0
 var _primary := Color("#55f2bd")
 var _secondary := Color("#32aee8")
+var _resonance_strength := 0.0
 
 
 func _ready() -> void:
@@ -22,6 +23,11 @@ func set_palette(palette: Dictionary) -> void:
 	queue_redraw()
 
 
+func set_resonance_strength(strength: float) -> void:
+	_resonance_strength = clampf(strength, 0.0, 1.0)
+	queue_redraw()
+
+
 func _draw() -> void:
 	var edge := 34.0
 	draw_rect(Rect2(0.0, 0.0, size.x, edge), Color(0.0, 0.0, 0.0, 0.22))
@@ -36,6 +42,23 @@ func _draw() -> void:
 	_draw_bracket(Vector2(size.x - 24.0, 286.0), Vector2.LEFT, Vector2.DOWN)
 	_draw_bracket(Vector2(24.0, size.y - 34.0), Vector2.RIGHT, Vector2.UP)
 	_draw_bracket(Vector2(size.x - 24.0, size.y - 34.0), Vector2.LEFT, Vector2.UP)
+	if _resonance_strength > 0.001:
+		var pulse := 0.68 + sin(_phase * 8.0) * 0.18
+		var resonance_color := _primary.lerp(_secondary, 0.5 + sin(_phase * 2.4) * 0.22)
+		draw_rect(
+			Rect2(10.0, 10.0, size.x - 20.0, size.y - 20.0),
+			Color(resonance_color, _resonance_strength * pulse * 0.3),
+			false,
+			10.0 + _resonance_strength * 8.0
+		)
+		for index in 3:
+			var inset := 18.0 + float(index) * 11.0
+			draw_rect(
+				Rect2(inset, inset, size.x - inset * 2.0, size.y - inset * 2.0),
+				Color(resonance_color, _resonance_strength * (0.035 - float(index) * 0.008)),
+				false,
+				2.0
+			)
 
 
 func _draw_bracket(origin: Vector2, horizontal: Vector2, vertical: Vector2) -> void:

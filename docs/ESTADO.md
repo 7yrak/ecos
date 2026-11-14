@@ -8,18 +8,18 @@
 - Fecha de actualizacion: 2026-07-27
 - Fase activa: Fase 3 - MVP de contenido
 - Hito activo: validar nueve etapas 2.5D, sus coreografias y el rendimiento movil
-- Estado general: renovacion 3D reactiva implementada; APK pendiente de validacion fisica
-- Ultima sesion: se profundizo el gameplay con arena modular, ecos holograficos y respuesta tactil
+- Estado general: cierre del primer eco protegido con perfil Android seguro; pendiente de revalidacion fisica
+- Ultima sesion: se corrigio el pico simultaneo de audio y GPU al crear el primer eco
 
 ## Ultimo resultado verificable
 
 - El proyecto usa Godot 4.7.1, GDScript, Java 21, Android SDK 36, orientacion vertical
   y resolucion logica 720 x 1280 con renderizador Compatibility.
-- La version de trabajo es `0.11.0` (`versionCode 22`).
+- La version de trabajo es `0.12.1` (`versionCode 24`).
 - Las APK no forman parte de Git. La APK firmada se genera solo de forma local en
   `releases/`, que conserva unicamente el artefacto vigente.
-- La salida local actual es `ECOS-0.11.0-android.apk`, SHA-256
-  `6A8EC63A56BCFF6F0B4C663547BD243B68449EADBC6BBEADD807DDFB45DA907F`.
+- La salida local actual es `ECOS-0.12.1-android.apk`, SHA-256
+  `E0016A8B9BD92CA0A7FB616554004768D1A08F013D12ABF17CFD48C3A3026DB1`.
 - La APK usa firmas v2 y v3, `targetSdk 36`, ARM64 y x86_64; no solicita permisos ni
   contiene recursos de pruebas o desarrollo.
 - `0.4.0` usa un certificado nuevo porque la clave privada anterior no estaba
@@ -49,6 +49,20 @@
 - Tocar o arrastrar produce ondas y luz en la posicion del dedo. El desplazamiento
   del jugador deja ondas menores, mientras un barrido emisivo recorre el sector y una
   luz superficial acompana el movimiento.
+- Una esquiva perfecta exige entrar en la franja exterior de riesgo de un eco u
+  obstaculo activo y volver a salir sin colisionar. Acercarse, permanecer cerca o
+  entrar en la zona de impacto no concede puntos.
+- Cada esquiva aumenta combo, Sincronia y puntos de habilidad. El multiplicador llega
+  hasta x1.96 mediante combo y suma x0.80 durante Resonancia.
+- Moverse con velocidad suficiente llena gradualmente Sincronia; detenerse la vacia.
+  Al llegar a 100 comienza una Resonancia de siete segundos con borde, iluminacion,
+  particulas, musica, sonido y vibracion reforzados.
+- Cada intento abre con una aproximacion cinematografica de camara. Al 52% del tiempo
+  aparece un evento monumental fijo: las nueve etapas tienen nombre, silueta,
+  composicion orbital y configuracion 3D propias.
+- La musica procedimental usa una raiz distinta por etapa y cambia tono y volumen
+  segun ecos, sector y Sincronia. Eco, esquiva, Resonancia y monumento poseen golpes
+  sonoros diferenciados; las generaciones de eco alteran su tono.
 - Jugador, ecos, obstaculos base y sorpresas se representan en 3D. Colisiones, entrada,
   tiempos y coreografias permanecen en 2D para no perder precision ni determinismo.
 - Ajustes guarda un modo de calidad 2.5D alta a 720 x 1280 y otro de rendimiento a
@@ -108,7 +122,10 @@
   niveles siguientes se compran con la moneda obtenida al jugar.
 - Billetera, inventario, equipamiento, nivel seleccionado y primeras victorias se
   guardan localmente con esquema versionado.
-- Pasan 353 verificaciones headless, incluidas las cinco capacidades visuales nuevas,
+- Pasan 371 verificaciones headless, incluidas defensas del perfil Android,
+  esquivas seguras, proteccion contra
+  repeticion, combo, Sincronia, Resonancia, musica adaptativa, entrada y monumento,
+  ademas de las cinco capacidades visuales,
   las nueve etapas, pausa, salida al menu,
   identidades y arte visual por nivel, posiciones
   pasadas exactas, cadena recursiva, seis generaciones, presion reversible, victoria,
@@ -162,6 +179,12 @@ temperatura y legibilidad con seis o mas ecos, patrones activos y el sector 3 ab
 - [x] Animar expansiones con placas emergentes, puentes y camara cinematografica.
 - [x] Renovar ecos, obstaculos y suelo con hologramas y respuesta tactil.
 - [x] Ampliar la suite a 353 verificaciones y generar la APK local `0.11.0`.
+- [x] Implementar esquivas perfectas seguras, combo y multiplicador.
+- [x] Agregar Sincronia, Resonancia y HUD de flujo.
+- [x] Incorporar entradas cinematograficas y nueve eventos monumentales.
+- [x] Crear musica adaptativa, nuevos sonidos y vibraciones diferenciadas.
+- [x] Ampliar la suite a 367 verificaciones y generar la APK local `0.12.0`.
+- [x] Proteger la creacion del primer eco y generar la APK correctiva `0.12.1`.
 - [ ] Validar seguimiento, legibilidad y rendimiento en Galaxy A25 y S25.
 - [ ] Balancear umbrales 3/6, espera de 4 segundos, zoom y bono de 250 puntos.
 - [ ] Balancear duraciones, frecuencias, precios, bonos y poderes.

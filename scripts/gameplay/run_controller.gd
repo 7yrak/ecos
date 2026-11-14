@@ -21,6 +21,23 @@ const DESIGN_HEIGHT := 1280.0
 const EXPANSION_THRESHOLDS := [3, 6]
 const EXPANSION_DECISION_TIME := 4.0
 const MANUAL_EXPANSION_BONUS := 250
+const PERFECT_DODGE_MIN_CLEARANCE := 7.0
+const PERFECT_DODGE_MAX_CLEARANCE := 58.0
+const PERFECT_DODGE_REPEAT_TIME := 1.15
+const PLAYER_VISUAL_RADIUS := 22.0
+const SYNC_MAX := 100.0
+const RESONANCE_DURATION := 7.0
+const MONUMENT_NAMES := [
+	"TORRE DE LA PRIMERA SENAL",
+	"TURBINAS DE CONTRACORRIENTE",
+	"REACTOR CARMESI",
+	"MARTILLO DE LA FORJA",
+	"ANILLO DEL VACIO",
+	"CORONA GLACIAL",
+	"CORAZON SOLAR",
+	"PUERTA DEL HORIZONTE",
+	"CRISTAL DEL ULTIMO ECO",
+]
 
 @onready var player: PlayerController = $Player
 @onready var arena: ArenaVisual = $Arena
@@ -46,6 +63,8 @@ const MANUAL_EXPANSION_BONUS := 250
 @onready var expansion_label: Label = $UI/ExpansionStatus/Content/Label
 @onready var expansion_meter: ProgressBar = $UI/ExpansionStatus/Content/Meter
 @onready var pattern_memory_label: Label = $UI/ExpansionStatus/Content/PatternMemory
+@onready var sync_label: Label = $UI/ExpansionStatus/Content/SyncLabel
+@onready var sync_meter: ProgressBar = $UI/ExpansionStatus/Content/SyncMeter
 @onready var pattern_warning_label: Label = $UI/PatternWarning
 @onready var break_limit_button: Button = $UI/BreakLimitButton
 @onready var power_button: Button = $UI/PowerButton
@@ -99,6 +118,18 @@ var _run_id := 0
 var _reward_granted := false
 var _power_used := false
 var _power_invulnerability_time := 0.0
+var _skill_score := 0
+var _sync_value := 0.0
+var _resonance_time := 0.0
+var _resonance_bonus := 0.0
+var _perfect_dodges := 0
+var _combo := 0
+var _max_combo := 0
+var _combo_timeout := 0.0
+var _near_hazard_inside: Dictionary = {}
+var _near_hazard_last_award: Dictionary = {}
+var _monument_triggered := false
+var _slow_motion_serial := 0
 
 
 func _ready() -> void:
@@ -121,6 +152,14 @@ func _ready() -> void:
 	player.set_sensitivity(settings_store.sensitivity)
 	player.set_skin(progress_store.equipped_skin)
 	_start_run()
+
+
+func _exit_tree() -> void:
+	_slow_motion_serial += 1
+	if not is_equal_approx(Engine.time_scale, 1.0):
+		Engine.time_scale = 1.0
+	if is_instance_valid(get_tree()) and get_tree().paused:
+		get_tree().paused = false
 
 
 func configure_level(level_number: int) -> void:
@@ -175,11 +214,14 @@ func _physics_process(delta: float) -> void:
 	_update_progression()
 	_update_surprise_sequence()
 	_update_expansion_offer(delta)
+	_update_perfect_dodges()
+	_update_sync(delta)
+	_update_monument_event()
 
 	if _segment_time >= _level.echo_interval:
 		_spawn_echo()
 
-	_score = int(_run_time * 10.0) + _total_echo_count * 100 + _expansion_bonus
+	_score = int(_run_time * 10.0) + _total_echo_count * 100 + _expansion_bonus + _skill_score + int(_resonance_bonus)
 	_update_hud()
 	if _run_time >= _level.duration:
 		_complete_level()
@@ -201,6 +243,8 @@ func _start_run() -> void:
 		_camera_tween.kill()
 	if is_instance_valid(_camera_zoom_tween):
 		_camera_zoom_tween.kill()
+	_slow_motion_serial += 1
+	Engine.time_scale = 1.0
 	_state = RunState.PLAYING
 	_level_won = false
 	_reward_granted = false
@@ -217,6 +261,17 @@ func _start_run() -> void:
 	_slow_offenses = 0
 	_chain_pressure_multiplier = 1.0
 	_score = 0
+	_skill_score = 0
+	_sync_value = 0.0
+	_resonance_time = 0.0
+	_resonance_bonus = 0.0
+	_perfect_dodges = 0
+	_combo = 0
+	_max_combo = 0
+	_combo_timeout = 0.0
+	_near_hazard_inside.clear()
+	_near_hazard_last_award.clear()
+	_monument_triggered = false
 	_current_phase = 1
 	_world_stage = 1
 	_expansion_offer_time = 0.0
@@ -232,6 +287,11 @@ func _start_run() -> void:
 	_apply_visual_identity()
 	arena.set_expansion_stage(1, false)
 	world_25d.set_arena_stage(1)
+	world_25d.set_resonance_active(false)
+	world_25d.play_stage_intro()
+	atmosphere.set_resonance_strength(0.0)
+	feedback.set_resonance(false)
+	feedback.configure_music(_level_number)
 	world_camera.enabled = true
 	world_camera.zoom = Vector2.ONE
 	world_camera.offset = Vector2.ZERO
@@ -258,7 +318,11 @@ func _start_run() -> void:
 	instruction_label.text = "%s // %d S" % [_level.title, roundi(_level.duration)]
 	instruction_label.modulate.a = 1.0
 	_configure_power_button()
-	_show_banner("NIVEL %d // %s // %d S" % [_level.number, _level.difficulty, roundi(_level.duration)], _level.visual_palette.primary, 2.4)
+	_show_banner(
+		"TRANSMISION %02d // %s // 3  2  1" % [_level.number, _level.title],
+		_level.visual_palette.primary,
+		2.4
+	)
 	_update_hud()
 
 
@@ -312,14 +376,9 @@ func _on_rift_opened(rift) -> void:
 	echo.hit_player.connect(_on_echo_hit_player)
 	_total_echo_count += 1
 	_echo_count = echoes.get_child_count()
-	feedback.play_echo(echo.global_position)
+	feedback.play_echo(echo.global_position, echo.generation)
 	_offer_expansion_if_ready()
 	_update_hud()
-
-
-func _exit_tree() -> void:
-	if is_instance_valid(get_tree()) and get_tree().paused:
-		get_tree().paused = false
 
 
 func _show_pause() -> void:
@@ -386,6 +445,11 @@ func _complete_level() -> void:
 
 func _show_result(reason: String) -> void:
 	_state = RunState.GAME_OVER
+	_slow_motion_serial += 1
+	Engine.time_scale = 1.0
+	world_25d.set_resonance_active(false)
+	atmosphere.set_resonance_strength(0.0)
+	feedback.set_resonance(false)
 	pause_button.visible = false
 	player.set_movement_enabled(false)
 	_clear_rifts()
@@ -418,7 +482,7 @@ func _show_result(reason: String) -> void:
 		_flash_screen(Color(1.0, 0.2, 0.16), 0.3, 0.42)
 		restart_button.text = "REINTENTAR NIVEL"
 	var reward := _grant_run_reward()
-	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nPATRONES DESCUBIERTOS  %02d / %02d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _discovered_event_count, _level.surprise_events.size(), _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
+	result_label.text = "NIVEL %02d // %s\n%s\n\nTIEMPO  %05.1f / %05.1f s\nPUNTOS  %04d\nECOS CREADOS  %02d\nSECTORES ABIERTOS  %d / 3\nPATRONES DESCUBIERTOS  %02d / %02d\nESQUIVAS PERFECTAS  %02d // COMBO MAX x%d\nFALTAS LENTAS  %02d / CADENA x%.1f\n\n+%d FRAGMENTOS  //  SALDO %d" % [_level.number, _level.difficulty, reason, _run_time, _level.duration, _score, _total_echo_count, _world_stage, _discovered_event_count, _level.surprise_events.size(), _perfect_dodges, _max_combo, _slow_offenses, _chain_pressure_multiplier, reward, progress_store.fragments]
 	game_over_overlay.visible = true
 	result_panel.modulate.a = 0.0
 	result_panel.scale = Vector2.ONE * 0.9
@@ -495,6 +559,163 @@ func _update_echo_pressure(segment_distance: float) -> void:
 func _apply_chain_pressure() -> void:
 	for child in echoes.get_children():
 		(child as EchoPlayback).set_pressure_multiplier(_chain_pressure_multiplier)
+
+
+func _update_perfect_dodges() -> void:
+	var evaluated_ids := {}
+	for obstacle in [upper_obstacle, lower_obstacle, patrol_obstacle, pulse_obstacle]:
+		if not obstacle.progression_active or not obstacle.visible or not obstacle.collision_active:
+			continue
+		_evaluate_near_hazard(obstacle, _rect_hazard_clearance(obstacle, obstacle.obstacle_size), evaluated_ids)
+	for child in surprises.get_children():
+		if not child is SurpriseObstacle:
+			continue
+		var surprise := child as SurpriseObstacle
+		if not surprise.collision_active:
+			continue
+		_evaluate_near_hazard(surprise, _rect_hazard_clearance(surprise, surprise.obstacle_size), evaluated_ids)
+	for child in echoes.get_children():
+		if not child is EchoPlayback:
+			continue
+		var echo := child as EchoPlayback
+		var clearance := player.global_position.distance_to(echo.global_position) - PLAYER_VISUAL_RADIUS - 24.0
+		_evaluate_near_hazard(echo, clearance, evaluated_ids)
+	for hazard_id in _near_hazard_inside.keys():
+		if not evaluated_ids.has(hazard_id):
+			_near_hazard_inside.erase(hazard_id)
+
+
+func _rect_hazard_clearance(hazard: Node2D, hazard_size: Vector2) -> float:
+	var local_point := hazard.to_local(player.global_position)
+	var half_size := hazard_size * 0.5
+	var outside := Vector2(
+		maxf(absf(local_point.x) - half_size.x, 0.0),
+		maxf(absf(local_point.y) - half_size.y, 0.0)
+	)
+	return outside.length() - PLAYER_VISUAL_RADIUS
+
+
+func _evaluate_near_hazard(hazard: Node, clearance: float, evaluated_ids: Dictionary) -> void:
+	var hazard_id := hazard.get_instance_id()
+	evaluated_ids[hazard_id] = true
+	var inside_band := clearance >= PERFECT_DODGE_MIN_CLEARANCE and clearance <= PERFECT_DODGE_MAX_CLEARANCE
+	var was_inside := bool(_near_hazard_inside.get(hazard_id, false))
+	if was_inside and clearance > PERFECT_DODGE_MAX_CLEARANCE:
+		var last_award := float(_near_hazard_last_award.get(hazard_id, -100.0))
+		if _run_time - last_award >= PERFECT_DODGE_REPEAT_TIME:
+			_near_hazard_last_award[hazard_id] = _run_time
+			_register_perfect_dodge()
+	_near_hazard_inside[hazard_id] = inside_band
+
+
+func _register_perfect_dodge() -> void:
+	if _state != RunState.PLAYING:
+		return
+	_perfect_dodges += 1
+	_combo += 1
+	_max_combo = maxi(_max_combo, _combo)
+	_combo_timeout = 3.2
+	_sync_value = minf(SYNC_MAX, _sync_value + 20.0 + minf(12.0, float(_combo) * 1.5))
+	var award := roundi(160.0 * _score_multiplier())
+	_skill_score += award
+	feedback.play_perfect_dodge(player.global_position)
+	world_25d.play_perfect_dodge(player.position)
+	_show_banner(
+		"ESQUIVA PERFECTA // COMBO x%d // +%d" % [_combo, award],
+		_level.visual_palette.primary.lightened(0.24),
+		1.15
+	)
+	_flash_screen(_level.visual_palette.primary, 0.075, 0.18)
+	_shake_camera(4.0, 0.13)
+	settings_store.vibrate(24)
+	_play_dodge_slow_motion()
+
+
+func _score_multiplier() -> float:
+	return 1.0 + minf(0.96, float(_combo) * 0.12) + (0.8 if _resonance_time > 0.0 else 0.0)
+
+
+func _play_dodge_slow_motion() -> void:
+	if OS.has_feature("headless") or OS.has_feature("mobile"):
+		return
+	_slow_motion_serial += 1
+	var serial := _slow_motion_serial
+	Engine.time_scale = 0.38
+	var timer := get_tree().create_timer(0.11, true, false, true)
+	timer.timeout.connect(_restore_time_scale.bind(serial))
+
+
+func _restore_time_scale(serial: int) -> void:
+	if serial != _slow_motion_serial:
+		return
+	Engine.time_scale = 1.0
+
+
+func _update_sync(delta: float) -> void:
+	_combo_timeout = maxf(0.0, _combo_timeout - delta)
+	if _combo_timeout <= 0.0 and _combo > 0 and _resonance_time <= 0.0:
+		_combo = 0
+	if _resonance_time > 0.0:
+		_resonance_time = maxf(0.0, _resonance_time - delta)
+		_resonance_bonus += delta * 18.0
+		atmosphere.set_resonance_strength(0.78 + sin(_run_time * 7.0) * 0.22)
+		if _resonance_time <= 0.0:
+			_end_resonance()
+	else:
+		if _sync_value >= SYNC_MAX:
+			_begin_resonance()
+		else:
+			var movement_ratio := player.velocity.length() / maxf(1.0, player.move_speed)
+			if movement_ratio >= 0.48:
+				_sync_value = minf(SYNC_MAX, _sync_value + delta * (3.8 + movement_ratio * 2.2))
+			else:
+				_sync_value = maxf(0.0, _sync_value - delta * 4.6)
+			if _sync_value >= SYNC_MAX:
+				_begin_resonance()
+	var danger_intensity := clampf(
+		float(_echo_count) / 9.0 + float(_world_stage - 1) * 0.16 + _sync_value / SYNC_MAX * 0.36,
+		0.0,
+		1.0
+	)
+	feedback.set_intensity(danger_intensity)
+
+
+func _begin_resonance() -> void:
+	if _resonance_time > 0.0:
+		return
+	_resonance_time = RESONANCE_DURATION
+	_sync_value = SYNC_MAX
+	_combo_timeout = RESONANCE_DURATION
+	world_25d.set_resonance_active(true)
+	atmosphere.set_resonance_strength(1.0)
+	feedback.set_resonance(true)
+	feedback.play_resonance(player.global_position)
+	_show_banner("RESONANCIA // PUNTOS x%.2f // %d S" % [_score_multiplier(), roundi(RESONANCE_DURATION)], _level.visual_palette.warning, 2.2)
+	_flash_screen(_level.visual_palette.primary, 0.15, 0.42)
+	_shake_camera(10.0, 0.32)
+	settings_store.vibrate(85)
+
+
+func _end_resonance() -> void:
+	_sync_value = 42.0
+	_combo = maxi(0, _combo - 2)
+	world_25d.set_resonance_active(false)
+	atmosphere.set_resonance_strength(0.0)
+	feedback.set_resonance(false)
+	_show_banner("RESONANCIA COMPLETA // MANTEN EL FLUJO", _level.visual_palette.secondary, 1.6)
+
+
+func _update_monument_event() -> void:
+	if _monument_triggered or _run_time < maxf(9.0, _level.duration * 0.52):
+		return
+	_monument_triggered = true
+	world_25d.trigger_monument_event()
+	feedback.play_monument(player.global_position)
+	var event_name: String = MONUMENT_NAMES[_level_number - 1]
+	_show_banner("EVENTO DE NIVEL // %s" % event_name, _level.visual_palette.warning, 3.0)
+	_flash_screen(_level.visual_palette.warning, 0.13, 0.55)
+	_shake_camera(13.0, 0.48)
+	settings_store.vibrate(95)
 
 
 func _update_progression() -> void:
@@ -623,6 +844,13 @@ func _update_hud() -> void:
 	echo_label.text = "ECOS\n%02d" % _echo_count
 	phase_label.text = "N%d S%d/3\nF%d CAD x%.1f" % [_level.number, _world_stage, _slow_offenses, _chain_pressure_multiplier]
 	pattern_memory_label.text = "MEMORIA DEL NIVEL %02d/%02d" % [_discovered_event_count, _level.surprise_events.size()]
+	sync_meter.value = _sync_value
+	if _resonance_time > 0.0:
+		sync_label.text = "RESONANCIA %.1f S // COMBO x%d // PTS x%.2f" % [_resonance_time, _combo, _score_multiplier()]
+		sync_label.add_theme_color_override("font_color", _level.visual_palette.warning)
+	else:
+		sync_label.text = "SINCRONIA %02d%% // COMBO x%d // PTS x%.2f" % [roundi(_sync_value), _combo, _score_multiplier()]
+		sync_label.add_theme_color_override("font_color", _level.visual_palette.primary.lightened(0.28))
 	_update_expansion_hud()
 
 
@@ -642,6 +870,7 @@ func _configure_arena_for_level() -> void:
 func _apply_visual_identity() -> void:
 	var palette: Dictionary = _level.visual_palette
 	arena.set_palette(palette)
+	world_25d.set_level_identity(_level_number)
 	world_25d.set_palette(palette)
 	atmosphere.set_palette(palette)
 	feedback.set_palette(palette)
@@ -830,6 +1059,7 @@ func _expand_world(manual: bool) -> void:
 	_world_stage += 1
 	if manual:
 		_expansion_bonus += MANUAL_EXPANSION_BONUS
+		_sync_value = minf(SYNC_MAX, _sync_value + 14.0)
 
 	var next_rect := arena.play_rect_for_stage(_world_stage)
 	arena.set_expansion_stage(_world_stage)

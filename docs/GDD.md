@@ -57,6 +57,14 @@ creado por uno mismo en una cadena perfecta.
 - Moverse activamente vuelve a ampliar el retraso de forma gradual. Las faltas lentas
   permanecen como estadistica del intento, pero no crean una amenaza distinta.
 - Chocar con un eco o peligro pierde el intento; agotar el tiempo gana el nivel.
+- Entrar en la franja exterior de un peligro activo y salir sin impacto concede una
+  esquiva perfecta. Acercarse sin completar la salida no concede recompensa.
+- Las esquivas perfectas crean combo, suman puntos y alimentan Sincronia. Mantener
+  velocidad tambien la llena; detenerse la reduce.
+- Sincronia 100 activa siete segundos de Resonancia con un multiplicador adicional
+  de x0.80, musica y presentacion reforzadas.
+- Cada etapa reproduce una entrada corta y activa un evento monumental propio al
+  alcanzar el 52% de su duracion.
 - Una sola reanimacion puede ofrecerse mediante anuncio recompensado.
 - La dificultad aumenta mediante tiempo objetivo, frecuencia, etapas, compresion de
   la cadena, cantidad de ecos y modificadores definidos por nivel.
@@ -119,9 +127,19 @@ Implementado:
 - Obstaculos que emergen, golpean y se retiran con siluetas propias para muros,
   compuertas y barridos.
 - Suelo reactivo al toque, arrastre y movimiento con ondas, luces y barrido emisivo.
+- Sistema de esquivas perfectas validado al salir vivo de una franja de riesgo, con
+  proteccion por peligro y tiempo contra recompensas repetidas.
+- HUD de Sincronia, combo y multiplicador; Resonancia temporal con respuesta visual,
+  sonora y tactil.
+- Entrada cinematografica de camara al iniciar cada intento y nueve monumentos 3D
+  deterministas que aparecen a mitad de sus etapas.
+- Musica procedimental adaptativa por nivel, intensidad de peligro y Resonancia;
+  diez golpes sonoros procedimentales cubren eventos principales.
 - Simulacion, entrada y colisiones 2D separadas del render 3D para conservar
   precision tactil y reproducibilidad.
-- Selector persistente entre calidad 2.5D alta y modo de rendimiento.
+- Selector persistente entre calidad 2.5D alta y modo de rendimiento. Android inicia
+  siempre con el perfil seguro de rendimiento y hologramas de eco sin emisores GPU
+  individuales.
 - Vibracion breve al terminar una ronda cuando esta habilitada.
 - Tres tipos de obstaculo: barrera fija, patrulla movil y pulso intermitente.
 - Nivel 1 con objetivo de 45 segundos y tres etapas: fija desde el inicio, patrulla a

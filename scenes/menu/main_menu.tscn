@@ -169,7 +169,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.584, 1, 0.796, 0.9)
 theme_override_font_sizes/font_size = 20
-text = "ECOS // 0.11.0"
+text = "ECOS // 0.12.0"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Content/Layout/Top"]
@@ -372,11 +372,11 @@ text = "04  ROMPE EL LIMITE\nCon 3 y 6 ecos puedes expandir el mundo. Decide rap
 vertical_alignment = 1
 
 [node name="StepFive" type="Label" parent="TutorialOverlay/Center/Panel/Content"]
-custom_minimum_size = Vector2(0, 128)
+custom_minimum_size = Vector2(0, 148)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.68, 0.25, 1)
-theme_override_font_sizes/font_size = 22
-text = "05  APRENDE Y CONTROLA\nCada nivel repite obstaculos en el mismo segundo y lugar.\nPulsa II para pausar, reiniciar o salir al menu."
+theme_override_font_sizes/font_size = 20
+text = "05  ESQUIVA Y ENTRA EN RESONANCIA\nEntra en la zona de riesgo y sal con vida para crear combo.\nLlena Sincronia moviendote; pulsa II para pausar o salir."
 vertical_alignment = 1
 
 [node name="Back" type="Button" parent="TutorialOverlay/Center/Panel/Content"]
