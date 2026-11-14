@@ -369,6 +369,14 @@ func _test_run_scene() -> void:
 	world_25d.set_high_quality(false)
 	_expect(world_25d.size == Vector2i(540, 960), "el modo rendimiento reduce la resolucion 3D")
 	_expect(is_equal_approx(world_25d.display_scale(), (1.0 / World25D.FINAL_ZOOM) * 4.0 / 3.0), "el modo rendimiento conserva el encuadre")
+	world_25d.set_mobile_safe_override(true)
+	world_25d.set_high_quality(true)
+	world_25d.set_resonance_active(true)
+	_expect(world_25d.mobile_safe_mode_active(), "Android activa el perfil visual seguro")
+	_expect(world_25d.size == Vector2i(540, 960), "el perfil movil limita la resolucion 3D")
+	_expect(world_25d.resonance_particle_budget() == 34, "el perfil movil limita las particulas de Resonancia")
+	world_25d.set_resonance_active(false)
+	world_25d.set_mobile_safe_override(false)
 	world_25d.set_high_quality(true)
 	run.pause_button.pressed.emit()
 	_expect(paused and run.pause_overlay.visible, "el boton de pausa esta disponible durante el intento")
@@ -383,8 +391,51 @@ func _test_run_scene() -> void:
 		and feedback.stream_data_size(GameplayFeedback.Cue.PULSE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.PRESSURE) > 0 \
 		and feedback.stream_data_size(GameplayFeedback.Cue.HIT) > 0 \
-		and feedback.stream_data_size(GameplayFeedback.Cue.HAZARD) > 0
-	_expect(audio_ready, "genera los siete sonidos procedurales")
+		and feedback.stream_data_size(GameplayFeedback.Cue.HAZARD) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.DODGE) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.RESONANCE) > 0 \
+		and feedback.stream_data_size(GameplayFeedback.Cue.MONUMENT) > 0
+	_expect(audio_ready, "genera los diez sonidos procedurales")
+	feedback.set_mobile_safe_override(true)
+	feedback.configure_music(9)
+	_expect(not feedback.adaptive_music_active(), "Android evita crear musica larga durante la partida")
+	feedback.set_mobile_safe_override(false)
+	_expect(world_25d.intro_play_count() >= 1, "cada intento reproduce una entrada cinematografica")
+	_expect(run.sync_meter.max_value == 100.0 and run.sync_label.text.contains("SINCRONIA"), "el HUD incorpora Sincronia, combo y multiplicador")
+
+	var near_miss_position := obstacle.to_global(Vector2(0.0, obstacle.obstacle_size.y * 0.5 + RunController.PLAYER_VISUAL_RADIUS + 25.0))
+	player.global_position = near_miss_position
+	run._update_perfect_dodges()
+	_expect(run._perfect_dodges == 0, "entrar en riesgo aun no concede una esquiva")
+	player.global_position = run.to_global(Vector2(360.0, 650.0))
+	run._update_perfect_dodges()
+	_expect(run._perfect_dodges == 1 and run._combo == 1, "una aproximacion peligrosa registra una esquiva perfecta")
+	_expect(run._sync_value > 0.0 and run._skill_score > 0, "la esquiva alimenta Sincronia y puntuacion")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.DODGE, "la esquiva perfecta tiene una respuesta sonora propia")
+	run._update_perfect_dodges()
+	_expect(run._perfect_dodges == 1, "permanecer lejos del mismo peligro no repite la recompensa")
+	run._run_time += RunController.PERFECT_DODGE_REPEAT_TIME + 0.1
+	player.global_position = near_miss_position
+	run._update_perfect_dodges()
+	player.global_position = run.to_global(Vector2(360.0, 650.0))
+	run._update_perfect_dodges()
+	_expect(run._perfect_dodges == 2, "salir y volver a arriesgarse permite otra esquiva")
+
+	run._sync_value = RunController.SYNC_MAX
+	run._update_sync(0.05)
+	_expect(run._resonance_time > 0.0 and feedback.resonance_active(), "Sincronia completa activa Resonancia audiovisual")
+	_expect(run._score_multiplier() > 1.8, "Resonancia eleva el multiplicador de puntos")
+	run._update_sync(RunController.RESONANCE_DURATION + 0.1)
+	_expect(is_zero_approx(run._resonance_time) and not feedback.resonance_active(), "Resonancia termina y restaura la presentacion normal")
+
+	run._run_time = run._level.duration * 0.52
+	var monument_count := world_25d.monument_event_count()
+	run._update_monument_event()
+	_expect(run._monument_triggered and world_25d.monument_event_count() == monument_count + 1, "cada nivel activa su evento monumental determinista")
+	_expect(feedback.last_cue == GameplayFeedback.Cue.MONUMENT, "el evento monumental tiene golpe sonoro propio")
+	feedback.set_intensity(1.5)
+	_expect(is_equal_approx(feedback.music_intensity(), 1.0), "la musica adaptativa limita su intensidad")
+	run._start_run()
 
 	run._physics_process(5.1)
 	_expect(echoes.get_child_count() == 0 and run.rifts.get_child_count() == 1, "avisa la grieta antes de crear el eco")

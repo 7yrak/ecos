@@ -448,6 +448,40 @@ motivo. Esto evita modificar la direccion del proyecto sin dejar rastro.
   baja esas cantidades. El caso critico de sector 3 con seis o mas ecos debe medirse
   en Galaxy A25 antes de aumentar efectos.
 
+## D-038 - Premiar el dominio mediante Sincronia y espectaculo
+
+- Fecha: 2026-07-27
+- Estado: aceptada por el usuario
+- Decision: convertir el juego habil en una fuente directa de espectaculo. Salir
+  con vida de una franja de riesgo concede esquiva perfecta, combo, puntos y
+  Sincronia. Sincronia completa activa siete segundos de Resonancia. Cada intento
+  tiene entrada de camara, cada etapa un monumento fijo al 52% y la musica responde
+  a su intensidad.
+- Motivo: despues de elevar la presentacion 3D, el siguiente salto debia hacer que
+  jugar bien se sintiera diferente, no limitarse a sumar decoracion permanente.
+- Consecuencia: el detector premia la salida segura y no la mera proximidad; conserva
+  registro por peligro y una espera de 1.15 segundos. El tiempo lento de una esquiva
+  dura 0.11 segundos reales y siempre se restaura al reiniciar, pausar el flujo o
+  abandonar la escena. Combo, Sincronia, duracion y multiplicadores requieren balance
+  fisico antes de publicar.
+
+## D-039 - Perfil Android seguro en los picos de creacion
+
+- Fecha: 2026-07-27
+- Estado: aceptada por correccion critica
+- Decision: Android usa desde el inicio el viewport 3D de rendimiento. En el
+  nacimiento de los ecos conserva el holograma esencial, pero no crea luces ni
+  emisores GPU individuales. Tampoco genera musica larga en memoria, altera el tono
+  de los golpes cortos ni usa `Engine.time_scale`.
+- Motivo: una prueba fisica ubico el cierre exactamente en el nacimiento del primer
+  eco, donde coincidían la nueva musica adaptativa, el cambio de intensidad y la
+  creacion del holograma. Sin `logcat` autorizado no se puede atribuir una unica
+  llamada, por lo que se elimina todo el pico especifico sin retirar la mecanica.
+- Consecuencia: escritorio conserva el perfil visual completo. Android mantiene
+  arena, expansion, color generacional, halo, anillo, ondas y respuestas de pantalla,
+  con un costo estable. La prueba dedicada debe crear ecos en las nueve etapas y la
+  validacion definitiva sigue siendo fisica.
+
 ## Decisiones pendientes del usuario
 
 - Publico objetivo y clasificacion de edad buscada.

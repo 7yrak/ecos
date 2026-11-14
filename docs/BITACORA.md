@@ -4,6 +4,86 @@ Historial cronologico del proyecto. Las entradas anteriores no se reescriben; la
 correcciones se documentan en una entrada nueva. La entrada mas reciente va
 primero.
 
+## 2026-07-27 - Correccion del cierre al crear el primer eco
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- En una prueba fisica Android se informo que la aplicacion se cerraba exactamente
+  cuando nacía el primer eco de la partida.
+
+Cambios:
+
+- Android activa desde el inicio un perfil 3D seguro a 540 x 960, sin esperar a que
+  termine de construirse la escena de gameplay.
+- La musica larga generada durante la partida y la variacion de tono por generacion
+  se desactivan en Android; los diez golpes sonoros cortos permanecen.
+- El holograma movil conserva nucleo, halo, anillo y color generacional, pero omite
+  en su nacimiento la luz, estela de particulas y geometria secundaria que producian
+  un pico simultaneo de audio y GPU.
+- Resonancia limita su presupuesto movil a 34 particulas, los monumentos usan una
+  variante de baja geometria y la camara lenta global queda reemplazada por su
+  respuesta visual en Android.
+- La version correctiva avanza a `0.12.1` (`versionCode 24`).
+
+Verificacion:
+
+- Pasan 371 verificaciones headless en Godot 4.7.1.
+- Una prueba grafica dedicada completo 108 partidas, las nueve etapas y 432
+  nacimientos de eco bajo el perfil movil sin errores ni cierres.
+- APK local `ECOS-0.12.1-android.apk`: 65,167,271 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos.
+- SHA-256:
+  `E0016A8B9BD92CA0A7FB616554004768D1A08F013D12ABF17CFD48C3A3026DB1`.
+
+Siguiente accion:
+
+- Instalar `0.12.1` en el mismo telefono y confirmar que supera la creacion del
+  primer eco. Si persiste, capturar `adb logcat` con el dispositivo autorizado.
+
+## 2026-07-27 - Sincronia, Resonancia y eventos de nivel
+
+Fase: Fase 3 - MVP de contenido
+
+Origen del cambio:
+
+- Se aprobo priorizar esquivas perfectas, estado de flujo, entradas cinematograficas,
+  eventos propios por etapa y audio/vibracion adaptativos.
+
+Cambios:
+
+- La esquiva perfecta ahora se valida contra la superficie rotada real de muros,
+  compuertas, barridos, obstaculos base y ecos. Solo se entrega al salir vivo de la
+  franja peligrosa.
+- Cada peligro recuerda entrada, salida y ultimo premio; quedarse cerca o atravesar
+  la zona de impacto no genera puntos repetidos.
+- Se agregaron combo, mejor combo, puntos de habilidad, multiplicador y barra de
+  Sincronia. Movimiento sostenido y esquivas la llenan; inactividad la reduce.
+- Sincronia completa activa siete segundos de Resonancia con x0.80 adicional,
+  particulas, luces, borde animado, musica, golpe sonoro y vibracion propios.
+- Cada intento inicia con un viaje corto de camara. Al 52% aparece uno de nueve
+  monumentos deterministas con nombre, nucleo, silueta y orbitales diferenciados.
+- La musica procedimental cambia raiz por etapa y escala tono y volumen con ecos,
+  sector, Sincronia y Resonancia. Los ecos alteran su tono segun generacion.
+- El resultado informa esquivas y combo maximo; el tutorial explica el nuevo flujo.
+- La version avanza a `0.12.0` (`versionCode 23`).
+
+Verificacion:
+
+- Pasan 367 verificaciones headless en Godot 4.7.1.
+- Se revisaron visualmente la entrada de Abismo Violeta y Resonancia en sector 3 con
+  cinco ecos, borde activo y el monumento `ANILLO DEL VACIO`.
+- APK local `ECOS-0.12.0-android.apk`: 65,163,175 bytes, firmas v2/v3,
+  `targetSdk 36`, ARM64 y x86_64, sin permisos.
+- SHA-256:
+  `9B0F214146EDA00F66EE4EDF699C770ECDEBE1F809385395047452E78EE40AAA`.
+
+Siguiente accion:
+
+- Medir en Galaxy A25 si la franja de 7 a 58 px, los 3.2 segundos de combo y los
+  siete segundos de Resonancia resultan legibles, justos y fluidos.
+
 ## 2026-07-27 - Diorama 3D reactivo
 
 Fase: Fase 3 - MVP de contenido

@@ -23,6 +23,7 @@ var _frame_root: Node3D
 var _platform_root: Node3D
 var _architecture_root: Node3D
 var _reactive_root: Node3D
+var _monument_root: Node3D
 var _ambient_particles: GPUParticles3D
 var _scanner_strip: MeshInstance3D
 var _scanner_light: OmniLight3D
@@ -47,10 +48,17 @@ var _last_touch_pulse_time := -10.0
 var _last_player_wake := Vector3(1000.0, 0.0, 1000.0)
 var _reactive_pulses: Array[Node3D] = []
 var _platform_generation := 0
+var _level_identity := 1
+var _intro_play_count := 0
+var _monument_event_count := 0
+var _monument_active := false
+var _resonance_active := false
+var _mobile_safe_override := false
 
 
 func _ready() -> void:
-	size = Vector2i(720, 1280)
+	_high_quality = not OS.has_feature("mobile")
+	size = Vector2i(720, 1280) if _high_quality else Vector2i(540, 960)
 	render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	handle_input_locally = false
 	transparent_bg = false
@@ -88,6 +96,7 @@ func set_palette(palette: Dictionary) -> void:
 	_rebuild_architecture()
 	_rebuild_platforms(false)
 	_rebuild_frame()
+	_rebuild_monument()
 
 
 func set_arena_stage(stage: int, animate := false) -> void:
@@ -98,6 +107,7 @@ func set_arena_stage(stage: int, animate := false) -> void:
 			_reset_reactive_surface()
 		_rebuild_platforms(animate and _stage > previous_stage, previous_stage)
 		_rebuild_architecture()
+		_position_monument()
 		_rebuild_frame()
 		if animate and _stage > previous_stage:
 			_play_camera_reveal()
@@ -110,19 +120,110 @@ func set_player_skin(skin_id: String) -> void:
 		_rebuild_player(_player_color)
 
 
-func set_high_quality(enabled: bool) -> void:
-	_high_quality = enabled
-	size = Vector2i(720, 1280) if enabled else Vector2i(540, 960)
-	if is_instance_valid(_key_light):
-		_key_light.shadow_enabled = enabled
-	if is_instance_valid(_trail_particles):
-		_trail_particles.amount = 32 if enabled else 16
+func set_level_identity(level_number: int) -> void:
+	_level_identity = clampi(level_number, 1, 9)
+	if _enabled:
+		_rebuild_monument()
+
+
+func play_stage_intro() -> void:
+	_intro_play_count += 1
+	if not _enabled or not is_instance_valid(_camera):
+		return
+	if is_instance_valid(_camera_reveal_tween):
+		_camera_reveal_tween.kill()
+	_camera.size = CAMERA_SIZE * 1.16
+	_camera.look_at_from_position(
+		CAMERA_REVEAL + Vector3(-1.1 if _level_identity % 2 else 1.1, 1.8, 1.4),
+		Vector3.ZERO,
+		Vector3.UP
+	)
+	_camera_reveal_tween = create_tween()
+	_camera_reveal_tween.tween_method(_set_intro_camera_progress, 0.0, 1.0, 1.55) \
+		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+	_camera_reveal_tween.tween_callback(_finish_camera_reveal)
+
+
+func trigger_monument_event() -> void:
+	_monument_event_count += 1
+	_monument_active = true
+	if not _enabled or not is_instance_valid(_monument_root):
+		return
+	_monument_root.visible = true
+	_monument_root.scale = Vector3.ONE * 0.16
+	_monument_root.position.y = -2.8
+	var target_y := 0.72 + float(_level_identity % 3) * 0.18
+	var tween := _monument_root.create_tween().set_parallel(true)
+	tween.tween_property(_monument_root, "position:y", target_y, 1.1) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_monument_root, "scale", Vector3.ONE, 1.0) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_monument_root, "rotation:y", PI * 2.0, 1.5) \
+		.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+
+
+func play_perfect_dodge(design_position: Vector2) -> void:
+	if not _enabled:
+		return
+	_spawn_floor_pulse(
+		_to_world(design_position),
+		_palette.get("primary", Color("#55f2bd")).lightened(0.18),
+		1.72,
+		true
+	)
+
+
+func set_resonance_active(active: bool) -> void:
+	_resonance_active = active
+	if not _enabled:
+		return
 	if is_instance_valid(_ambient_particles):
-		_ambient_particles.amount = 74 if enabled else 34
+		_ambient_particles.amount = _ambient_particle_budget()
+
+
+func intro_play_count() -> int:
+	return _intro_play_count
+
+
+func monument_event_count() -> int:
+	return _monument_event_count
+
+
+func set_mobile_safe_override(enabled: bool) -> void:
+	_mobile_safe_override = enabled
+
+
+func mobile_safe_mode_active() -> bool:
+	return _uses_mobile_safe_mode()
+
+
+func resonance_particle_budget() -> int:
+	return _ambient_particle_budget()
+
+
+func set_high_quality(enabled: bool) -> void:
+	_high_quality = enabled and not _uses_mobile_safe_mode()
+	size = Vector2i(720, 1280) if _high_quality else Vector2i(540, 960)
+	if is_instance_valid(_key_light):
+		_key_light.shadow_enabled = _high_quality
+	if is_instance_valid(_trail_particles):
+		_trail_particles.amount = 32 if _high_quality else 16
+	if is_instance_valid(_ambient_particles):
+		_ambient_particles.amount = _ambient_particle_budget()
 	for visual in _echo_visuals.values():
 		var echo_trail := (visual as Node3D).get_node_or_null("EchoTrail") as GPUParticles3D
 		if is_instance_valid(echo_trail):
-			echo_trail.amount = 10 if enabled else 5
+			echo_trail.amount = 10 if _high_quality else 5
+
+
+func _ambient_particle_budget() -> int:
+	if _uses_mobile_safe_mode():
+		return 34
+	return (112 if _high_quality else 52) if _resonance_active else (74 if _high_quality else 34)
+
+
+func _uses_mobile_safe_mode() -> bool:
+	return _mobile_safe_override or OS.has_feature("mobile")
 
 
 func react_to_pointer(design_position: Vector2, intensity := 1.0) -> void:
@@ -227,6 +328,10 @@ func _build_world() -> void:
 	_platform_root.name = "PhysicalArenaDeck"
 	_world_root.add_child(_platform_root)
 
+	_monument_root = Node3D.new()
+	_monument_root.name = "StageMonument"
+	_world_root.add_child(_monument_root)
+
 	_frame_root = Node3D.new()
 	_frame_root.name = "ArenaFrame"
 	_world_root.add_child(_frame_root)
@@ -240,6 +345,7 @@ func _build_world() -> void:
 	_rebuild_player(Color("#55f2bd"))
 	_rebuild_architecture()
 	_rebuild_platforms(false)
+	_rebuild_monument()
 
 
 func _update_floor_material() -> void:
@@ -354,6 +460,134 @@ func _rebuild_architecture() -> void:
 		anchor_light.omni_range = 2.6
 		anchor_light.shadow_enabled = false
 		anchor.add_child(anchor_light)
+
+
+func _rebuild_monument() -> void:
+	if not is_instance_valid(_monument_root):
+		return
+	for child in _monument_root.get_children():
+		child.queue_free()
+	_monument_active = false
+	_monument_root.visible = false
+	_monument_root.rotation = Vector3.ZERO
+	_monument_root.scale = Vector3.ONE
+	_position_monument()
+	var primary: Color = _palette.get("primary", Color("#55f2bd"))
+	var secondary: Color = _palette.get("secondary", Color("#32aee8"))
+	var danger: Color = _palette.get("danger", Color("#ff5b52"))
+
+	var core := MeshInstance3D.new()
+	core.name = "MonumentCore"
+	if _uses_mobile_safe_mode():
+		var mobile_mesh := CylinderMesh.new()
+		mobile_mesh.top_radius = 0.38 + float(_level_identity % 3) * 0.08
+		mobile_mesh.bottom_radius = 0.68
+		mobile_mesh.height = 2.65
+		mobile_mesh.radial_segments = 8
+		core.mesh = mobile_mesh
+	elif _level_identity == 1:
+		var tower_mesh := CylinderMesh.new()
+		tower_mesh.top_radius = 0.34
+		tower_mesh.bottom_radius = 0.72
+		tower_mesh.height = 3.3
+		tower_mesh.radial_segments = 10
+		core.mesh = tower_mesh
+	elif _level_identity == 2:
+			core.mesh = _torus_mesh(0.72, 1.02)
+			core.rotation.x = PI * 0.5
+			core.scale = Vector3(1.35, 1.35, 1.35)
+	elif _level_identity == 3:
+			var reactor_mesh := SphereMesh.new()
+			reactor_mesh.radius = 0.78
+			reactor_mesh.height = 1.56
+			reactor_mesh.radial_segments = 24
+			reactor_mesh.rings = 12
+			core.mesh = reactor_mesh
+	elif _level_identity == 4:
+			var forge_mesh := BoxMesh.new()
+			forge_mesh.size = Vector3(1.45, 2.5, 1.15)
+			core.mesh = forge_mesh
+			core.rotation.z = 0.28
+	elif _level_identity == 5:
+			var crystal_mesh := PrismMesh.new()
+			crystal_mesh.size = Vector3(1.6, 3.0, 1.25)
+			core.mesh = crystal_mesh
+	elif _level_identity == 6:
+			var crown_mesh := PrismMesh.new()
+			crown_mesh.size = Vector3(2.1, 2.2, 1.45)
+			core.mesh = crown_mesh
+			core.rotation = Vector3(0.28, 0.4, PI)
+	elif _level_identity == 7:
+			var solar_mesh := SphereMesh.new()
+			solar_mesh.radius = 1.0
+			solar_mesh.height = 2.0
+			solar_mesh.radial_segments = 32
+			solar_mesh.rings = 16
+			core.mesh = solar_mesh
+	elif _level_identity == 8:
+			var gate_mesh := BoxMesh.new()
+			gate_mesh.size = Vector3(2.25, 2.9, 0.34)
+			core.mesh = gate_mesh
+			core.rotation.y = 0.18
+	else:
+			var final_crystal_mesh := PrismMesh.new()
+			final_crystal_mesh.size = Vector3(1.9, 3.5, 1.65)
+			core.mesh = final_crystal_mesh
+			core.rotation.z = PI
+	core.material_override = _energy_material(primary.lerp(danger, float(_level_identity - 1) / 12.0), 3.2)
+	core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if _uses_mobile_safe_mode() else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	_monument_root.add_child(core)
+
+	var orbitals := Node3D.new()
+	orbitals.name = "MonumentOrbitals"
+	_monument_root.add_child(orbitals)
+	var satellite_count := 2 if _uses_mobile_safe_mode() else 3 + posmod(_level_identity, 4)
+	for index in satellite_count:
+		var satellite := MeshInstance3D.new()
+		satellite.name = "Satellite%d" % index
+		var satellite_mesh := BoxMesh.new()
+		satellite_mesh.size = Vector3(0.18, 0.48 + float(index % 2) * 0.26, 0.18)
+		satellite.mesh = satellite_mesh
+		var angle := TAU * float(index) / float(satellite_count)
+		satellite.position = Vector3(cos(angle) * 1.35, sin(angle * 2.0) * 0.38, sin(angle) * 1.35)
+		satellite.rotation = Vector3(angle, -angle, angle * 0.5)
+		satellite.material_override = _energy_material(secondary if index % 2 else primary, 2.0)
+		orbitals.add_child(satellite)
+
+	if not _uses_mobile_safe_mode():
+		for ring_index in 2:
+			var ring := MeshInstance3D.new()
+			ring.name = "MonumentRing%d" % ring_index
+			ring.mesh = _torus_mesh(1.18 + float(ring_index) * 0.32, 1.24 + float(ring_index) * 0.32)
+			ring.rotation.x = 0.42 + float(ring_index) * 0.72
+			ring.material_override = _hologram_material(secondary if ring_index else primary, 0.48)
+			_monument_root.add_child(ring)
+
+		var monument_light := OmniLight3D.new()
+		monument_light.name = "MonumentLight"
+		monument_light.light_color = primary
+		monument_light.light_energy = 2.3
+		monument_light.omni_range = 5.4
+		monument_light.shadow_enabled = false
+		_monument_root.add_child(monument_light)
+
+
+func _position_monument() -> void:
+	if not is_instance_valid(_monument_root):
+		return
+	var width := 7.0
+	var depth := 10.0
+	var center := Vector3.ZERO
+	if is_instance_valid(_run):
+		var rect := _run.arena.play_rect_for_stage(_stage)
+		width = rect.size.x / PIXELS_PER_UNIT
+		depth = rect.size.y / PIXELS_PER_UNIT * GROUND_DEPTH_SCALE
+		center = _to_world(rect.get_center())
+	var side := -1.0 if _level_identity % 2 == 0 else 1.0
+	_monument_root.position.x = center.x + side * width * 0.25
+	_monument_root.position.z = center.z - depth * 0.24
+	if not _monument_active:
+		_monument_root.position.y = -2.8
 
 
 func _rebuild_platforms(animate: bool, previous_stage := 1) -> void:
@@ -597,6 +831,7 @@ func _sync_echoes() -> void:
 
 func _create_echo_visual(echo: EchoPlayback) -> Node3D:
 	var color := _echo_generation_color(echo.generation, echo.pressured)
+	var mobile_safe := _uses_mobile_safe_mode()
 	var root := Node3D.new()
 	root.name = "Echo%02d" % echo.generation
 	root.set_meta("generation", echo.generation)
@@ -605,8 +840,8 @@ func _create_echo_visual(echo: EchoPlayback) -> Node3D:
 	var sphere := SphereMesh.new()
 	sphere.radius = 0.17
 	sphere.height = 0.34
-	sphere.radial_segments = 18
-	sphere.rings = 9
+	sphere.radial_segments = 12 if mobile_safe else 18
+	sphere.rings = 6 if mobile_safe else 9
 	core.mesh = sphere
 	core.material_override = _energy_material(color, 2.2)
 	root.add_child(core)
@@ -614,32 +849,34 @@ func _create_echo_visual(echo: EchoPlayback) -> Node3D:
 	var shell_mesh := SphereMesh.new()
 	shell_mesh.radius = 0.27
 	shell_mesh.height = 0.54
-	shell_mesh.radial_segments = 18
-	shell_mesh.rings = 9
+	shell_mesh.radial_segments = 12 if mobile_safe else 18
+	shell_mesh.rings = 6 if mobile_safe else 9
 	shell.mesh = shell_mesh
 	shell.material_override = _hologram_material(color, 0.16)
 	root.add_child(shell)
-	for index in 3:
+	var ring_count := 1 if mobile_safe else 3
+	for index in ring_count:
 		var ring := MeshInstance3D.new()
 		ring.name = "GenerationRing%d" % index
 		ring.mesh = _torus_mesh(0.25 + index * 0.075, 0.29 + index * 0.075)
 		ring.material_override = _hologram_material(color, 0.68 - index * 0.16)
 		ring.rotation.x = float(index) * 0.62
 		root.add_child(ring)
-	var beam := MeshInstance3D.new()
-	beam.name = "MemoryBeam"
-	var beam_mesh := CylinderMesh.new()
-	beam_mesh.top_radius = 0.018
-	beam_mesh.bottom_radius = 0.055
-	beam_mesh.height = 1.05
-	beam_mesh.radial_segments = 8
-	beam.mesh = beam_mesh
-	beam.position.y = 0.36
-	beam.material_override = _hologram_material(color, 0.22)
-	root.add_child(beam)
-	var echo_trail := _create_memory_trail(color)
-	root.add_child(echo_trail)
-	if echo.generation <= 8:
+	if not mobile_safe:
+		var beam := MeshInstance3D.new()
+		beam.name = "MemoryBeam"
+		var beam_mesh := CylinderMesh.new()
+		beam_mesh.top_radius = 0.018
+		beam_mesh.bottom_radius = 0.055
+		beam_mesh.height = 1.05
+		beam_mesh.radial_segments = 8
+		beam.mesh = beam_mesh
+		beam.position.y = 0.36
+		beam.material_override = _hologram_material(color, 0.22)
+		root.add_child(beam)
+		var echo_trail := _create_memory_trail(color)
+		root.add_child(echo_trail)
+	if not mobile_safe and echo.generation <= 8:
 		var echo_light := OmniLight3D.new()
 		echo_light.name = "EchoLight"
 		echo_light.light_color = color
@@ -932,7 +1169,11 @@ func _animate_world() -> void:
 		_player_ring.rotation.y = _visual_time * 1.8
 		_player_ring.rotation.x = sin(_visual_time * 0.9) * 0.24
 	if is_instance_valid(_player_light):
-		_player_light.light_energy = 1.2 + sin(_visual_time * 6.0) * 0.18
+		_player_light.light_energy = 1.2 + sin(_visual_time * 6.0) * 0.18 + (0.72 if _resonance_active else 0.0)
+	if is_instance_valid(_key_light):
+		_key_light.light_energy = 1.18 + sin(_visual_time * 7.0) * 0.16 if _resonance_active else 0.78
+	if is_instance_valid(_rim_light):
+		_rim_light.light_energy = 0.86 + sin(_visual_time * 5.0) * 0.14 if _resonance_active else 0.48
 	if is_instance_valid(_scanner_strip) and is_instance_valid(_run):
 		var rect := _run.arena.play_rect_for_stage(_stage)
 		var center := _to_world(rect.get_center())
@@ -942,7 +1183,7 @@ func _animate_world() -> void:
 		_scanner_strip.position = Vector3(center.x, -0.045, center.z - depth * 0.5 + depth * scan_progress)
 		_scanner_strip.scale.x = width / 7.0
 		_scanner_strip.visible = true
-		_scanner_light.light_energy = 0.32 + sin(_visual_time * 5.0) * 0.08
+		_scanner_light.light_energy = 0.32 + sin(_visual_time * 5.0) * 0.08 + (0.52 if _resonance_active else 0.0)
 	for visual in _echo_visuals.values():
 		var echo_visual := visual as Node3D
 		var generation := int(echo_visual.get_meta("generation", 1))
@@ -956,6 +1197,18 @@ func _animate_world() -> void:
 		var details := obstacle_visual.get_node_or_null("Details")
 		if is_instance_valid(details):
 			details.rotation.y = sin(_visual_time * 6.0 + float(obstacle_visual.get_instance_id() % 7)) * 0.055
+	if _monument_active and is_instance_valid(_monument_root):
+		var orbitals := _monument_root.get_node_or_null("MonumentOrbitals") as Node3D
+		if is_instance_valid(orbitals):
+			orbitals.rotation.y = _visual_time * (0.42 + float(_level_identity) * 0.025)
+			orbitals.rotation.x = sin(_visual_time * 0.8) * 0.18
+		for ring_index in 2:
+			var monument_ring := _monument_root.get_node_or_null("MonumentRing%d" % ring_index) as MeshInstance3D
+			if is_instance_valid(monument_ring):
+				monument_ring.rotation.y = _visual_time * (0.28 + float(ring_index) * 0.17) * (-1.0 if ring_index else 1.0)
+		var monument_light := _monument_root.get_node_or_null("MonumentLight") as OmniLight3D
+		if is_instance_valid(monument_light):
+			monument_light.light_energy = 2.1 + sin(_visual_time * 6.5) * 0.7
 
 
 func _play_camera_reveal() -> void:
@@ -968,6 +1221,18 @@ func _play_camera_reveal() -> void:
 	_camera_reveal_tween.tween_method(_set_camera_reveal_progress, 0.0, 1.0, 1.28) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_camera_reveal_tween.tween_callback(_finish_camera_reveal)
+
+
+func _set_intro_camera_progress(progress: float) -> void:
+	var side := -1.0 if _level_identity % 2 else 1.0
+	var intro_position := CAMERA_REVEAL + Vector3(side * 1.1, 1.8, 1.4)
+	var camera_position := intro_position.lerp(CAMERA_HOME, progress)
+	_camera.size = lerpf(CAMERA_SIZE * 1.16, CAMERA_SIZE, progress)
+	_camera.look_at_from_position(
+		camera_position,
+		Vector3(lerpf(side * 0.8, 0.0, progress), -0.12, lerpf(-1.2, 0.0, progress)),
+		Vector3.UP
+	)
 
 
 func _set_camera_reveal_progress(progress: float) -> void:
